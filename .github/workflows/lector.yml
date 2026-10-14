@@ -1,0 +1,56 @@
+name: Lector tiempo real
+
+on:
+  schedule:
+    - cron: "5 13 * * 1-5"
+    - cron: "30 16 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      minutos:
+        description: "Minutos de prueba"
+        default: "5"
+
+jobs:
+  escuchar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+      TICKERS: ALUA,BBAR,BMA,BYMA,CEPU,COME,CRES,ECOG,EDN,GGAL,IRSA,LOMA,METR,PAMP,SUPV,TECO2,TGNO4,TGSU2,TRAN,TXAR,VALO,YPFD
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+      - name: Escuchar
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            HASTA=$(date -d "+${{ github.event.inputs.minutos }} minutes" +%H:%M)
+          elif [ $(date +%H) -lt 12 ]; then
+            HASTA="13:45"
+          else
+            HASTA="17:10"
+          fi
+          ARCHIVO="parte_$(date +%H%M).txt.gz"
+          echo "ARCHIVO=$ARCHIVO" >> $GITHUB_ENV
+          echo "Escuchando hasta $HASTA"
+          while [ "$(date +%H:%M)" \< "$HASTA" ]; do
+            python lector.py "$HASTA" "$ARCHIVO" || sleep 5
+          done
+      - name: Enviar al repositorio privado
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: |
+          [ -f "$ARCHIVO" ] || { echo "Sin datos"; exit 0; }
+          git clone --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          mkdir -p "datos/tiempo_real/$(date +%F)"
+          cp "$ARCHIVO" "datos/tiempo_real/$(date +%F)/"
+          cd datos
+          git config user.name "bot-lector"
+          git config user.email "bot@users.noreply.github.com"
+          git add tiempo_real
+          git commit -m "Tiempo real $(date +%F) $ARCHIVO"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
