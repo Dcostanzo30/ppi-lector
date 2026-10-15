@@ -1,0 +1,96 @@
+name: Lector tiempo real
+
+on:
+  schedule:
+    - cron: "23 12 * * 1-5"   # turno mañana, 09:23 (con margen por las demoras de GitHub)
+    - cron: "53 12 * * 1-5"   # respaldo del turno mañana, 09:53
+    - cron: "37 16 * * 1-5"   # respaldo del turno tarde, 13:37 (solo corre si nadie está escuchando)
+  workflow_dispatch:
+    inputs:
+      turno:
+        description: "prueba o tarde"
+        default: "prueba"
+      minutos:
+        description: "Minutos de prueba"
+        default: "5"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  escuchar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      GH_TOKEN: ${{ github.token }}
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+      TICKERS: ALUA,BBAR,BMA,BYMA,CEPU,COME,CRES,ECOG,EDN,GGAL,IRSA,LOMA,METR,PAMP,SUPV,TECO2,TGNO4,TGSU2,TRAN,TXAR,VALO,YPFD
+    steps:
+      - name: Decidir turno
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TURNO="${{ github.event.inputs.turno }}"
+          elif [ $(date +%H) -lt 12 ]; then
+            TURNO="manana"
+          else
+            TURNO="tarde"
+          fi
+          SEGUIR=si
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            OTROS=$(gh run list -R "$GITHUB_REPOSITORY" -w lector.yml -s in_progress --json databaseId -q ".[].databaseId" | grep -v "^${GITHUB_RUN_ID}$" | wc -l)
+            if [ "$OTROS" -gt 0 ]; then
+              echo "Ya hay un lector escuchando; este respaldo no hace falta."
+              SEGUIR=no
+            fi
+          fi
+          echo "Turno: $TURNO / seguir: $SEGUIR"
+          echo "TURNO=$TURNO" >> $GITHUB_ENV
+          echo "SEGUIR=$SEGUIR" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+        if: env.SEGUIR == 'si'
+      - uses: actions/setup-python@v5
+        if: env.SEGUIR == 'si'
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+        if: env.SEGUIR == 'si'
+      - name: Escuchar
+        if: env.SEGUIR == 'si'
+        run: |
+          case "$TURNO" in
+            manana) HASTA="13:45" ;;
+            tarde)  HASTA="17:10" ;;
+            *)      HASTA=$(date -d "+${{ github.event.inputs.minutos || '5' }} minutes" +%H:%M) ;;
+          esac
+          if [ "$TURNO" = "manana" ]; then
+            # Posta: a las 13:30 el turno mañana larga el turno tarde, que se superpone 15 minutos.
+            ESPERA=$(( $(date -d 13:30 +%s) - $(date +%s) ))
+            [ $ESPERA -lt 0 ] && ESPERA=0
+            nohup bash -c "sleep $ESPERA; gh workflow run lector.yml -R $GITHUB_REPOSITORY -f turno=tarde && echo posta enviada" > posta.log 2>&1 &
+            echo "Posta al turno tarde programada en $ESPERA segundos"
+          fi
+          ARCHIVO="parte_$(date +%H%M).txt.gz"
+          echo "ARCHIVO=$ARCHIVO" >> $GITHUB_ENV
+          echo "Turno $TURNO, escuchando hasta $HASTA"
+          while [ "$(date +%H:%M)" \< "$HASTA" ]; do
+            python lector.py "$HASTA" "$ARCHIVO" || sleep 20
+          done
+          cat posta.log 2>/dev/null || true
+      - name: Enviar al repositorio privado
+        if: env.SEGUIR == 'si'
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: |
+          [ -f "$ARCHIVO" ] || { echo "Sin datos"; exit 0; }
+          git clone --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          mkdir -p "datos/tiempo_real/$(date +%F)"
+          cp "$ARCHIVO" "datos/tiempo_real/$(date +%F)/"
+          cd datos
+          git config user.name "bot-lector"
+          git config user.email "bot@users.noreply.github.com"
+          git add tiempo_real
+          git commit -m "Tiempo real $(date +%F) $ARCHIVO"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
