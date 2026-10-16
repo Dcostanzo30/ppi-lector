@@ -1,0 +1,24 @@
+name: Prueba Finnhub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+    steps:
+      - name: Consultar precios
+        run: |
+          [ -n "$FINNHUB_API_KEY" ] || { echo "No encuentro el secreto FINNHUB_API_KEY" >> $GITHUB_STEP_SUMMARY; exit 1; }
+          echo "## Prueba de Finnhub" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Símbolo | Último | Cierre anterior | Variación % | Hora (UTC) |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          for s in GGAL SPY AAPL; do
+            r=$(curl -s "https://finnhub.io/api/v1/quote?symbol=$s&token=$FINNHUB_API_KEY")
+            echo "$s: $r"
+            python3 -c "import json,sys,datetime; d=json.loads(sys.argv[2]); print(f\"| {sys.argv[1]} | {d.get('c')} | {d.get('pc')} | {d.get('dp')} | {datetime.datetime.utcfromtimestamp(d.get('t') or 0):%Y-%m-%d %H:%M} |\")" "$s" "$r" >> $GITHUB_STEP_SUMMARY || echo "| $s | error: $r | | | |" >> $GITHUB_STEP_SUMMARY
+          done
