@@ -1,0 +1,176 @@
+name: Lector tiempo real
+
+on:
+  schedule:
+    - cron: "23 12 * * 1-5"   # turno mañana, 09:23 (con margen por las demoras de GitHub)
+    - cron: "53 12 * * 1-5"   # respaldo del turno mañana, 09:53
+    - cron: "37 16 * * 1-5"   # respaldo del turno tarde, 13:37 (solo corre si nadie está escuchando)
+  workflow_dispatch:
+    inputs:
+      turno:
+        description: "prueba o tarde"
+        default: "prueba"
+      minutos:
+        description: "Minutos de prueba"
+        default: "5"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  escuchar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      GH_TOKEN: ${{ github.token }}
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+      TICKERS: ALUA,BBAR,BMA,BYMA,CEPU,COME,CRES,ECOG,EDN,GGAL,IRSA,LOMA,METR,PAMP,SUPV,TECO2,TGNO4,TGSU2,TRAN,TXAR,VALO,YPFD
+      EXTRAS: AL30|BONOS|A-24HS,AL30D|BONOS|A-24HS,AL30C|BONOS|A-24HS,GD30|BONOS|A-24HS,GD30D|BONOS|A-24HS,GD30C|BONOS|A-24HS,GD46|BONOS|A-24HS,GD46D|BONOS|A-24HS,SPY|CEDEARS|A-24HS,QQQ|CEDEARS|A-24HS,XLE|CEDEARS|A-24HS,USO|CEDEARS|A-24HS,EWZ|CEDEARS|A-24HS,GLD|CEDEARS|A-24HS,GGAL|ACCIONES-USA|A-24HS
+    steps:
+      - name: Decidir turno
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TURNO="${{ github.event.inputs.turno }}"
+          elif [ $(date +%H) -lt 12 ]; then
+            TURNO="manana"
+          else
+            TURNO="tarde"
+          fi
+          SEGUIR=si
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            OTROS=$(gh run list -R "$GITHUB_REPOSITORY" -w lector.yml -s in_progress --json databaseId -q ".[].databaseId" | grep -v "^${GITHUB_RUN_ID}$" | wc -l)
+            if [ "$OTROS" -gt 0 ]; then
+              echo "Ya hay un lector escuchando; este respaldo no hace falta."
+              SEGUIR=no
+            fi
+          fi
+          echo "Turno: $TURNO / seguir: $SEGUIR"
+          echo "TURNO=$TURNO" >> $GITHUB_ENV
+          echo "SEGUIR=$SEGUIR" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+        if: env.SEGUIR == 'si'
+      - uses: actions/setup-python@v5
+        if: env.SEGUIR == 'si'
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client websocket-client
+        if: env.SEGUIR == 'si'
+      - name: Escuchar
+        if: env.SEGUIR == 'si'
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: |
+          case "$TURNO" in
+            manana) HASTA="13:45" ;;
+            tarde)  HASTA="17:10" ;;
+            *)      HASTA=$(date -d "+${{ github.event.inputs.minutos || '5' }} minutes" +%H:%M) ;;
+          esac
+          if [ "$TURNO" = "manana" ]; then
+            # Posta: a las 13:30 el turno mañana larga el turno tarde, que se superpone 15 minutos.
+            ESPERA=$(( $(date -d 13:30 +%s) - $(date +%s) ))
+            [ $ESPERA -lt 0 ] && ESPERA=0
+            nohup bash -c "sleep $ESPERA; gh workflow run lector.yml -R $GITHUB_REPOSITORY -f turno=tarde && echo posta enviada" > posta.log 2>&1 &
+            echo "Posta al turno tarde programada en $ESPERA segundos"
+          fi
+          ARCHIVO="parte_$(date +%H%M).txt.gz"
+          echo "ARCHIVO=$ARCHIVO" >> $GITHUB_ENV
+          # Nueva York en tiempo real por Finnhub, en un proceso aparte. Finnhub admite una sola conexión por clave:
+          # el turno tarde arranca recién cuando terminó el de la mañana (13:46).
+          FH="finnhub_$(date +%H%M).txt.gz"
+          echo "FH=$FH" >> $GITHUB_ENV
+          export FH HASTA
+          nohup bash -c '
+            if [ "$TURNO" = "tarde" ]; then E=$(( $(date -d 13:46 +%s) - $(date +%s) )); [ $E -gt 0 ] && sleep $E; fi
+            while [ "$(date +%H:%M)" \< "$HASTA" ]; do python finnhub_lector.py "$HASTA" "$FH" || sleep 20; done
+          ' > finnhub.log 2>&1 &
+          # Pantalla en vivo: cada 10 minutos resume lo grabado y lo sube a vivo/pantalla.md del repositorio privado.
+          # Corre aparte: si falla, el lector sigue grabando igual.
+          export ARCHIVO
+          nohup bash -c '
+            HOY=$(date +%F)
+            git clone -q --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" vivo_repo || exit 0
+            cd vivo_repo
+            git config user.name "bot-pantalla"
+            git config user.email "bot@users.noreply.github.com"
+            while true; do
+              sleep 600
+              H=$(date +%H:%M)
+              [ "$H" \< "10:35" ] && continue
+              [ "$H" \> "17:15" ] && break
+              git pull -q --rebase || true
+              OTRAS=$(ls tiempo_real/$HOY/*.txt.gz 2>/dev/null)
+              OTRAS_FH=$(ls tiempo_real_afuera/$HOY/*.txt.gz 2>/dev/null)
+              ACTUAL_FH=""
+              if [ -f "../$FH" ]; then cp "../$FH" "/tmp/actual_$FH"; ACTUAL_FH="/tmp/actual_$FH"; fi
+              # el turno tarde publica recien cuando el de la manana ya subio su parte
+              if [ "$TURNO" = "tarde" ] && [ -z "$OTRAS" ]; then echo "$H espero la parte de la manana"; continue; fi
+              [ -f "../$ARCHIVO" ] || continue
+              cp "../$ARCHIVO" "/tmp/actual_$ARCHIVO"
+              mkdir -p vivo
+              python ../pantalla.py $OTRAS "/tmp/actual_$ARCHIVO" --afuera $OTRAS_FH $ACTUAL_FH > vivo/pantalla.md.tmp && mv vivo/pantalla.md.tmp vivo/pantalla.md || continue
+              git add vivo/pantalla.md
+              git commit -q -m "Pantalla $H" || continue
+              for i in 1 2 3; do git push -q && break || (git pull -q --rebase && sleep 3); done
+              echo "$H pantalla publicada"
+            done
+          ' > pantalla.log 2>&1 &
+          echo "Turno $TURNO, escuchando hasta $HASTA"
+          while [ "$(date +%H:%M)" \< "$HASTA" ]; do
+            python lector.py "$HASTA" "$ARCHIVO" || sleep 20
+          done
+          cat posta.log 2>/dev/null || true
+          cat pantalla.log 2>/dev/null || true
+          tail -5 finnhub.log 2>/dev/null || true
+      - name: Resumen de la prueba
+        if: env.SEGUIR == 'si' && env.TURNO == 'prueba'
+        run: |
+          sleep 5
+          python - <<'PY' >> $GITHUB_STEP_SUMMARY
+          import os, json
+          from collections import Counter
+          from pantalla import leer_gz, parsear
+          print("## Prueba del lector\n")
+          c = Counter()
+          for l in leer_gz(os.environ["ARCHIVO"]) if os.path.exists(os.environ["ARCHIVO"]) else []:
+              try:
+                  m = parsear(l.split("\t", 1)[1]); c[(m.get("Ticker"), m.get("Type"))] += 1
+              except Exception:
+                  pass
+          print("**PPI** (mensajes por instrumento):\n")
+          print("| Ticker | Tipo | Mensajes |\n|---|---|---|")
+          for (t, ty), n in sorted(c.items(), key=lambda x: (str(x[0][1]), str(x[0][0]))):
+              print(f"| {t} | {ty} | {n} |")
+          f = Counter(); prev = 0
+          fh = os.environ.get("FH", "")
+          for l in leer_gz(fh) if fh and os.path.exists(fh) else []:
+              try:
+                  m = json.loads(l.split("\t", 1)[1])
+              except Exception:
+                  continue
+              if m.get("type") == "previo":
+                  prev += 1
+              for d in m.get("data") or []:
+                  f[d.get("s")] += 1
+          print(f"\n**Finnhub**: cierres anteriores leídos {prev}; operaciones por símbolo: {dict(f) or 'ninguna (mercado cerrado)'}")
+          PY
+      - name: Enviar al repositorio privado
+        if: env.SEGUIR == 'si' && env.TURNO != 'prueba'
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: |
+          [ -f "$ARCHIVO" ] || { echo "Sin datos"; exit 0; }
+          sleep 5
+          git clone --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          mkdir -p "datos/tiempo_real/$(date +%F)"
+          cp "$ARCHIVO" "datos/tiempo_real/$(date +%F)/"
+          if [ -f "$FH" ]; then mkdir -p "datos/tiempo_real_afuera/$(date +%F)"; cp "$FH" "datos/tiempo_real_afuera/$(date +%F)/"; fi
+          cd datos
+          git config user.name "bot-lector"
+          git config user.email "bot@users.noreply.github.com"
+          git add tiempo_real tiempo_real_afuera 2>/dev/null || git add tiempo_real
+          git commit -m "Tiempo real $(date +%F) $ARCHIVO"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
