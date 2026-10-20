@@ -1,0 +1,37 @@
+name: Probar Supabase
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
+    steps:
+      - run: pip install requests
+      - name: Probar
+        shell: python
+        run: |
+          import os, json, requests
+          url = os.environ["SUPABASE_URL"].strip().rstrip("/")
+          k = os.environ["SUPABASE_SECRET"].strip()
+          print("Dirección:", url if url.startswith("https://") and url.endswith(".supabase.co") else "MAL CARGADA (tiene que ser https://....supabase.co)")
+          print("Clave secreta:", "tipo sb_secret" if k.startswith("sb_secret_") else "tipo service_role" if k.startswith("eyJ") else "NO PARECE la clave secreta")
+          h = {"apikey": k, "Content-Type": "application/json"}
+          if k.startswith("eyJ"):
+              h["Authorization"] = "Bearer " + k
+          fila = {"clave": "PRUEBA|1", "fecha": "2026-10-20", "ts": "2026-10-20T19:30:00.000", "tk": "PRUEBA",
+                  "precio": 1, "nom": 1, "monto": 1, "lado": "C"}
+          r = requests.post(url + "/rest/v1/ops?on_conflict=clave", headers=dict(h, Prefer="resolution=ignore-duplicates,return=minimal"), data=json.dumps([fila]), timeout=20)
+          print("1) Guardar una operación de prueba:", r.status_code, "OK" if r.status_code < 300 else r.text[:200])
+          r = requests.get(url + "/rest/v1/ops?clave=eq.PRUEBA%7C1&select=tk,precio", headers=h, timeout=20)
+          print("2) Leerla de vuelta:", r.status_code, r.text[:200])
+          r = requests.post(url + "/realtime/v1/api/broadcast", headers=h, timeout=20,
+                            data=json.dumps({"messages": [{"topic": "cinta", "event": "ops", "payload": {"ops": [], "libro": {}}}]}))
+          print("3) Aviso en vivo:", r.status_code, "OK" if r.status_code < 300 else r.text[:200])
+          r = requests.delete(url + "/rest/v1/ops?clave=eq.PRUEBA%7C1", headers=h, timeout=20)
+          print("4) Borrar la prueba:", r.status_code, "OK" if r.status_code < 300 else r.text[:200])
+# FIN supabase.yml
