@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mesa METIS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Mesa de operaciones para TV apaisada: franja de estado arriba, especies elegidas en grilla grande, alertas a la derecha.
+   Look oscuro único y deliberado (pantalla de operador), sin variante clara. */
+:root{
+  --bg:#0d1014; --panel:#151a20; --panel2:#1b2129; --line:#2a323c; --fg:#e8ecf1; --muted:#8b96a3;
+  --compra:#4c9bff; --venta:#ff8a3d; --neutro:#6b7480;
+  --ok:#3ccf8e; --warn:#f2c14e; --bad:#ff5468; --accent:#9fd3ff;
+  --f-num:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-txt:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-dat:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-txt);font-size:15px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
+.tab{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)} button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent);color:#0d1014;border-color:var(--accent)}
+select,input{font:inherit;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+
+/* franja */
+.franja{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.marca{font-family:var(--f-num);font-weight:700;font-size:26px;letter-spacing:.06em}
+.estado{display:flex;align-items:baseline;gap:8px}
+.lbl{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.big{font-family:var(--f-num);font-weight:600;font-size:28px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-weight:600;font-size:13px}
+.pill i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.g{color:var(--ok)} .y{color:var(--warn)} .r{color:var(--bad)}
+.bg-g{background:color-mix(in srgb,var(--ok) 18%,transparent)} .bg-y{background:color-mix(in srgb,var(--warn) 18%,transparent)} .bg-r{background:color-mix(in srgb,var(--bad) 20%,transparent)}
+.dot-g{background:var(--ok)} .dot-y{background:var(--warn)} .dot-r{background:var(--bad)}
+.acc{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.modo{font-family:var(--f-dat);font-size:13px;color:var(--muted)}
+.modo b{color:var(--ok);font-weight:500}
+
+/* cuerpo */
+.cuerpo{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;padding-top:12px}
+.cuerpo.sin-alertas{grid-template-columns:minmax(0,1fr)}
+@media (max-width:900px){.cuerpo{grid-template-columns:minmax(0,1fr)}}
+.grilla{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));align-content:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card.luz-r{box-shadow:inset 4px 0 0 var(--bad)} .card.luz-y{box-shadow:inset 4px 0 0 var(--warn)} .card.luz-g{box-shadow:inset 4px 0 0 var(--ok)}
+.cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+.tk{font-family:var(--f-num);font-weight:700;font-size:34px;letter-spacing:.03em}
+.px{font-family:var(--f-num);font-weight:600;font-size:40px}
+.var{font-family:var(--f-num);font-size:26px;font-weight:600}
+.up{color:var(--ok)} .dn{color:var(--bad)} .fl{color:var(--muted)}
+.rango{font-family:var(--f-dat);font-size:13px;color:var(--muted)}
+.cab .pill{margin-left:auto}
+canvas{display:block;width:100%}
+.datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px 14px}
+.dato .v{font-family:var(--f-num);font-size:24px;font-weight:600}
+.dato .v small{font-size:15px;color:var(--muted);font-weight:500}
+.extremo{font-size:14px;line-height:1.45;background:var(--panel2);border-radius:8px;padding:8px 10px}
+.extremo b{font-weight:600}
+.libro{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-family:var(--f-dat);font-size:12.5px}
+.libro .c{color:var(--compra);text-align:right} .libro .vv{color:var(--venta)}
+.libro .t{color:var(--muted);font-family:var(--f-txt);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.vacia{color:var(--muted);padding:30px;text-align:center;border:1px dashed var(--line);border-radius:10px}
+
+/* alertas */
+.alertas{display:flex;flex-direction:column;gap:10px;min-width:0}
+.alerta{background:var(--panel);border:1px solid var(--warn);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.alerta.fuerte{border-color:var(--bad)}
+.alerta .fila{display:flex;align-items:baseline;gap:10px}
+.alerta .tk{font-size:26px}
+.alerta .px{font-size:24px}
+.alerta .motivo{font-size:14px}
+.alerta .bot{display:flex;gap:8px}
+.alerta .bot button{padding:4px 10px;font-size:13px}
+
+/* las 22 */
+.todas{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-x:auto}
+.todas table{width:100%;border-collapse:collapse;font-size:14px}
+.todas th{color:var(--muted);font-weight:500;font-size:12px;letter-spacing:.06em;text-transform:uppercase;text-align:right;padding:4px 8px;border-bottom:1px solid var(--line)}
+.todas th:first-child,.todas td:first-child{text-align:left}
+.todas td{padding:5px 8px;text-align:right;font-family:var(--f-dat);border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent)}
+.todas tr.sel td:first-child{color:var(--accent)}
+.todas td:first-child{font-family:var(--f-num);font-size:18px;font-weight:600;cursor:pointer}
+
+/* panel de configuración */
+.config{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:10px;max-width:720px}
+.config label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.config input{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{padding:4px 9px;font-family:var(--f-num);font-size:17px;font-weight:600}
+.nota{font-size:13px;color:var(--muted)}
+.tip{position:fixed;pointer-events:none;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:var(--f-dat);font-size:12px;z-index:5}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<header class="franja">
+  <span class="marca">MESA</span>
+  <div class="estado"><span class="lbl">Semáforo</span><span id="sem" class="pill"><i></i><span>—</span></span></div>
+  <div class="estado"><span class="lbl">Panel en verde</span><span id="panelVerde" class="big tab">—</span></div>
+  <div class="estado"><span class="lbl">Presión 10' panel</span><span id="panelPres" class="big tab">—</span></div>
+  <div class="estado"><span class="lbl">Hora</span><span id="hora" class="big tab">—</span></div>
+  <div class="acc">
+    <span id="modo" class="modo">—</span>
+    <select id="velocidad" title="Velocidad de la reproducción" hidden>
+      <option value="1">x1</option><option value="10">x10</option><option value="60" selected>x60</option><option value="300">x300</option>
+    </select>
+    <button id="btnTodas" type="button">Ver las 22</button>
+    <button id="btnElegir" type="button">Elegir especies</button>
+    <button id="btnConfig" type="button">Conexión</button>
+  </div>
+</header>
+
+<section id="elegir" class="config" hidden>
+  <div class="lbl">Especies a seguir hoy (tocá para sumar o sacar; se recuerdan en este dispositivo)</div>
+  <div id="chips" class="chips"></div>
+</section>
+
+<section id="config" class="config" hidden>
+  <div class="lbl">Conexión en vivo (Supabase)</div>
+  <label for="cfgUrl">Project URL<input id="cfgUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></label>
+  <label for="cfgKey">Publishable key (la pública, la que empieza con sb_publishable_ o eyJ)<input id="cfgKey" autocomplete="off"></label>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button id="cfgGuardar" type="button">Guardar y conectar</button>
+    <button id="cfgDemo" type="button">Ver la reproducción del 16/10</button>
+  </div>
+  <div class="nota">Se guarda solo en este navegador. Nunca pegues acá la clave secreta.</div>
+  <div id="cfgEstado" class="nota"></div>
+</section>
+
+<main id="cuerpo" class="cuerpo">
+  <div id="grilla" class="grilla"><div class="vacia">Cargando la cinta…</div></div>
+  <aside id="alertas" class="alertas" aria-label="Alertas"></aside>
+</main>
+<section id="todas" class="todas" hidden></section>
+<div id="tip" class="tip" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(() => {
+'use strict';
+const PANEL = ["ALUA","BBAR","BMA","BYMA","CEPU","COME","CRES","ECOG","EDN","GGAL","IRSA","LOMA","METR","PAMP","SUPV","TECO2","TGNO4","TGSU2","TRAN","TXAR","VALO","YPFD"];
+const VENTANA = 400;                    // operaciones visibles en el gráfico de cada especie
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const recuperar = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
+
+// ---------- estado ----------
+let S = {};                // por especie: {ops:[{t,p,n,m,l}], hi, lo, tHi, iHi, tLo, iLo, varp, libro}
+let ahora = 0;             // segundos del día del último dato
+let elegidas = recuperar('mesa.elegidas', ["GGAL", "BMA", "YPFD", "TXAR"]);
+let descartadas = {};      // alertas cerradas: tk -> hasta qué hora
+let vistas = new Set();
+let modo = 'espera';
+function nuevo(tk) { return S[tk] || (S[tk] = { ops: [], hi: -Infinity, lo: Infinity, tHi: 0, iHi: 0, tLo: 0, iLo: 0, varp: null, libro: null }); }
+
+function agregar(tk, t, p, n, m, l, v) {
+  if (!p) return;
+  const e = nuevo(tk), i = e.ops.length;
+  e.ops.push({ t, p, n, m, l });
+  if (p > e.hi) { e.hi = p; e.tHi = t; e.iHi = i; }
+  if (p < e.lo) { e.lo = p; e.tLo = t; e.iLo = i; }
+  if (v != null) e.varp = v * 100;
+  if (t > ahora) ahora = t;
+}
+const segDe = iso => { const h = iso.slice(11, 23).split(':'); return (+h[0]) * 3600 + (+h[1]) * 60 + parseFloat(h[2]); };
+const hhmm = s => { s = Math.max(0, Math.floor(s)); return String(Math.floor(s / 3600)).padStart(2, '0') + ':' + String(Math.floor(s % 3600 / 60)).padStart(2, '0'); };
+const hhmmss = s => hhmm(s) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+const ar = (v, d = 0) => v == null || !isFinite(v) ? '—' : v.toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const sg = (v, d = 1, suf = '%') => v == null || !isFinite(v) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + ar(Math.abs(v), d) + suf;
+
+// ---------- medidas ----------
+function desde(e, seg) { const L = e.ops; let k = L.length; while (k > 0 && L[k - 1].t > ahora - seg) k--; return L.slice(k); }
+function presion(L, minimo) {
+  if (L.length < minimo) return null;
+  let c = 0, v = 0, tot = 0;
+  for (const o of L) { tot += o.m; if (o.l === 'C') c += o.m; else if (o.l === 'V') v += o.m; }
+  return tot ? (c - v) / tot * 100 : null;
+}
+function medidas(tk) {
+  const e = S[tk]; if (!e || !e.ops.length) return null;
+  const L = e.ops, u = L[L.length - 1];
+  const l10 = desde(e, 600), l5 = desde(e, 300), l2 = desde(e, 120);
+  const l2a = L.filter(o => o.t > ahora - 240 && o.t <= ahora - 120);
+  const minutos = Math.max(1, (ahora - L[0].t) / 60);
+  const ritmo = l5.length / Math.max(1, L.length / minutos * 5);
+  const ult = L.slice(-21);
+  const cadencia = ult.length > 1 ? (ult[ult.length - 1].t - ult[0].t) / (ult.length - 1) : null;   // promedio de las últimas 20
+  return { u, l10, p10: presion(l10, 10), p5: presion(l5, 8), ritmo, acel: l2a.length ? l2.length / l2a.length : (l2.length ? null : 0),
+           ops2: l2.length, cadencia, monto: L.reduce((a, o) => a + o.m, 0) };
+}
+function panel() {
+  let verdes = 0, conDato = 0, c = 0, v = 0, tot = 0;
+  for (const tk of PANEL) {
+    const e = S[tk]; if (!e || !e.ops.length) continue;
+    conDato++; if ((e.varp ?? 0) >= 0) verdes++;
+    for (const o of desde(e, 600)) { tot += o.m; if (o.l === 'C') c += o.m; else if (o.l === 'V') v += o.m; }
+  }
+  return { verdes, conDato, pres: tot ? (c - v) / tot * 100 : null };
+}
+function luz(tk, md, pn) {
+  const e = S[tk], senales = [];
+  if (md.p10 != null && md.p10 <= -40) senales.push("presión 10' vendedora");
+  if (pn.conDato && pn.verdes / pn.conDato < 0.5) senales.push('panel en rojo');
+  if (ahora - e.tLo < 300 && e.iLo > 0) senales.push('mínimo nuevo hace menos de 5\'');
+  if (md.ritmo >= 1.5 && (md.p5 ?? 0) < 0) senales.push('ritmo alto con ventas');
+  return { n: senales.length, c: senales.length >= 2 ? 'r' : senales.length === 1 ? 'y' : 'g', senales };
+}
+function extremo(tk) {
+  const e = S[tk], L = e.ops, esMin = e.tLo >= e.tHi;
+  const i = esMin ? e.iLo : e.iHi, t = esMin ? e.tLo : e.tHi, p = esMin ? e.lo : e.hi;
+  const despues = L.slice(i + 1), u = L[L.length - 1];
+  return { esMin, t, p, ops: despues.length, pres: presion(despues, 3), mov: (u.p / p - 1) * 100,
+           min: (ahora - t) / 60 };
+}
+
+// ---------- dibujo ----------
+function lienzo(cv, alto) {
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth || cv.parentElement.clientWidth;
+  cv.style.height = alto + 'px';
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(alto * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(alto * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, alto);
+  return { g, w, h: alto };
+}
+function dibujar(cv, tk) {
+  const e = S[tk], L = e.ops.slice(-VENTANA);
+  const { g, w, h } = lienzo(cv, Math.max(170, Math.min(300, Math.round(window.innerHeight * 0.24))));
+  const izq = 4, der = 64, hp = h * 0.62, hb = h * 0.38 - 18, xw = w - izq - der;
+  const col = { C: css('--compra'), V: css('--venta'), M: css('--neutro') };
+  g.font = '12px "IBM Plex Mono", monospace'; g.textBaseline = 'middle';
+  if (!L.length) return;
+  let mn = Math.min(...L.map(o => o.p)), mx = Math.max(...L.map(o => o.p));
+  if (mx === mn) { mx += 1; mn -= 1; }
+  const pad = (mx - mn) * 0.08; mn -= pad; mx += pad;
+  const X = k => izq + (L.length === 1 ? xw / 2 : k / (L.length - 1) * xw);
+  const Y = p => 6 + (1 - (p - mn) / (mx - mn)) * (hp - 12);
+  // grilla y escala de precio
+  g.strokeStyle = css('--line'); g.fillStyle = css('--muted'); g.lineWidth = 1;
+  for (let k = 0; k <= 3; k++) { const p = mn + (mx - mn) * k / 3, y = Y(p); g.beginPath(); g.moveTo(izq, y); g.lineTo(izq + xw, y); g.stroke(); g.fillText(ar(p, p < 1000 ? 1 : 0), izq + xw + 6, y); }
+  // máximo y mínimo del día si entran
+  g.setLineDash([4, 4]);
+  for (const [p, c] of [[e.hi, '--ok'], [e.lo, '--bad']]) { if (p >= mn && p <= mx) { g.strokeStyle = css(c); g.beginPath(); g.moveTo(izq, Y(p)); g.lineTo(izq + xw, Y(p)); g.stroke(); } }
+  g.setLineDash([]);
+  // precio
+  g.strokeStyle = css('--fg'); g.lineWidth = 1.6; g.beginPath();
+  L.forEach((o, k) => k ? g.lineTo(X(k), Y(o.p)) : g.moveTo(X(k), Y(o.p))); g.stroke();
+  const u = L[L.length - 1]; g.fillStyle = css('--accent'); g.beginPath(); g.arc(X(L.length - 1), Y(u.p), 3.5, 0, 7); g.fill();
+  // barras de monto por operación
+  const ms = L.map(o => o.m).sort((a, b) => a - b), tope = ms[Math.floor(ms.length * 0.97)] || 1;
+  const y0 = hp + 8 + hb, bw = Math.max(1, xw / L.length * 0.7);
+  L.forEach((o, k) => { const bh = Math.min(1, o.m / tope) * hb; g.fillStyle = col[o.l] || col.M; g.fillRect(X(k) - bw / 2, y0 - bh, bw, Math.max(1, bh)); });
+  g.fillStyle = css('--muted'); g.fillText('monto', izq + xw + 6, hp + 8 + 8);
+  g.fillText(ar(tope / 1e6, 1) + ' M$', izq + xw + 6, hp + 8 + 24);
+  // horas en el eje
+  g.textBaseline = 'alphabetic';
+  g.fillText(hhmm(L[0].t), izq, h - 2);
+  const t2 = hhmm(u.t); g.fillText(t2, izq + xw - g.measureText(t2).width, h - 2);
+  cv._datos = { L, X, izq, xw };
+}
+function dibujarRitmo(cv, tk) {
+  const e = S[tk]; const { g, w, h } = lienzo(cv, 60);
+  const fin = Math.floor(ahora / 60), ini = fin - 59, cuenta = new Array(60).fill(0), vend = new Array(60).fill(0);
+  for (let k = e.ops.length - 1; k >= 0; k--) { const o = e.ops[k], m = Math.floor(o.t / 60); if (m < ini) break; cuenta[m - ini]++; if (o.l === 'V') vend[m - ini]++; }
+  const mx = Math.max(4, ...cuenta), bw = (w - 64) / 60;
+  for (let k = 0; k < 60; k++) {
+    const bh = cuenta[k] / mx * (h - 16), bv = vend[k] / mx * (h - 16);
+    g.fillStyle = css('--compra'); g.fillRect(4 + k * bw, h - 14 - bh, bw * 0.8, bh - bv);
+    g.fillStyle = css('--venta'); g.fillRect(4 + k * bw, h - 14 - bv, bw * 0.8, bv);
+  }
+  g.fillStyle = css('--muted'); g.font = '12px "IBM Plex Mono", monospace';
+  g.fillText('ops/min', w - 58, 14); g.fillText('máx ' + mx, w - 58, 30);
+  g.fillText(hhmm(ini * 60), 4, h - 1); const t = hhmm(fin * 60); g.fillText(t, 4 + 60 * bw - g.measureText(t).width, h - 1);
+}
+
+// ---------- tarjetas ----------
+function claseVar(v) { return v == null ? 'fl' : v > 0 ? 'up' : v < 0 ? 'dn' : 'fl'; }
+function tarjeta(tk) {
+  const d = document.createElement('article'); d.className = 'card'; d.dataset.tk = tk;
+  d.innerHTML = `<div class="cab"><span class="tk"></span><span class="px tab"></span><span class="var tab"></span><span class="rango tab"></span><span class="pill"><i></i><span></span></span></div>
+    <canvas class="graf" aria-label="Precio y monto de cada operación"></canvas>
+    <canvas class="ritmo" aria-label="Operaciones por minuto, última hora"></canvas>
+    <div class="datos">
+      <div class="dato"><div class="lbl">Presión 5'</div><div class="v tab p5"></div></div>
+      <div class="dato"><div class="lbl">Presión 10'</div><div class="v tab p10"></div></div>
+      <div class="dato"><div class="lbl">Ops 2' · aceleración</div><div class="v tab acel"></div></div>
+      <div class="dato"><div class="lbl">Ritmo 5'</div><div class="v tab rit"></div></div>
+      <div class="dato"><div class="lbl">Cadencia</div><div class="v tab cad"></div></div>
+      <div class="dato"><div class="lbl">Ops · monto día</div><div class="v tab dia"></div></div>
+    </div>
+    <div class="extremo"></div>
+    <div class="libro" hidden></div>`;
+  d.querySelector('.tk').textContent = tk;
+  const cv = d.querySelector('.graf');
+  cv.addEventListener('mousemove', ev => tip(ev, cv));
+  cv.addEventListener('mouseleave', () => { $('tip').hidden = true; });
+  return d;
+}
+function tip(ev, cv) {
+  const D = cv._datos; if (!D) return;
+  const r = cv.getBoundingClientRect(), x = ev.clientX - r.left;
+  const k = Math.round((x - D.izq) / D.xw * (D.L.length - 1)); const o = D.L[k]; if (!o) return;
+  const t = $('tip'); t.hidden = false;
+  t.textContent = `${hhmmss(o.t)}  $${ar(o.p, o.p < 1000 ? 1 : 0)}  ${ar(o.n)} nom  ${ar(o.m / 1e6, 2)} M$  ${o.l === 'C' ? 'compra' : o.l === 'V' ? 'venta' : 'cruce'}`;
+  const tw = t.offsetWidth; t.style.left = Math.min(window.innerWidth - tw - 8, ev.clientX + 12) + 'px'; t.style.top = (ev.clientY + 14) + 'px';
+}
+function llenar(d, tk, pn) {
+  const e = S[tk], md = medidas(tk);
+  if (!md) { d.querySelector('.px').textContent = 'sin operaciones'; return; }
+  const lz = luz(tk, md, pn);
+  d.className = 'card luz-' + lz.c;
+  d.querySelector('.px').textContent = '$' + ar(md.u.p, md.u.p < 1000 ? 1 : 0);
+  const vv = d.querySelector('.var'); vv.textContent = sg(e.varp, 2); vv.className = 'var tab ' + claseVar(e.varp);
+  d.querySelector('.rango').textContent = `mín ${ar(e.lo, e.lo < 1000 ? 1 : 0)} · máx ${ar(e.hi, e.hi < 1000 ? 1 : 0)}`;
+  const pl = d.querySelector('.pill'); pl.className = 'pill bg-' + lz.c + ' ' + lz.c;
+  pl.querySelector('i').className = 'dot-' + lz.c; pl.querySelector('span').textContent = lz.n ? lz.senales.join(' · ') : 'sin señales de salida';
+  const pc = (el, v) => { el.textContent = sg(v, 0); el.className = 'v tab ' + el.classList[2] + ' ' + claseVar(v); };
+  pc(d.querySelector('.p5'), md.p5); pc(d.querySelector('.p10'), md.p10);
+  d.querySelector('.acel').innerHTML = `${md.ops2} <small>${md.acel == null ? '' : '×' + ar(md.acel, 1)}</small>`;
+  d.querySelector('.rit').innerHTML = `${ar(md.ritmo, 1)}x <small>del día</small>`;
+  d.querySelector('.cad').innerHTML = md.cadencia == null ? '—' : `${ar(md.cadencia, md.cadencia < 10 ? 1 : 0)} <small>s entre ops</small>`;
+  d.querySelector('.dia').innerHTML = `${ar(e.ops.length)} <small>· ${ar(md.monto / 1e6, 0)} M$</small>`;
+  const x = extremo(tk);
+  d.querySelector('.extremo').innerHTML = `<span class="lbl">Último extremo</span><br><b class="${x.esMin ? 'dn' : 'up'}">${x.esMin ? 'Mínimo' : 'Máximo'} ${ar(x.p, x.p < 1000 ? 1 : 0)}</b> a las ${hhmmss(x.t)} (hace ${ar(x.min, 0)}'). Después: <b>${x.ops}</b> ops, presión <b class="${claseVar(x.pres)}">${sg(x.pres, 0)}</b>, precio <b class="${claseVar(x.mov)}">${sg(x.mov, 2)}</b>.`;
+  const lb = d.querySelector('.libro');
+  if (e.libro && (e.libro.bids?.length || e.libro.offers?.length)) {
+    lb.hidden = false;
+    let hh = '<span class="t" style="text-align:right">Compran</span><span class="t">Venden</span>';
+    for (let k = 0; k < 5; k++) {
+      const b = e.libro.bids?.[k], o = e.libro.offers?.[k];
+      hh += `<span class="c">${b ? ar(b[1]) + ' × ' + ar(b[0], b[0] < 1000 ? 1 : 0) : ''}</span><span class="vv">${o ? ar(o[0], o[0] < 1000 ? 1 : 0) + ' × ' + ar(o[1]) : ''}</span>`;
+    }
+    lb.innerHTML = hh;
+  } else lb.hidden = true;
+  dibujar(d.querySelector('.graf'), tk);
+  dibujarRitmo(d.querySelector('canvas.ritmo'), tk);
+}
+
+// ---------- alertas (especies fuera de la selección) ----------
+function alertasDe(pn) {
+  const res = [];
+  for (const tk of PANEL) {
+    if (elegidas.includes(tk) || (descartadas[tk] || 0) > ahora) continue;
+    const e = S[tk]; if (!e || e.ops.length < 20) continue;
+    const md = medidas(tk), mot = [];
+    if (ahora - e.tLo < 180 && e.iLo > 10 && md.ops2 >= 5) mot.push(`rompió el mínimo del día (${ar(e.lo, e.lo < 1000 ? 1 : 0)})`);
+    if (ahora - e.tHi < 180 && e.iHi > 10 && md.ops2 >= 5) mot.push(`rompió el máximo del día (${ar(e.hi, e.hi < 1000 ? 1 : 0)})`);
+    if (md.acel != null && md.acel >= 3 && md.ops2 >= 10) mot.push(`aceleró ×${ar(md.acel, 1)} (${md.ops2} ops en 2')`);
+    if (md.p5 != null && Math.abs(md.p5) >= 70 && desde(e, 300).length >= 15) mot.push(`presión 5' ${sg(md.p5, 0)}`);
+    if (mot.length) res.push({ tk, mot, fuerte: mot.length >= 2, md });
+  }
+  return res.slice(0, 5);
+}
+function pintarAlertas(pn) {
+  const box = $('alertas'), lista = alertasDe(pn);
+  $('cuerpo').classList.toggle('sin-alertas', !lista.length);
+  box.replaceChildren(...lista.map(a => {
+    const d = document.createElement('div'); d.className = 'alerta' + (a.fuerte ? ' fuerte' : '');
+    const e = S[a.tk];
+    d.innerHTML = `<div class="fila"><span class="tk"></span><span class="px tab"></span><span class="var tab"></span></div><div class="motivo"></div>
+      <canvas class="mini" height="50" aria-hidden="true"></canvas><div class="bot"><button type="button" class="sumar">Sumar a la mesa</button><button type="button" class="cerrar">Cerrar 15'</button></div>`;
+    d.querySelector('.tk').textContent = a.tk;
+    d.querySelector('.px').textContent = '$' + ar(a.md.u.p, a.md.u.p < 1000 ? 1 : 0);
+    const vv = d.querySelector('.var'); vv.textContent = sg(e.varp, 2); vv.className = 'var tab ' + claseVar(e.varp); vv.style.fontSize = '20px';
+    d.querySelector('.motivo').textContent = a.mot.join(' · ');
+    d.querySelector('.sumar').onclick = () => { elegidas.push(a.tk); guardar('mesa.elegidas', elegidas); armar(); };
+    d.querySelector('.cerrar').onclick = () => { descartadas[a.tk] = ahora + 900; pintar(); };
+    requestAnimationFrame(() => { const cv = d.querySelector('.mini'); const { g, w, h } = lienzo(cv, 50); const L = e.ops.slice(-120);
+      const mn = Math.min(...L.map(o => o.p)), mx = Math.max(...L.map(o => o.p)) || mn + 1;
+      g.strokeStyle = css('--fg'); g.lineWidth = 1.4; g.beginPath();
+      L.forEach((o, k) => { const x = k / Math.max(1, L.length - 1) * w, y = 4 + (1 - (o.p - mn) / ((mx - mn) || 1)) * (h - 8); k ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); });
+    return d;
+  }));
+}
+
+// ---------- las 22 ----------
+function pintarTodas(pn) {
+  const box = $('todas'); if (box.hidden) return;
+  const filas = PANEL.filter(tk => S[tk]?.ops.length).map(tk => ({ tk, md: medidas(tk), e: S[tk] }))
+    .sort((a, b) => (b.e.varp ?? 0) - (a.e.varp ?? 0));
+  const t = document.createElement('table');
+  t.innerHTML = '<thead><tr><th>Especie</th><th>Último</th><th>Var. día</th><th>Ops</th><th>Monto M$</th><th>Presión 10\'</th><th>Ritmo 5\'</th><th>Luz</th></tr></thead>';
+  const tb = document.createElement('tbody');
+  for (const f of filas) {
+    const lz = luz(f.tk, f.md, pn), tr = document.createElement('tr');
+    if (elegidas.includes(f.tk)) tr.className = 'sel';
+    tr.innerHTML = `<td></td><td>${ar(f.md.u.p, f.md.u.p < 1000 ? 1 : 0)}</td><td class="${claseVar(f.e.varp)}">${sg(f.e.varp, 2)}</td><td>${ar(f.e.ops.length)}</td><td>${ar(f.md.monto / 1e6, 0)}</td><td class="${claseVar(f.md.p10)}">${sg(f.md.p10, 0)}</td><td>${ar(f.md.ritmo, 1)}x</td><td><span class="pill bg-${lz.c} ${lz.c}"><i class="dot-${lz.c}"></i>${lz.n}</span></td>`;
+    tr.firstChild.textContent = f.tk; tr.firstChild.title = 'Tocá para sumar o sacar de la mesa';
+    tr.firstChild.onclick = () => alternar(f.tk);
+    tb.appendChild(tr);
+  }
+  t.appendChild(tb); box.replaceChildren(t);
+}
+
+// ---------- armado y refresco ----------
+function alternar(tk) {
+  elegidas = elegidas.includes(tk) ? elegidas.filter(x => x !== tk) : [...elegidas, tk];
+  guardar('mesa.elegidas', elegidas); armar();
+}
+function chips() {
+  $('chips').replaceChildren(...PANEL.map(tk => { const b = document.createElement('button'); b.type = 'button'; b.textContent = tk;
+    b.className = elegidas.includes(tk) ? 'on' : ''; b.setAttribute('aria-pressed', elegidas.includes(tk)); b.onclick = () => alternar(tk); return b; }));
+}
+function armar() {
+  const gr = $('grilla');
+  gr.replaceChildren(...(elegidas.length ? elegidas.map(tarjeta) : [Object.assign(document.createElement('div'), { className: 'vacia', textContent: 'Elegí las especies del día con "Elegir especies".' })]));
+  chips(); pintar();
+}
+let pendiente = false;
+function pintar() {
+  if (pendiente) return; pendiente = true;
+  requestAnimationFrame(() => {
+    pendiente = false;
+    const pn = panel();
+    $('hora').textContent = ahora ? hhmmss(ahora) : '—';
+    $('panelVerde').textContent = pn.conDato ? `${pn.verdes} de ${pn.conDato}` : '—';
+    const pp = $('panelPres'); pp.textContent = sg(pn.pres, 0); pp.className = 'big tab ' + claseVar(pn.pres);
+    // semáforo de la mesa: panel en rojo y presión vendedora del panel (las señales externas siguen en la pantalla de texto)
+    const rojas = (pn.conDato && pn.verdes / pn.conDato < 0.5 ? 1 : 0) + (pn.pres != null && pn.pres <= -40 ? 1 : 0);
+    const c = rojas >= 2 ? 'r' : rojas === 1 ? 'y' : 'g', sem = $('sem');
+    sem.className = 'pill bg-' + c + ' ' + c; sem.querySelector('i').className = 'dot-' + c;
+    sem.querySelector('span').textContent = rojas >= 2 ? 'rojo' : rojas === 1 ? 'amarillo' : 'verde';
+    for (const d of $('grilla').querySelectorAll('.card')) llenar(d, d.dataset.tk, pn);
+    pintarAlertas(pn); pintarTodas(pn);
+  });
+}
+window.addEventListener('resize', pintar);
+$('btnTodas').onclick = () => { const b = $('todas'); b.hidden = !b.hidden; $('btnTodas').classList.toggle('on', !b.hidden); $('btnTodas').textContent = b.hidden ? 'Ver las 22' : 'Ocultar las 22'; pintar(); };
+$('btnElegir').onclick = () => { const b = $('elegir'); b.hidden = !b.hidden; $('btnElegir').classList.toggle('on', !b.hidden); };
+$('btnConfig').onclick = () => { const b = $('config'); b.hidden = !b.hidden; $('btnConfig').classList.toggle('on', !b.hidden); };
+try { navigator.wakeLock?.request('screen').catch(() => {}); } catch (e) {}
+
+// ---------- reproducción del 16/10 ----------
+let demoTimer = null;
+async function demo() {
+  modo = 'demo'; S = {}; ahora = 0; vistas = new Set();
+  if (demoTimer) clearInterval(demoTimer);
+  let D;
+  try { D = window.DEMO || await (await fetch('demo_1610.json')).json(); }
+  catch (e) { $('grilla').innerHTML = '<div class="vacia">Para ver la cinta en vivo, cargá la conexión de Supabase con el botón "Conexión".</div>'; $('config').hidden = false; $('modo').textContent = 'sin conexión'; return; }
+  const ops = D.ops; let k = 0;
+  const inicio = 12 * 3600;                       // arranca con la mañana ya cargada
+  while (k < ops.length && ops[k][1] < inicio) { const o = ops[k++]; agregar(D.tks[o[0]], o[1], o[2], o[3], o[4], o[5], o[6]); }
+  ahora = inicio;
+  $('velocidad').hidden = false;
+  $('modo').innerHTML = `<b>REPRODUCCIÓN</b> cinta del ${D.fecha.split('-').reverse().join('/')}`;
+  armar();
+  demoTimer = setInterval(() => {
+    const v = +$('velocidad').value; ahora += v * 0.25;
+    while (k < ops.length && ops[k][1] <= ahora) { const o = ops[k++]; agregar(D.tks[o[0]], o[1], o[2], o[3], o[4], o[5], o[6]); }
+    if (k >= ops.length) clearInterval(demoTimer);
+    pintar();
+  }, 250);
+}
+
+// ---------- en vivo con Supabase ----------
+let cliente = null, canal = null;
+async function vivo(url, key) {
+  if (!window.supabase) { $('cfgEstado').textContent = 'No cargó la librería de Supabase; revisá la conexión.'; return; }
+  if (demoTimer) clearInterval(demoTimer);
+  $('velocidad').hidden = true;
+  modo = 'vivo'; S = {}; ahora = 0; vistas = new Set();
+  $('modo').innerHTML = '<b>CONECTANDO…</b>';
+  armar();
+  try {
+    cliente = window.supabase.createClient(url, key, { realtime: { params: { eventsPerSecond: 20 } } });
+    const hoy = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);   // fecha de Buenos Aires
+    // primero el aviso en vivo (para no perder nada mientras se carga lo anterior)
+    const cola = []; let listo = false;
+    canal = cliente.channel('cinta').on('broadcast', { event: 'ops' }, ({ payload }) => {
+      if (!listo) { cola.push(payload); return; }
+      recibirLote(payload);
+    }).subscribe(st => { if (st === 'SUBSCRIBED') $('cfgEstado').textContent = 'Escuchando la cinta en vivo.'; });
+    let desdeN = 0;
+    for (;;) {
+      const { data, error } = await cliente.from('ops').select('clave,ts,tk,precio,nom,monto,lado,var').eq('fecha', hoy)
+        .order('ts', { ascending: true }).order('clave', { ascending: true }).range(desdeN, desdeN + 999);
+      if (error) throw error;
+      for (const r of data) cargarFila(r);
+      $('modo').innerHTML = `<b>CARGANDO</b> ${ar(desdeN + data.length)} operaciones de hoy`;
+      if (data.length < 1000) break; desdeN += 1000;
+    }
+    listo = true; for (const p of cola) recibirLote(p);
+    $('modo').innerHTML = '<b>EN VIVO</b> cinta de PPI vía Supabase';
+    pintar();
+  } catch (e) {
+    $('modo').innerHTML = '<b style="color:var(--bad)">SIN CONEXIÓN</b>';
+    $('cfgEstado').textContent = 'No se pudo leer Supabase: ' + (e.message || e);
+    $('config').hidden = false;
+  }
+}
+function cargarFila(r) {
+  if (vistas.has(r.clave)) return; vistas.add(r.clave);
+  agregar(r.tk, segDe(r.ts), r.precio, r.nom, r.monto, r.lado, r.var);
+}
+function recibirLote(p) {
+  for (const r of p.ops || []) cargarFila(r);
+  for (const [tk, lb] of Object.entries(p.libro || {})) nuevo(tk).libro = lb;
+  pintar();
+}
+$('cfgGuardar').onclick = () => {
+  const url = $('cfgUrl').value.trim().replace(/\/$/, ''), key = $('cfgKey').value.trim();
+  if (!/^https:\/\/.+/.test(url) || key.length < 20) { $('cfgEstado').textContent = 'Revisá la dirección (empieza con https://) y la clave pública.'; return; }
+  if (/^sb_secret_/.test(key)) { $('cfgEstado').textContent = 'Esa es la clave secreta: acá va la pública (publishable).'; return; }
+  guardar('mesa.supabase', { url, key }); $('config').hidden = true; $('btnConfig').classList.remove('on'); vivo(url, key);
+};
+$('cfgDemo').onclick = () => { $('config').hidden = true; $('btnConfig').classList.remove('on'); demo(); };
+
+// ---------- arranque ----------
+const cfg = recuperar('mesa.supabase', null);
+if (cfg) { $('cfgUrl').value = cfg.url; $('cfgKey').value = cfg.key; }
+if (cfg && !window.DEMO) vivo(cfg.url, cfg.key); else demo();
+})();
+</script>
+
+</body>
+</html>
+<!-- FIN tv.html -->
