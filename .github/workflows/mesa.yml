@@ -1,0 +1,42 @@
+name: Actualizar mesa
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Poner la clave publica en tv.html
+        run: |
+          python - <<'PY'
+          s = open("tv.html", encoding="utf-8").read()
+          cambios = [
+              ("const URL_PROYECTO = 'https://grcexevegtuqydzegnlt.supabase.co';   // dirección del proyecto (no es secreta)\n",
+               "const URL_PROYECTO = 'https://grcexevegtuqydzegnlt.supabase.co';   // dirección del proyecto (no es secreta)\n"
+               "const CLAVE_PUBLICA = 'sb_publishable_cEfp6JxUYnO1dwsdhUluDg_hez-k26N';   // clave pública de Supabase: solo lectura, se puede compartir\n"),
+              ("$('cfgKey').value = cfg?.key || borrador.key || '';",
+               "$('cfgKey').value = cfg?.key || borrador.key || CLAVE_PUBLICA;"),
+              ("if (cfg && !window.DEMO) vivo(cfg.url, cfg.key); else demo();",
+               "if (window.DEMO || location.hostname.endsWith('claude.ai') || location.hostname.includes('claudeusercontent')) demo();\n"
+               "else vivo(cfg?.url || URL_PROYECTO, cfg?.key || CLAVE_PUBLICA);"),
+          ]
+          for viejo, nuevo in cambios:
+              if "CLAVE_PUBLICA" in s and viejo.startswith("const URL"):
+                  continue
+              if viejo not in s:
+                  raise SystemExit("No encontré el texto a cambiar: " + viejo[:60])
+              s = s.replace(viejo, nuevo, 1)
+          open("tv.html", "w", encoding="utf-8").write(s)
+          print("tv.html actualizado")
+          PY
+          git config user.name "bot-mesa"
+          git config user.email "bot@users.noreply.github.com"
+          git add tv.html
+          git commit -m "Mesa: se conecta sola a Supabase" && git push
+# FIN mesa.yml
