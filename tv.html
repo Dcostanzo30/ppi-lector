@@ -516,12 +516,14 @@ $('cfgDemo').onclick = () => { $('config').hidden = true; $('btnConfig').classLi
 
 // ---------- arranque ----------
 const URL_PROYECTO = 'https://grcexevegtuqydzegnlt.supabase.co';   // dirección del proyecto (no es secreta)
+const CLAVE_PUBLICA = 'sb_publishable_cEfp6JxUYnO1dwsdhUluDg_hez-k26N';   // clave pública de Supabase: solo lectura, se puede compartir
 const cfg = recuperar('mesa.supabase', null);
 const borrador = recuperar('mesa.borrador', {});
 $('cfgUrl').value = cfg?.url || borrador.url || URL_PROYECTO;
-$('cfgKey').value = cfg?.key || borrador.key || '';
+$('cfgKey').value = cfg?.key || borrador.key || CLAVE_PUBLICA;
 for (const id of ['cfgUrl', 'cfgKey']) $(id).addEventListener('input', () => guardar('mesa.borrador', { url: $('cfgUrl').value, key: $('cfgKey').value }));
-if (cfg && !window.DEMO) vivo(cfg.url, cfg.key); else demo();
+if (window.DEMO || location.hostname.endsWith('claude.ai') || location.hostname.includes('claudeusercontent')) demo();
+else vivo(cfg?.url || URL_PROYECTO, cfg?.key || CLAVE_PUBLICA);
 })();
 </script>
 
