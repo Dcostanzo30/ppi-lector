@@ -425,9 +425,9 @@ function pintar() {
     const pp = $('panelPres'); pp.textContent = sg(pn.pres, 0); pp.className = 'big tab ' + claseVar(pn.pres);
     // semáforo de la mesa: panel en rojo y presión vendedora del panel (las señales externas siguen en la pantalla de texto)
     const rojas = (pn.conDato && pn.verdes / pn.conDato < 0.5 ? 1 : 0) + (pn.pres != null && pn.pres <= -40 ? 1 : 0);
-    const c = rojas >= 2 ? 'r' : rojas === 1 ? 'y' : 'g', sem = $('sem');
-    sem.className = 'pill bg-' + c + ' ' + c; sem.querySelector('i').className = 'dot-' + c;
-    sem.querySelector('span').textContent = rojas >= 2 ? 'rojo' : rojas === 1 ? 'amarillo' : 'verde';
+    const c = !pn.conDato ? '' : rojas >= 2 ? 'r' : rojas === 1 ? 'y' : 'g', sem = $('sem');
+    sem.className = c ? 'pill bg-' + c + ' ' + c : 'pill'; sem.querySelector('i').className = c ? 'dot-' + c : '';
+    sem.querySelector('span').textContent = !pn.conDato ? 'sin datos' : rojas >= 2 ? 'rojo' : rojas === 1 ? 'amarillo' : 'verde';
     for (const d of $('grilla').querySelectorAll('.card')) llenar(d, d.dataset.tk, pn);
     pintarAlertas(pn); pintarTodas(pn);
   });
@@ -515,8 +515,12 @@ $('cfgGuardar').onclick = () => {
 $('cfgDemo').onclick = () => { $('config').hidden = true; $('btnConfig').classList.remove('on'); demo(); };
 
 // ---------- arranque ----------
+const URL_PROYECTO = 'https://grcexevegtuqydzegnlt.supabase.co';   // dirección del proyecto (no es secreta)
 const cfg = recuperar('mesa.supabase', null);
-if (cfg) { $('cfgUrl').value = cfg.url; $('cfgKey').value = cfg.key; }
+const borrador = recuperar('mesa.borrador', {});
+$('cfgUrl').value = cfg?.url || borrador.url || URL_PROYECTO;
+$('cfgKey').value = cfg?.key || borrador.key || '';
+for (const id of ['cfgUrl', 'cfgKey']) $(id).addEventListener('input', () => guardar('mesa.borrador', { url: $('cfgUrl').value, key: $('cfgKey').value }));
 if (cfg && !window.DEMO) vivo(cfg.url, cfg.key); else demo();
 })();
 </script>
