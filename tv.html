@@ -64,6 +64,9 @@ canvas{display:block;width:100%}
 .dato .v small{font-size:15px;color:var(--muted);font-weight:500}
 .extremo{font-size:14px;line-height:1.45;background:var(--panel2);border-radius:8px;padding:8px 10px}
 .extremo b{font-weight:600}
+.bat{font-size:14px;line-height:1.45;border:1px dashed var(--accent);border-radius:8px;padding:6px 10px}
+.bat .lbl{color:var(--accent)}
+.bat b.r{color:var(--bad)}
 .libro{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-family:var(--f-dat);font-size:12.5px}
 .libro .c{color:var(--compra);text-align:right} .libro .vv{color:var(--venta)}
 .libro .t{color:var(--muted);font-family:var(--f-txt);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
@@ -223,6 +226,103 @@ function extremo(tk) {
            min: (ahora - t) / 60 };
 }
 
+// ---------- señales de la batería ----------
+// Solo las hipótesis en escalón 1 (señal de atención) del parte del 22/10, con 3 días de cinta: son avisos para mirar, no órdenes.
+// Mismas reglas que bateria.py (v1): martillazo ≥ 3,5 volatilidades en ≤ 150 s; contraparte ±30% en 2'; desequilibrio 5 niveles ≥ 0,7;
+// precio contra libro; desaceleración en un extremo; bloque en un extremo; especie despegada del panel 1,5% en 60'.
+// La volatilidad propia sale de lo ya ocurrido hoy (en la mesa no está el historial de días anteriores).
+function regLibro(tk, lb) {
+  const e = nuevo(tk), b = lb.bids || [], o = lb.offers || [];
+  if (!b.length || !o.length) return;
+  const b1 = b[0][0], a1 = o[0][0]; if (!(b1 > 0 && a1 > 0 && b1 < a1)) return;
+  const d5b = b.slice(0, 5).reduce((x, y) => x + (y[1] || 0), 0), d5a = o.slice(0, 5).reduce((x, y) => x + (y[1] || 0), 0);
+  const H = e.H || (e.H = []), mid = (b1 + a1) / 2, u = H[H.length - 1];
+  if (u && u.mid === mid && u.d5b === d5b && u.d5a === d5a) return;
+  H.push({ t: ahora, mid, d5b, d5a, imb: (d5b - d5a) / Math.max(1, d5b + d5a) });
+  if (H.length > 6000) H.splice(0, 1000);
+}
+function enT(L, t) { // último elemento con .t <= t (búsqueda binaria)
+  if (!L || !L.length || L[0].t > t) return null;
+  let lo = 0, hi = L.length - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (L[m].t <= t) lo = m; else hi = m - 1; }
+  return L[lo];
+}
+function serie(e) { return e.H && e.H.length > 30 ? { L: e.H, v: x => x.mid } : { L: e.ops, v: x => x.p }; }
+function volPropia(e) {
+  const m = Math.floor(ahora / 60);
+  if (e._volM === m) return e._vol;
+  const { L, v } = serie(e); let s = 0, n = 0;
+  if (L.length > 1) for (let t = L[0].t + 150; t <= ahora; t += 60) { const a = enT(L, t - 150), b = enT(L, t); if (a && b) { s += Math.abs(v(b) - v(a)) / v(b) * 100; n++; } }
+  e._volM = m; e._vol = n >= 10 ? Math.max(0.05, s / n) : null;
+  return e._vol;
+}
+function p90(e) {
+  const m = Math.floor(ahora / 60); if (e._p90M === m) return e._p90;
+  const x = e.ops.map(o => o.n).sort((a, b) => a - b); e._p90M = m; e._p90 = x.length >= 30 ? x[Math.floor(0.9 * x.length)] : null; return e._p90;
+}
+function senalesBat(tk) {
+  const e = S[tk]; if (!e || e.ops.length < 20) return [];
+  const out = [], v = volPropia(e), { L, v: val } = serie(e), act = enT(L, ahora);
+  if (!v || !act) return out;
+  const fmt = x => ar(x, x < 1000 ? 1 : 0), m = val(act);
+  // martillazo + respuesta de la contraparte (C1 / C4)
+  const ref = [];
+  for (let t = ahora - 270; t <= ahora - 150; t += 5) { const x = enT(L, t); if (x) ref.push(val(x)); }
+  if (ref.length >= 10) {
+    ref.sort((a, b) => a - b); const r = ref[ref.length >> 1], d = (m - r) / r * 100;
+    const ops = desde(e, 150).length;
+    if (Math.abs(d) >= 3.5 * v && Math.abs(d) >= 0.25 && ops >= 3 && (!e.mart || ahora - e.mart.t > 300)) {
+      const pre = (e.H || []).filter(x => x.t > ahora - 300 && x.t <= ahora);
+      const lado = d < 0 ? 'd5b' : 'd5a';
+      e.mart = { t: ahora, dir: Math.sign(d), desde: r, hasta: m, pre: pre.length ? pre.reduce((s, x) => s + x[lado], 0) / pre.length : null, lado };
+    }
+  }
+  if (e.mart && ahora - e.mart.t <= 1200) {
+    const k = e.mart, txtG = `${k.dir < 0 ? 'baja' : 'sube'} de ${fmt(k.desde)} a ${fmt(k.hasta)} a las ${hhmm(k.t)}`;
+    let lect = 'mirando la respuesta del libro (2\')';
+    if (ahora - k.t >= 120 && k.pre) {
+      const res = (e.H || []).filter(x => x.t > k.t && x.t <= k.t + 120);
+      if (res.length) {
+        const c = res.reduce((s, x) => s + x[k.lado], 0) / res.length / k.pre - 1;
+        lect = c >= 0.3 ? `la ${k.dir < 0 ? 'compra' : 'venta'} creció ${sg(c * 100, 0)} → rebote más probable (C4)`
+             : c <= 0 ? `la ${k.dir < 0 ? 'compra' : 'venta'} no apareció (${sg(c * 100, 0)}) → puede seguir (C4)` : `contraparte ${sg(c * 100, 0)}, sin lectura`;
+      }
+    }
+    out.push({ txt: `<b class="${k.dir < 0 ? 'dn' : 'up'}">Martillazo</b>: ${txtG}; ${lect}.`, plano: `martillazo: ${txtG}`, alerta: ahora - k.t <= 300 });
+  }
+  // libro (A2, D3)
+  if (e.H && e.H.length > 30) {
+    const im = act.imb;
+    if (Math.abs(im) >= 0.7) out.push({ txt: `Libro cargado a la ${im > 0 ? 'compra' : 'venta'} (${sg(im * 100, 0)}): el precio medio suele ir para ese lado en 5' (A2).` });
+    const a5 = enT(L, ahora - 300);
+    if (a5) { const d5 = (m - a5.mid) / m * 100;
+      if (Math.abs(im) >= 0.3 && Math.abs(d5) >= 0.5 * v && Math.sign(d5) !== Math.sign(im))
+        out.push({ txt: `Precio ${d5 > 0 ? 'sube' : 'baja'} contra un libro ${im > 0 ? 'comprador' : 'vendedor'}: suele mandar el libro (D3).` }); }
+  }
+  // desaceleración en un extremo (B3)
+  const pr = e.ops[e.ops.length - 1].p, n2 = desde(e, 120).length / 2, n10 = e.ops.filter(o => o.t > ahora - 720 && o.t <= ahora - 120).length / 10;
+  if (ahora - e.ops[0].t > 1800 && n10 >= 0.4 && n2 < 0.5 * n10) {
+    if ((e.hi - pr) / pr * 100 <= 0.2 * v) out.push({ txt: `Se frena cerca del máximo (${fmt(e.hi)}): giro a la baja más probable en 30' (B3).`, plano: 'se frena en el máximo', alerta: true });
+    else if ((pr - e.lo) / pr * 100 <= 0.2 * v) out.push({ txt: `Se frena cerca del mínimo (${fmt(e.lo)}): rebote más probable en 30' (B3).`, plano: 'se frena en el mínimo', alerta: true });
+  }
+  // bloque en un extremo (H2)
+  const q = p90(e);
+  const bloques = q ? desde(e, 300).filter(o => o.n >= 5 * q && (o.l === 'C' || o.l === 'V') && ((e.hi - o.p) / o.p * 100 <= 0.1 || (o.p - e.lo) / o.p * 100 <= 0.1)) : [];
+  for (const o of bloques.slice(-1)) {   // solo el último bloque en un extremo
+    if ((e.hi - o.p) / o.p * 100 <= 0.1) out.push({ txt: `Bloque de ${ar(o.n)} en el máximo (${hhmm(o.t)}): giro más probable en 30' (H2).`, plano: `bloque de ${ar(o.n)} en el máximo`, alerta: true });
+    else if ((o.p - e.lo) / o.p * 100 <= 0.1) out.push({ txt: `Bloque de ${ar(o.n)} en el mínimo (${hhmm(o.t)}): giro más probable en 30' (H2).`, plano: `bloque de ${ar(o.n)} en el mínimo`, alerta: true });
+  }
+  // despegada del panel (D4)
+  const o60 = enT(e.ops, ahora - 3600);
+  if (o60 && ahora - e.ops[0].t > 3600) {
+    let s = 0, n = 0;
+    for (const t2 of PANEL) { const e2 = S[t2]; const a = e2 && enT(e2.ops, ahora - 3600); if (a && e2.ops.length) { s += (e2.ops[e2.ops.length - 1].p / a.p - 1) * 100; n++; } }
+    const rel = (pr / o60.p - 1) * 100 - (n ? s / n : 0);
+    if (Math.abs(rel) >= 1.5) out.push({ txt: `${rel > 0 ? 'Más arriba' : 'Más abajo'} que el panel ${sg(rel, 1)} en la última hora: suele volver hacia el panel (D4).`, plano: `despegada del panel ${sg(rel, 1)} en 60'`, alerta: true });
+  }
+  return out;
+}
+
 // ---------- dibujo ----------
 function lienzo(cv, alto) {
   const dpr = window.devicePixelRatio || 1, w = cv.clientWidth || cv.parentElement.clientWidth;
@@ -297,6 +397,7 @@ function tarjeta(tk) {
       <div class="dato"><div class="lbl">Ops · monto día</div><div class="v tab dia"></div></div>
     </div>
     <div class="extremo"></div>
+    <div class="bat" hidden></div>
     <div class="libro" hidden></div>`;
   d.querySelector('.tk').textContent = tk;
   const cv = d.querySelector('.graf');
@@ -340,6 +441,9 @@ function llenar(d, tk, pn) {
     }
     lb.innerHTML = hh;
   } else lb.hidden = true;
+  const bt = d.querySelector('.bat'), sb = senalesBat(tk);
+  bt.hidden = !sb.length;
+  if (sb.length) bt.innerHTML = `<span class="lbl">Señales de atención (batería, provisional)</span><br>` + sb.map(x => x.txt).join('<br>');
   dibujar(d.querySelector('.graf'), tk);
   dibujarRitmo(d.querySelector('canvas.ritmo'), tk);
 }
@@ -355,6 +459,7 @@ function alertasDe(pn) {
     if (ahora - e.tHi < 180 && e.iHi > 10 && md.ops2 >= 5) mot.push(`rompió el máximo del día (${ar(e.hi, e.hi < 1000 ? 1 : 0)})`);
     if (md.acel != null && md.acel >= 3 && md.ops2 >= 10) mot.push(`aceleró ×${ar(md.acel, 1)} (${md.ops2} ops en 2')`);
     if (md.p5 != null && Math.abs(md.p5) >= 70 && desde(e, 300).length >= 15) mot.push(`presión 5' ${sg(md.p5, 0)}`);
+    for (const x of senalesBat(tk)) if (x.alerta) mot.push(x.plano);
     if (mot.length) res.push({ tk, mot, fuerte: mot.length >= 2, md });
   }
   return res.slice(0, 5);
@@ -503,7 +608,7 @@ function cargarFila(r) {
 }
 function recibirLote(p) {
   for (const r of p.ops || []) cargarFila(r);
-  for (const [tk, lb] of Object.entries(p.libro || {})) nuevo(tk).libro = lb;
+  for (const [tk, lb] of Object.entries(p.libro || {})) { nuevo(tk).libro = lb; regLibro(tk, lb); }
   pintar();
 }
 $('cfgGuardar').onclick = () => {
