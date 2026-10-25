@@ -1,0 +1,46 @@
+name: Historial energia
+
+# Historial diario en pesos de las energéticas del panel líder (PPI) y sus ADR en Nueva York.
+# Solo consultas. No corre en horario de rueda.
+on:
+  push:
+    paths:
+      - ".github/workflows/historial_energia.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bajar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+      HIST_ACCIONES: YPFD,PAMP,VIST,TGSU2,TGNO4,CEPU,EDN,TRAN
+      HIST_NY: YPF,PAM,VIST,TGS,CEPU,EDN,BZ=F
+      HIST_SALIDA: estudios/energia
+      HIST_SOLO24: "1"
+    steps:
+      - name: Fuera del horario de rueda
+        run: |
+          D=$(date +%u); H=$(date +%H)
+          if [ "$D" -le 5 ] && [ "$H" -ge 9 ] && [ "$H" -lt 18 ]; then echo "Horario de rueda: no corre"; exit 1; fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client yfinance
+      - name: Bajar
+        run: python cedear_estudio.py 2025-10-01
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Historial energia $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN historial_energia.yml
