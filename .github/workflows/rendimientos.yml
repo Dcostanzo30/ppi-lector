@@ -1,0 +1,47 @@
+name: Rendimientos
+
+# TIR, paridad y duración de bonos, letras y ONs operados en un día (calculadora de PPI). Solo consultas.
+# Corre al subir cambios del script, o a mano con una fecha. No corre en horario de rueda.
+on:
+  push:
+    paths:
+      - "rendimientos.py"
+      - ".github/workflows/rendimientos.yml"
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha AAAA-MM-DD (tiene que existir mercado_total/FECHA.csv)"
+        default: "2026-10-23"
+
+permissions:
+  contents: write
+
+jobs:
+  calcular:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+    steps:
+      - name: Fuera del horario de rueda
+        run: |
+          D=$(date +%u); H=$(date +%H)
+          if [ "$D" -le 5 ] && [ "$H" -ge 9 ] && [ "$H" -lt 18 ]; then echo "Horario de rueda: no corre"; exit 1; fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+      - name: Calcular
+        run: python rendimientos.py "${{ github.event.inputs.fecha || '2026-10-23' }}"
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add mercado_total
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Rendimientos $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN rendimientos.yml
