@@ -1,0 +1,54 @@
+name: Reservas BCRA
+
+# Cápsula de reservas: baja del BCRA el balance semanal (estado resumido de activos y pasivos), las series diarias
+# y las principales variables, y calcula reservas brutas y netas (método FMI y método ácido) con reservas.py.
+# Solo descargas públicas del BCRA. Corre los jueves y viernes a la noche (el BCRA publica el balance con unos días de demora).
+on:
+  push:
+    paths:
+      - "reservas.py"
+      - ".github/workflows/reservas.yml"
+  schedule:
+    - cron: "0 23 * * 4,5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reservas
+  cancel-in-progress: false
+
+jobs:
+  reservas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install xlrd openpyxl pandas
+      - name: Bajar del BCRA
+        run: |
+          mkdir -p estudios/reservas/crudo
+          cd estudios/reservas/crudo
+          B=https://www.bcra.gob.ar/archivos/Pdfs/PublicacionesEstadisticas
+          for f in estados-resumidos-activos-pasivos-bcra-serie-anual-1998-actualidad.xls estado-resumido-activos-pasivos-bcra.pdf informes/estados-resumidos-activos-pasivos-bcra-aclaraciones.pdf diar_bas.xls; do
+            n=$(basename $f)
+            curl -sSL --retry 3 -m 120 -A "Mozilla/5.0" -o "$n" "$B/$f" && echo "ok $n $(stat -c %s $n)" || echo "falló $n"
+          done
+          curl -sSL --retry 3 -m 60 -o variables_v3.json "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias" && echo "ok api $(stat -c %s variables_v3.json)" || echo "falló api"
+          ls -la
+      - name: Calcular
+        run: |
+          if [ -f reservas.py ]; then python reservas.py; else echo "Sin reservas.py todavía"; fi
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/reservas
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Reservas BCRA $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN reservas.yml
