@@ -1,0 +1,43 @@
+name: Seguimiento bonos
+
+# Tabla nocturna de AE38, GD38, AL41 y otros soberanos en dólares (precio D, TIR, paridad, monto, riesgo país).
+# No consulta a PPI: usa la foto del mercado total. Corre cada vez que termina una vuelta del mercado total.
+on:
+  workflow_run:
+    workflows: ["Mercado total"]
+    types: [completed]
+  push:
+    paths:
+      - "seguimiento_bonos.py"
+      - ".github/workflows/seguimiento_bonos.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: seguimiento-bonos
+  cancel-in-progress: false
+
+jobs:
+  tabla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Calcular
+        run: python seguimiento_bonos.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/bonos/seguimiento.csv estudios/bonos/SEGUIMIENTO.md
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Seguimiento bonos $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN seguimiento_bonos.yml
