@@ -8,7 +8,7 @@ import csv, os, sys, time
 from datetime import datetime, timedelta
 from pathlib import Path
 
-PPI_ESPECIES = [(t, "ACCIONES") for t in os.environ.get("HIST_ACCIONES", "").split(",") if t] or [("OXY", "CEDEARS"), ("OXYD", "CEDEARS"), ("SPY", "CEDEARS"), ("SPYD", "CEDEARS"), ("SPYC", "CEDEARS"),
+PPI_ESPECIES = [(t, os.environ.get("HIST_TIPO", "ACCIONES")) for t in os.environ.get("HIST_ACCIONES", "").split(",") if t] or [("OXY", "CEDEARS"), ("OXYD", "CEDEARS"), ("SPY", "CEDEARS"), ("SPYD", "CEDEARS"), ("SPYC", "CEDEARS"),
                 ("VIST", "CEDEARS"), ("VISTD", "CEDEARS"), ("VISTC", "CEDEARS"), ("YPFD", "ACCIONES"), ("YPFDD", "ACCIONES"),
                 ("AL30", "BONOS"), ("AL30D", "BONOS"), ("AL30C", "BONOS")]
 NY = [t for t in os.environ.get("HIST_NY", "OXY,SPY,VIST,YPF").split(",") if t]
@@ -41,6 +41,8 @@ def main():
     with open(sal / "historial_ppi.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh); w.writerow(["ticker", "tipo", "plazo", "fecha", "cierre", "apertura", "maximo", "minimo", "monto"])
         w.writerows(sorted(set(tuple(map(str, f)) for f in filas)))
+    if not NY:
+        print("listo (sin Nueva York)", flush=True); return
     import yfinance as yf
     ny = yf.download(NY, start=desde.strftime("%Y-%m-%d"), end=(hasta + timedelta(days=1)).strftime("%Y-%m-%d"), auto_adjust=False, progress=False)
     with open(sal / "historial_ny.csv", "w", newline="", encoding="utf-8") as fh:
