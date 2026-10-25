@@ -8,22 +8,22 @@ import csv, os, sys, time
 from datetime import datetime, timedelta
 from pathlib import Path
 
-PPI_ESPECIES = [("OXY", "CEDEARS"), ("OXYD", "CEDEARS"), ("SPY", "CEDEARS"), ("SPYD", "CEDEARS"), ("SPYC", "CEDEARS"),
+PPI_ESPECIES = [(t, "ACCIONES") for t in os.environ.get("HIST_ACCIONES", "").split(",") if t] or [("OXY", "CEDEARS"), ("OXYD", "CEDEARS"), ("SPY", "CEDEARS"), ("SPYD", "CEDEARS"), ("SPYC", "CEDEARS"),
                 ("VIST", "CEDEARS"), ("VISTD", "CEDEARS"), ("VISTC", "CEDEARS"), ("YPFD", "ACCIONES"), ("YPFDD", "ACCIONES"),
                 ("AL30", "BONOS"), ("AL30D", "BONOS"), ("AL30C", "BONOS")]
-NY = ["OXY", "SPY", "VIST", "YPF"]
+NY = [t for t in os.environ.get("HIST_NY", "OXY,SPY,VIST,YPF").split(",") if t]
 
 
 def main():
     hasta = datetime.fromisoformat(sys.argv[2]) if len(sys.argv) > 2 else datetime.now()
     desde = datetime.fromisoformat(sys.argv[1]) if len(sys.argv) > 1 else hasta - timedelta(days=730)
-    sal = Path("estudios/cedear"); sal.mkdir(parents=True, exist_ok=True)
+    sal = Path(os.environ.get("HIST_SALIDA", "estudios/cedear")); sal.mkdir(parents=True, exist_ok=True)
     from ppi_client.ppi import PPI
     ppi = PPI(sandbox=False)
     ppi.account.login_api(os.environ["PPI_API_KEY"].strip(), os.environ["PPI_API_SECRET"].strip())
     filas = []
     for tk, tp in PPI_ESPECIES:
-        for plazo in ("A-24HS", "INMEDIATA"):
+        for plazo in (("A-24HS",) if os.environ.get("HIST_SOLO24") else ("A-24HS", "INMEDIATA")):
             # de a tramos de 6 meses, por si PPI limita el rango
             d = desde
             while d < hasta:
