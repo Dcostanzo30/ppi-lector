@@ -1,6 +1,6 @@
 # Seguimiento de soberanos largos en dólares
 
-Última rueda: **2026-10-23**. Riesgo país: **—**.
+Última rueda: **2026-10-23**. Riesgo país: **707**.
 
 Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Paridad = precio / (residual + corrido).
 
@@ -19,7 +19,7 @@ Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Parida
 
 | Fecha | Riesgo país | TIR AE38 | TIR AL41 | TIR GD38 | Precio AE38D | Precio AL41D | Precio GD38D |
 |---|---|---|---|---|---|---|---|
-| 2026-10-23 | — | 12,81% | 12,42% | 10,83% | 73,00 | 64,65 | 78,90 |
+| 2026-10-23 | 707 | 12,81% | 12,42% | 10,83% | 73,00 | 64,65 | 78,90 |
 | 2026-10-22 | — | 12,82% | 12,28% | 10,83% | 72,90 | 65,03 | 78,83 |
 | 2026-10-21 | — | 12,78% | 12,37% | 10,80% | 73,00 | 64,71 | 78,90 |
 | 2026-10-20 | — | 12,70% | 12,19% | 10,71% | 73,20 | 65,29 | 79,17 |
