@@ -19,7 +19,10 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
-from ppi_client.ppi import PPI
+try:
+    from ppi_client.ppi import PPI
+except ImportError:          # para rehacer el resumen sin el cliente de PPI
+    PPI = None
 
 TOPE_MIN = float(os.environ.get("TOPE_MIN", "75"))
 HILOS = 3
@@ -148,6 +151,11 @@ def ar(x, d=0):
 
 def resumen(fecha, inst, r_dat, quedan):
     filas = list(csv.DictReader(open(r_dat, encoding="utf-8")))
+    # Si PPI devuelve el mismo registro para los dos plazos (mismo monto y precio), es uno solo: no se cuenta dos veces
+    clave = {}
+    for f in filas:
+        if f["plazo"] == "A-24HS": clave[(f["ticker"], f["tipo"])] = (f["volume"], f["price"])
+    filas = [f for f in filas if not (f["plazo"] == "INMEDIATA" and clave.get((f["ticker"], f["tipo"])) == (f["volume"], f["price"]))]
     px = {(f["ticker"], f["plazo"]): float(f["price"] or 0) for f in filas}
     def cot(a, b):
         for pl in ("A-24HS", "INMEDIATA"):
@@ -209,5 +217,12 @@ def resumen(fecha, inst, r_dat, quedan):
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 2 and sys.argv[2] == "--solo-resumen":      # rehace el resumen sin consultar a PPI
+        f = sys.argv[1]; inst = {}
+        with open(f"mercado_total/{f}_instrumentos.csv", encoding="utf-8") as fh:
+            for r in csv.DictReader(fh):
+                if r["tipo"] not in SALTEAR: inst[(r["ticker"], r["tipo"])] = json.loads(r["registro"])
+        resumen(f, inst, Path(f"mercado_total/{f}.csv"), 0)
+    else:
+        main()
 # FIN mercado_total.py
