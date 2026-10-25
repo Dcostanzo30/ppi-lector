@@ -1,0 +1,48 @@
+name: Mercado total
+
+# Cápsula Mercado Total: lista todos los instrumentos de BYMA en PPI y lo operado en un día, y calcula qué parte ven las 37.
+# Solo consultas (no tiempo real, no opera). Corre al subir cambios del script, o a mano con una fecha.
+# No corre en horario de rueda (lunes a viernes de 9 a 18) para no sumar ingresos a PPI mientras escucha el lector.
+on:
+  push:
+    paths:
+      - "mercado_total.py"
+      - ".github/workflows/mercado_total.yml"
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha AAAA-MM-DD (vacío = el último día hábil)"
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+    steps:
+      - name: Fuera del horario de rueda
+        run: |
+          D=$(date +%u); H=$(date +%H)
+          if [ "$D" -le 5 ] && [ "$H" -ge 9 ] && [ "$H" -lt 18 ]; then echo "Horario de rueda: no corre"; exit 1; fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+      - name: Medir
+        run: python mercado_total.py ${{ github.event.inputs.fecha }}
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add mercado_total
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Mercado total $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN mercado_total.yml
