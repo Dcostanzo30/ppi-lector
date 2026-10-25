@@ -1,7 +1,8 @@
 name: Mercado total
 
 # Cápsula Mercado Total: lista todos los instrumentos de BYMA en PPI y lo operado en un día, y calcula qué parte ven las 37.
-# Solo consultas (no tiempo real, no opera). Corre al subir cambios del script, o a mano con una fecha.
+# Solo consultas (no tiempo real, no opera). Es retomable: si en una corrida no termina, se vuelve a lanzar sola
+# (hasta 8 vueltas) y sigue desde donde quedó.
 # No corre en horario de rueda (lunes a viernes de 9 a 18) para no sumar ingresos a PPI mientras escucha el lector.
 on:
   push:
@@ -13,9 +14,17 @@ on:
       fecha:
         description: "Fecha AAAA-MM-DD (vacío = el último día hábil)"
         default: ""
+      vuelta:
+        description: "Número de vuelta (lo usa el propio workflow)"
+        default: "1"
 
 permissions:
   contents: write
+  actions: write
+
+concurrency:
+  group: mercado-total
+  cancel-in-progress: false
 
 jobs:
   medir:
@@ -23,6 +32,7 @@ jobs:
     timeout-minutes: 90
     env:
       TZ: America/Argentina/Buenos_Aires
+      GH_TOKEN: ${{ github.token }}
       PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
       PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
     steps:
@@ -36,13 +46,24 @@ jobs:
           python-version: "3.11"
       - run: pip install ppi-client
       - name: Medir
-        run: python mercado_total.py ${{ github.event.inputs.fecha }}
+        id: medir
+        run: python mercado_total.py "${{ github.event.inputs.fecha }}"
       - name: Guardar
         run: |
           git config user.name "bot-mercado"
           git config user.email "bot@users.noreply.github.com"
           git add mercado_total
           git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
-          git commit -m "Mercado total $(date +%F)"
+          git commit -m "Mercado total ${{ steps.medir.outputs.fecha }} (quedan ${{ steps.medir.outputs.quedan }})"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+      - name: Seguir si faltan instrumentos
+        if: steps.medir.outputs.quedan != '0'
+        run: |
+          V=${{ github.event.inputs.vuelta || '1' }}
+          if [ "$V" -lt 8 ]; then
+            gh workflow run mercado_total.yml --ref main -f fecha=${{ steps.medir.outputs.fecha }} -f vuelta=$((V+1))
+            echo "Lanzada la vuelta $((V+1))"
+          else
+            echo "Se llegó a 8 vueltas; queda para la próxima"
+          fi
 # FIN mercado_total.yml

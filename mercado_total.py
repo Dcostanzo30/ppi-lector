@@ -1,166 +1,212 @@
 """Cápsula Mercado Total: ¿qué parte del mercado de BYMA ven nuestras 37 especies?
 
-1. Pide a PPI la lista de todos los instrumentos de cada tipo (acciones, bonos, letras, ONs, CEDEARs, cauciones, opciones...).
-2. Para cada uno pide lo operado en el día indicado (consulta histórica diaria, no tiempo real).
-3. Escribe mercado_total/FECHA.csv (una fila por instrumento y plazo) y un resumen por tipo con la proporción
-   de las 37 que escucha el lector.
-No opera ni toca la cuenta: solo consulta. Respeta el límite de PPI de 3.000 consultas cada 15 minutos.
+1. Lista (una sola vez por fecha) todos los instrumentos de PPI por tipo y la guarda en mercado_total/FECHA_instrumentos.csv.
+2. Para cada instrumento pide lo operado ese día, en los plazos A-24HS e INMEDIATA (consulta histórica diaria,
+   no tiempo real). Es retomable: lo ya consultado queda en mercado_total/FECHA.csv y la corrida siguiente sigue
+   desde donde quedó. Usa 3 conexiones en paralelo sin pasar el límite de PPI (3.000 consultas cada 15 minutos).
+3. Escribe mercado_total/FECHA_resumen.md con tres capas:
+   - activos con libro (acciones, bonos, letras, ONs, CEDEARs): proporción de las 37, en pesos;
+   - opciones asignadas a su acción subyacente (monto en primas);
+   - cauciones (mercado de dinero) por moneda y plazo, aparte.
+"volume" de PPI es el MONTO operado en la moneda del instrumento (verificado contra la cinta del 23/10);
+lo que está en dólares se pasa a pesos con el MEP o el CCL implícito del día (AL30/AL30D y AL30/AL30C).
+No opera ni toca la cuenta: solo consulta.
 Uso: python mercado_total.py [AAAA-MM-DD]   (sin fecha = el último día hábil)
+Al terminar imprime QUEDAN=n (instrumentos sin consultar) para que el workflow sepa si debe seguir.
 """
-import csv, json, os, string, sys, time
-from collections import Counter, defaultdict
+import csv, json, os, re, string, sys, threading, time
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
 from ppi_client.ppi import PPI
 
-SALIDA_MD = os.environ.get("GITHUB_STEP_SUMMARY", "mercado_total.md")
-PAUSA = 0.32                  # ~3 consultas por segundo: queda debajo de 3.000 cada 15 minutos
-TOPE_MIN = float(os.environ.get("TOPE_MIN", "75"))   # minutos máximos de trabajo; si se pasa, guarda lo que tiene
+TOPE_MIN = float(os.environ.get("TOPE_MIN", "75"))
+HILOS = 3
+POR_SEGUNDO = 3.0
 PLAZOS = ["A-24HS", "INMEDIATA"]
-
-# Lo que escucha el lector (mismo listado que lector.yml)
+SALTEAR = {"FCI", "FCI-EXTERIOR", "LICITACIONES", "LEBACS"}            # no se operan en el mercado secundario de BYMA
+PRIORIDAD = ["ACCIONES", "CAUCIONES", "OPCIONES", "CEDEARS", "LETRAS", "BONOS", "ON", "ACCIONES-USA"]
 ACCIONES_37 = "ALUA,BBAR,BMA,BYMA,CEPU,COME,CRES,ECOG,EDN,GGAL,IRSA,LOMA,METR,PAMP,SUPV,TECO2,TGNO4,TGSU2,TRAN,TXAR,VALO,YPFD".split(",")
 OTROS_37 = {("AL30", "BONOS"), ("AL30D", "BONOS"), ("AL30C", "BONOS"), ("GD30", "BONOS"), ("GD30D", "BONOS"), ("GD30C", "BONOS"),
             ("GD46", "BONOS"), ("GD46D", "BONOS"), ("SPY", "CEDEARS"), ("QQQ", "CEDEARS"), ("XLE", "CEDEARS"), ("USO", "CEDEARS"),
             ("EWZ", "CEDEARS"), ("GLD", "CEDEARS"), ("GGAL", "ACCIONES-USA")}
 NUESTRAS = {(t, "ACCIONES") for t in ACCIONES_37} | OTROS_37
-
+CON_LIBRO = ["ACCIONES", "BONOS", "LETRAS", "ON", "CEDEARS"]
 inicio = time.time()
-consultas = 0
+_lock = threading.Lock(); _ultimo = [0.0]; consultas = [0]
 
 
-def escribir(t):
-    print(t, flush=True)
-    with open(SALIDA_MD, "a", encoding="utf-8") as fh:
-        fh.write(t + "\n")
-
-
-def pedir(fn, *a):
-    global consultas
-    time.sleep(PAUSA); consultas += 1
-    try:
-        return fn(*a)
-    except Exception as e:
-        return {"_error": f"{type(e).__name__}: {str(e)[:120]}"}
-
-
-def ultimo_habil():
-    d = datetime.now().date() - timedelta(days=1)
-    while d.weekday() >= 5:
-        d -= timedelta(days=1)
-    return d.isoformat()
+def ritmo():
+    with _lock:
+        espera = _ultimo[0] + 1 / POR_SEGUNDO - time.time()
+        if espera > 0: time.sleep(espera)
+        _ultimo[0] = time.time(); consultas[0] += 1
 
 
 def tiempo_ok():
     return (time.time() - inicio) / 60 < TOPE_MIN
 
 
-def nombre_tipo(t):
+def ultimo_habil():
+    d = datetime.now().date() - timedelta(days=1)
+    while d.weekday() >= 5: d -= timedelta(days=1)
+    return d.isoformat()
+
+
+def ingresar():
+    p = PPI(sandbox=False)
+    p.account.login_api(os.environ["PPI_API_KEY"].strip(), os.environ["PPI_API_SECRET"].strip())
+    return p
+
+
+def nombre(t):
     if isinstance(t, dict):
         for k in ("value", "code", "name", "description", "id"):
             if t.get(k): return str(t[k])
     return str(t)
 
 
-def main():
-    fecha = sys.argv[1] if len(sys.argv) > 1 else ultimo_habil()
-    ppi = PPI(sandbox=False)
-    try:
-        ppi.account.login_api(os.environ["PPI_API_KEY"].strip(), os.environ["PPI_API_SECRET"].strip())
-    except Exception as e:
-        escribir(f"# Mercado total\n\nNo se pudo ingresar a PPI: {type(e).__name__} {str(e)[:200]}"); return
-    escribir(f"# Mercado total — {fecha}\n")
-
-    # ---- 1. tipos y mercados
-    tipos_raw = pedir(ppi.configuration.get_instrument_types)
-    mercados_raw = pedir(ppi.configuration.get_markets)
-    tipos = [nombre_tipo(t) for t in (tipos_raw if isinstance(tipos_raw, list) else [])]
-    mercados = [nombre_tipo(m) for m in (mercados_raw if isinstance(mercados_raw, list) else [])]
-    escribir(f"Tipos que informa PPI: {', '.join(tipos) or json.dumps(tipos_raw)[:300]}")
-    escribir(f"Mercados: {', '.join(mercados) or json.dumps(mercados_raw)[:300]}\n")
-
-    # ---- 2. listado de instrumentos por tipo
-    instrumentos = {}            # (ticker, tipo) -> registro de PPI
-    muestra = {}
+def listar(ppi, ruta):
+    tipos = [nombre(t) for t in (ppi.configuration.get_instrument_types() or [])]
+    inst = {}
     for tipo in tipos:
-        if not tiempo_ok(): break
-        res = pedir(ppi.marketdata.search_instrument, "", "", "BYMA", tipo)
-        lista = res if isinstance(res, list) else []
-        modo = "todo de una vez"
-        if len(lista) < 20:                      # si la búsqueda vacía no lista todo, se busca por la primera letra
-            modo = "por letra"
+        if tipo in SALTEAR: continue
+        ritmo(); lista = ppi.marketdata.search_instrument("", "", "BYMA", tipo) or []
+        if len(lista) < 20:
             for c in string.ascii_uppercase + string.digits:
-                if not tiempo_ok(): break
-                r = pedir(ppi.marketdata.search_instrument, c, "", "BYMA", tipo)
+                ritmo(); r = ppi.marketdata.search_instrument(c, "", "BYMA", tipo)
                 if isinstance(r, list): lista += r
-        n0 = len(instrumentos)
         for r in lista:
-            if not isinstance(r, dict): continue
-            tk = str(r.get("ticker", "")).strip().upper()
-            tp = str(r.get("type") or tipo)
-            if tk and (tk, tp) not in instrumentos:
-                instrumentos[(tk, tp)] = r
-                muestra.setdefault(tp, r)
-        escribir(f"- {tipo}: {len(instrumentos) - n0} instrumentos ({modo})")
-    escribir(f"\nTotal de instrumentos listados: {len(instrumentos)}\n")
-    for tp, r in muestra.items():
-        escribir(f"  ejemplo {tp}: {json.dumps(r, ensure_ascii=False, default=str)[:300]}")
-
-    # ---- 3. lo operado en el día por instrumento (primero las nuestras, para tenerlas seguro)
-    orden = sorted(instrumentos, key=lambda k: (k not in NUESTRAS, k[1], k[0]))
-    d0 = datetime.fromisoformat(fecha)
-    filas, campos = [], Counter()
-    for tk, tp in orden:
-        if not tiempo_ok():
-            escribir(f"\n**Se cortó por tiempo** después de {len(filas)} instrumentos; el resto queda para la próxima corrida."); break
-        for plazo in PLAZOS:
-            r = pedir(ppi.marketdata.search, tk, tp, plazo, d0, d0 + timedelta(days=1))
-            dias = r if isinstance(r, list) else []
-            dia = next((x for x in dias if isinstance(x, dict) and str(x.get("date", ""))[:10] == fecha), None)
-            if dia is None and dias and isinstance(dias[-1], dict): dia = dias[-1] if str(dias[-1].get("date", ""))[:10] == fecha else None
-            if dia:
-                campos.update(dia.keys())
-                filas.append(dict(ticker=tk, tipo=tp, plazo=plazo, nuestra=(tk, tp) in NUESTRAS,
-                                  datos=json.dumps(dia, ensure_ascii=False, default=str)))
-        if len(filas) and len(filas) % 200 == 0:
-            print(f"  {len(filas)} filas, {consultas} consultas, {(time.time()-inicio)/60:.1f} min", flush=True)
-
-    # ---- 4. guardar
-    Path("mercado_total").mkdir(exist_ok=True)
-    claves = sorted(campos)
-    with open(f"mercado_total/{fecha}.csv", "w", newline="", encoding="utf-8") as fh:
-        w = csv.writer(fh); w.writerow(["ticker", "tipo", "plazo", "nuestra"] + claves)
-        for f in filas:
-            d = json.loads(f["datos"])
-            w.writerow([f["ticker"], f["tipo"], f["plazo"], f["nuestra"]] + [d.get(k, "") for k in claves])
-    with open(f"mercado_total/{fecha}_instrumentos.csv", "w", newline="", encoding="utf-8") as fh:
+            if isinstance(r, dict) and r.get("ticker"):
+                inst.setdefault((str(r["ticker"]).strip().upper(), str(r.get("type") or tipo)), r)
+    with open(ruta, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh); w.writerow(["ticker", "tipo", "registro"])
-        for (tk, tp), r in sorted(instrumentos.items()):
-            w.writerow([tk, tp, json.dumps(r, ensure_ascii=False, default=str)])
+        for (tk, tp), r in sorted(inst.items()): w.writerow([tk, tp, json.dumps(r, ensure_ascii=False, default=str)])
 
-    # ---- 5. resumen por tipo (monto = volume si PPI lo informa en pesos; se muestran los campos para revisarlo)
-    escribir(f"\nCampos diarios que devuelve PPI: {', '.join(claves)}\n")
-    def num(x):
-        try: return float(x)
-        except (TypeError, ValueError): return 0.0
-    POR_100 = ("BONO", "LETRA", "OBLIGACION", "ON", "TITULO")       # cotizan por cada 100 de valor nominal
-    tot = defaultdict(lambda: [0, 0, 0.0, 0.0])      # tipo -> [instrumentos con datos, nuestros, monto estimado total, monto de las 37]
+
+def main():
+    fecha = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else ultimo_habil()
+    Path("mercado_total").mkdir(exist_ok=True)
+    r_inst, r_dat, r_hecho = (Path(f"mercado_total/{fecha}{x}") for x in ("_instrumentos.csv", ".csv", "_consultados.txt"))
+    ppis = [ingresar() for _ in range(HILOS)]
+    if not r_inst.exists(): listar(ppis[0], r_inst)
+    inst = {}
+    with open(r_inst, encoding="utf-8") as fh:
+        for f in csv.DictReader(fh):
+            if f["tipo"] not in SALTEAR: inst[(f["ticker"], f["tipo"])] = json.loads(f["registro"])
+    hecho = set(r_hecho.read_text(encoding="utf-8").splitlines()) if r_hecho.exists() else set()
+    if r_dat.exists() and not hecho:      # corrida vieja sin registro de consultados: cuenta como hecho lo que tiene datos
+        with open(r_dat, encoding="utf-8") as fh: hecho = {f"{f['ticker']}|{f['tipo']}" for f in csv.DictReader(fh)}
+    pend = [k for k in inst if f"{k[0]}|{k[1]}" not in hecho]
+    pend.sort(key=lambda k: (k not in NUESTRAS, PRIORIDAD.index(k[1]) if k[1] in PRIORIDAD else 99, k[0]))
+    print(f"{fecha}: {len(inst)} instrumentos, {len(hecho)} ya consultados, {len(pend)} pendientes", flush=True)
+    d0 = datetime.fromisoformat(fecha)
+    campos = ["date", "price", "volume", "openingPrice", "max", "min", "previousClose", "marketChange", "marketChangePercent"]
+    if r_dat.exists():          # deja el archivo con las columnas en el orden de esta versión
+        viejas = list(csv.DictReader(open(r_dat, encoding="utf-8")))
+        cab = ["ticker", "tipo", "plazo", "nuestra"] + campos
+        if viejas and list(viejas[0].keys()) != cab:
+            with open(r_dat, "w", newline="", encoding="utf-8") as fh:
+                ww = csv.writer(fh); ww.writerow(cab)
+                for f in viejas: ww.writerow([f.get(c, "") for c in cab])
+    nuevo = not r_dat.exists()
+    fh_d = open(r_dat, "a", newline="", encoding="utf-8"); w = csv.writer(fh_d)
+    if nuevo: w.writerow(["ticker", "tipo", "plazo", "nuestra"] + campos)
+    fh_h = open(r_hecho, "a", encoding="utf-8")
+    if nuevo is False and not r_hecho.stat().st_size and hecho: fh_h.write("\n".join(sorted(hecho)) + "\n")
+    lock_w = threading.Lock()
+
+    def uno(args):
+        i, (tk, tp) = args
+        if not tiempo_ok(): return
+        ppi = ppis[i % HILOS]; filas = []
+        for plazo in PLAZOS:
+            ritmo()
+            try: r = ppi.marketdata.search(tk, tp, plazo, d0, d0 + timedelta(days=1))
+            except Exception: r = None
+            dia = next((x for x in (r or []) if isinstance(x, dict) and str(x.get("date", ""))[:10] == fecha), None)
+            if dia: filas.append([tk, tp, plazo, (tk, tp) in NUESTRAS] + [dia.get(c, "") for c in campos])
+        with lock_w:
+            for f in filas: w.writerow(f)
+            fh_h.write(f"{tk}|{tp}\n"); fh_d.flush(); fh_h.flush()
+
+    with ThreadPoolExecutor(HILOS) as ex:
+        list(ex.map(uno, enumerate(pend)))
+    fh_d.close(); fh_h.close()
+    hecho = set(r_hecho.read_text(encoding="utf-8").splitlines())
+    quedan = sum(1 for k in inst if f"{k[0]}|{k[1]}" not in hecho)
+    resumen(fecha, inst, r_dat, quedan)
+    print(f"QUEDAN={quedan}  consultas={consultas[0]}  minutos={(time.time() - inicio) / 60:.1f}", flush=True)
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a") as fh: fh.write(f"quedan={quedan}\nfecha={fecha}\n")
+
+
+def ar(x, d=0):
+    return f"{x:,.{d}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def resumen(fecha, inst, r_dat, quedan):
+    filas = list(csv.DictReader(open(r_dat, encoding="utf-8")))
+    px = {(f["ticker"], f["plazo"]): float(f["price"] or 0) for f in filas}
+    def cot(a, b):
+        for pl in ("A-24HS", "INMEDIATA"):
+            if px.get((a, pl)) and px.get((b, pl)): return px[(a, pl)] / px[(b, pl)]
+        return None
+    mep, ccl = cot("AL30", "AL30D"), cot("AL30", "AL30C")
+    def en_pesos(f):
+        v = float(f["volume"] or 0); mon = (inst.get((f["ticker"], f["tipo"])) or {}).get("currency", "Pesos")
+        if "MEP" in mon: return v * mep if mep else None
+        if "CCL" in mon: return v * ccl if ccl else None
+        return v
+    L = [f"# Mercado total — {fecha}", "",
+         f"Instrumentos listados en PPI (sin FCI ni licitaciones): {len(inst)}. Sin consultar todavía: {quedan}.",
+         f"Monto = \"volume\" de PPI (monto en la moneda del instrumento), pasado a pesos con MEP {ar(mep or 0, 2)} y CCL {ar(ccl or 0, 2)} (AL30).", ""]
+    # capa 1
+    tot = defaultdict(lambda: [0, 0, 0.0, 0.0])
     for f in filas:
-        d = json.loads(f["datos"]); v = num(d.get("volume")); p = num(d.get("price"))
-        monto = v * p / (100 if any(x in f["tipo"].upper() for x in POR_100) else 1)   # estimado: nominales × precio
-        t = tot[f["tipo"]]; t[0] += 1; t[2] += monto
-        if f["nuestra"]: t[1] += 1; t[3] += monto
-    escribir("Monto estimado = volumen × precio (÷100 en bonos, letras y ONs). Es una primera aproximación: hay que confirmar qué informa PPI en \"volume\".\n")
-    escribir("| Tipo | Instrumentos con datos | De las 37 | Monto estimado total | Monto de las 37 | Proporción |")
-    escribir("|---|---|---|---|---|---|")
-    for tp, (n, nn, v, vn) in sorted(tot.items(), key=lambda x: -x[1][2]):
-        escribir(f"| {tp} | {n} | {nn} | {v:,.0f} | {vn:,.0f} | {vn / v:.1%} |" if v else f"| {tp} | {n} | {nn} | 0 | 0 | — |")
+        if f["tipo"] not in CON_LIBRO: continue
+        m = en_pesos(f)
+        if not m: continue
+        t = tot[f["tipo"]]; t[0] += 1; t[2] += m
+        if f["nuestra"] == "True": t[1] += 1; t[3] += m
+    L += ["## 1. Activos con libro: qué parte ven las 37", "", "| Tipo | Instrumentos operados (por plazo) | De las 37 | Monto total ($) | Monto de las 37 ($) | Proporción |", "|---|---|---|---|---|---|"]
+    for tp in CON_LIBRO:
+        n, nn, v, vn = tot[tp]
+        L.append(f"| {tp} | {n} | {nn} | {ar(v)} | {ar(vn)} | {vn / v:.1%} |" if v else f"| {tp} | {n} | {nn} | 0 | 0 | — |")
     V = sum(t[2] for t in tot.values()); VN = sum(t[3] for t in tot.values())
-    sin_c = sum(t[2] for tp, t in tot.items() if "CAUC" not in tp.upper()); sin_cn = sum(t[3] for tp, t in tot.items() if "CAUC" not in tp.upper())
-    if V:
-        escribir(f"\nTotal: {V:,.0f}; de las 37: {VN:,.0f} ({VN / V:.1%}).")
-        if sin_c: escribir(f"Sin cauciones: {sin_c:,.0f}; de las 37: {sin_cn:,.0f} ({sin_cn / sin_c:.1%}).")
-    escribir(f"Consultas a PPI: {consultas}; minutos: {(time.time()-inicio)/60:.1f}.")
+    if V: L += ["", f"**Total con libro: ${ar(V)}; las 37: ${ar(VN)} ({VN / V:.1%}).**"]
+    # capa 2: opciones por subyacente
+    sub = defaultdict(lambda: [0, 0.0, 0.0, 0.0])        # subyacente -> [series operadas, primas call, primas put, total]
+    for f in filas:
+        if f["tipo"] != "OPCIONES": continue
+        d = (inst.get((f["ticker"], "OPCIONES")) or {}).get("description", "")
+        mt = re.search(r"Opci[oó]n (compra|venta) (\S+)", d)
+        u = mt.group(2) if mt else f["ticker"][:3]; v = float(f["volume"] or 0)
+        s = sub[u]; s[0] += 1; s[3] += v
+        if mt and mt.group(1) == "compra": s[1] += v
+        else: s[2] += v
+    if sub:
+        accion = {f["ticker"]: en_pesos(f) or 0 for f in filas if f["tipo"] == "ACCIONES" and f["plazo"] == "A-24HS"}
+        L += ["", "## 2. Opciones por acción subyacente (monto en primas)", "",
+              "| Subyacente | Series operadas | Primas calls ($) | Primas puts ($) | Total primas ($) | Contado A-24HS ($) |", "|---|---|---|---|---|---|"]
+        for u, (n, c, p, t) in sorted(sub.items(), key=lambda x: -x[1][3]):
+            L.append(f"| {u} | {n} | {ar(c)} | {ar(p)} | {ar(t)} | {ar(accion.get(u, 0))} |")
+        L += ["", "Las primas no son exposición: la exposición sobre la acción es contratos × 100 acciones × precio, y PPI no informa la cantidad de contratos por esta vía."]
+    # capa 3: cauciones
+    cau = [f for f in filas if f["tipo"] == "CAUCIONES"]
+    if cau:
+        L += ["", "## 3. Cauciones (mercado de dinero, fuera de la proporción)", "", "| Caución | Plazo de liquidación | Monto | Precio informado |", "|---|---|---|---|"]
+        for f in sorted(cau, key=lambda f: (f["ticker"][:5], int(re.sub(r"\D", "", f["ticker"]) or 0))):
+            L.append(f"| {f['ticker']} | {f['plazo']} | {ar(float(f['volume'] or 0))} | {f['price']} |")
+    otros = defaultdict(float)
+    for f in filas:
+        if f["tipo"] == "ACCIONES-USA": otros["ACCIONES-USA"] += en_pesos(f) or 0
+    if otros: L += ["", f"Acciones del exterior listadas por PPI (fuera de BYMA): ${ar(otros['ACCIONES-USA'])}."]
+    Path(f"mercado_total/{fecha}_resumen.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as fh: fh.write("\n".join(L) + "\n")
+
 
 if __name__ == "__main__":
     main()
