@@ -88,6 +88,27 @@ def listar(ppi, ruta):
         for (tk, tp), r in sorted(inst.items()): w.writerow([tk, tp, json.dumps(r, ensure_ascii=False, default=str)])
 
 
+def sumar_al_padron(inst, fecha, ruta="universo.csv"):
+    """Los instrumentos que PPI lista por primera vez entran al padrón en el anillo 3 (foto diaria)."""
+    if not Path(ruta).exists(): return
+    with open(ruta, encoding="utf-8") as fh:
+        r = csv.DictReader(fh); cols = r.fieldnames; filas = list(r)
+    hay = {(f["ticker"], f["tipo"]) for f in filas}
+    nuevos = []
+    for (tk, tp), reg in inst.items():
+        if (tk, tp) in hay: continue
+        c = str(reg.get("currency", "Pesos")); d = {k: "" for k in cols}
+        d.update(ticker=tk, tipo=tp, plazo="A-24HS", anillo="3", desde=fecha, motivo="Nuevo en el listado de PPI",
+                 moneda="MEP" if "MEP" in c else "CCL" if "CCL" in c else "ARS")
+        if tp == "OPCIONES":
+            m = re.search(r"Opci[oó]n (compra|venta) (\S+) AR\$ ([\d.]+) Vto\. (\d\d/\d\d/\d{4})", reg.get("description", ""))
+            if m: d.update(subyacente=m.group(2), opcion="call" if m.group(1) == "compra" else "put", ejercicio=m.group(3), vencimiento=m.group(4))
+        nuevos.append(d)
+    if nuevos:
+        with open(ruta, "a", newline="", encoding="utf-8") as fh: csv.DictWriter(fh, fieldnames=cols).writerows(nuevos)
+        print(f"padrón: {len(nuevos)} instrumentos nuevos al anillo 3", flush=True)
+
+
 def main():
     fecha = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else ultimo_habil()
     Path("mercado_total").mkdir(exist_ok=True)
@@ -98,6 +119,7 @@ def main():
     with open(r_inst, encoding="utf-8") as fh:
         for f in csv.DictReader(fh):
             if f["tipo"] not in SALTEAR: inst[(f["ticker"], f["tipo"])] = json.loads(f["registro"])
+    sumar_al_padron(inst, fecha)
     hecho = set(r_hecho.read_text(encoding="utf-8").splitlines()) if r_hecho.exists() else set()
     if r_dat.exists() and not hecho:      # corrida vieja sin registro de consultados: cuenta como hecho lo que tiene datos
         with open(r_dat, encoding="utf-8") as fh: hecho = {f"{f['ticker']}|{f['tipo']}" for f in csv.DictReader(fh)}

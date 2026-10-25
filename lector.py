@@ -17,33 +17,36 @@ EXTRAS = [e.strip() for e in os.environ.get("EXTRAS", "").split(",") if e.strip(
 TIPO, PLAZO = "ACCIONES", "A-24HS"
 
 
-ESCUCHA_EXTRA = os.environ.get("ESCUCHA_EXTRA", "escucha_extra.txt")
+UNIVERSO = os.environ.get("UNIVERSO", "universo.csv")
 
 
-def extra_desde_archivo():
-    """Escucha ampliada por escalones: escucha_extra.txt trae en la primera línea 'desde AAAA-MM-DD'
-    y después un instrumento por línea, TICKER|TIPO|PLAZO. Antes de esa fecha no se usa."""
+def desde_universo(hoy=None):
+    """Padrón único (universo.csv): se escuchan en vivo el núcleo y el anillo 2 vigentes hoy
+    (desde <= hoy y, si tiene, hoy < hasta). El anillo 3 solo va a la foto diaria del mercado total."""
+    import csv
+    hoy = hoy or datetime.now().strftime("%Y-%m-%d")
     try:
-        lineas = [l.strip() for l in open(ESCUCHA_EXTRA, encoding="utf-8") if l.strip() and not l.startswith("#")]
+        with open(UNIVERSO, encoding="utf-8") as fh:
+            filas = list(csv.DictReader(fh))
     except OSError:
-        return []
-    if not lineas or not lineas[0].lower().startswith("desde "):
-        return []
-    if datetime.now().strftime("%Y-%m-%d") < lineas[0].split()[1]:
-        return []
-    return [tuple(p.strip() for p in l.split("|")) for l in lineas[1:] if l.count("|") == 2]
+        return None
+    lista = []
+    for f in filas:
+        if f.get("anillo") in ("nucleo", "2") and f.get("desde", "") <= hoy and (not f.get("hasta") or hoy < f["hasta"]):
+            x = (f["ticker"], f["tipo"], f.get("plazo") or PLAZO)
+            if x not in lista: lista.append(x)
+    return lista or None
 
 
 def instrumentos():
-    lista = [(t, TIPO, PLAZO) for t in TICKERS]
+    lista = desde_universo()
+    if lista:
+        return lista
+    lista = [(t, TIPO, PLAZO) for t in TICKERS]          # respaldo si falta el padrón
     for e in EXTRAS:
         partes = [p.strip() for p in e.split("|")]
         if len(partes) == 3:
             lista.append(tuple(partes))
-    vistos = set(lista)
-    for x in extra_desde_archivo():
-        if x not in vistos:
-            lista.append(x); vistos.add(x)
     return lista
 
 def log(t):

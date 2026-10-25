@@ -54,7 +54,7 @@ jobs:
         run: |
           git config user.name "bot-mercado"
           git config user.email "bot@users.noreply.github.com"
-          git add mercado_total
+          git add mercado_total universo.csv
           git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
           git commit -m "Mercado total ${{ steps.medir.outputs.fecha }} (quedan ${{ steps.medir.outputs.quedan }})"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
