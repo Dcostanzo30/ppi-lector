@@ -11,6 +11,8 @@ ACTIVO = bool(URL and CLAVE)
 _cola = queue.Queue()
 _puntas, _libro, _vistas = {}, {}, set()
 _n = {"enviadas": 0, "errores": 0}
+# Solo las acciones del panel líder van a la mesa (aunque el lector escuche más instrumentos)
+PANEL = {t.strip() for t in os.environ.get("TICKERS", "").split(",") if t.strip()}
 
 
 def _cab(extra=None):
@@ -31,6 +33,8 @@ def recibir(crudo):
             return
         tk = str(m.get("Ticker", "?"))
         if str(m.get("Type", "ACCIONES")).upper() != "ACCIONES":
+            return
+        if PANEL and tk not in PANEL:
             return
         if m.get("Trade") not in (True, "true", "True"):
             bc, bv = mejor(m.get("Bids")), mejor(m.get("Offers"))

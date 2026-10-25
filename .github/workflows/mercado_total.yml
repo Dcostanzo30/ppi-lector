@@ -9,6 +9,8 @@ on:
     paths:
       - "mercado_total.py"
       - ".github/workflows/mercado_total.yml"
+  schedule:
+    - cron: "0 22 * * 1-5"     # 19:00 de Buenos Aires: mide el día que acaba de cerrar (control de cobertura de la escucha)
   workflow_dispatch:
     inputs:
       fecha:

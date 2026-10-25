@@ -52,7 +52,7 @@ def tiempo_ok():
 
 
 def ultimo_habil():
-    d = datetime.now().date() - timedelta(days=1)
+    d = datetime.now().date() - (timedelta(days=0) if datetime.now().hour >= 18 else timedelta(days=1))
     while d.weekday() >= 5: d -= timedelta(days=1)
     return d.isoformat()
 
