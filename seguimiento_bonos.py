@@ -99,6 +99,8 @@ def main():
                              "var_d_pct": round((pd_ / ant[1] - 1) * 100, 2) if ant[1] and not (ant[0] < "2026-07-09" <= d) else "",
                              "tir_pct": tir, "paridad_pct": par, "monto_d_usd": round(md), "monto_pesos": round(mp),
                              "riesgo_pais": rp.get(d, filas.get((d, b), {}).get("riesgo_pais", ""))}
+    for r in filas.values():
+        if not r.get("riesgo_pais") and r["fecha"] in rp: r["riesgo_pais"] = rp[r["fecha"]]
     with open(hist_f, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, CAMPOS); w.writeheader()
         for k in sorted(filas): w.writerow({c: filas[k].get(c, "") for c in CAMPOS})
