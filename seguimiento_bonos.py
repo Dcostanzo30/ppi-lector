@@ -113,6 +113,11 @@ def ar(x, dec=2):
     except (TypeError, ValueError): return "—"
 
 
+def brecha(filas, d, a, b):
+    try: return ar(float(filas[(d, a)]["tir_pct"]) - float(filas[(d, b)]["tir_pct"]))
+    except (KeyError, TypeError, ValueError): return "—"
+
+
 def escribir_md(filas):
     fechas = sorted({k[0] for k in filas})
     if not fechas: return
@@ -123,12 +128,13 @@ def escribir_md(filas):
     for b in BONOS:
         r = filas.get((u, b))
         if r: l.append(f"| {'**'+b+'**' if b in FOCO else b} | {ar(r['precio_d'])} | {ar(r['var_d_pct'])}% | {ar(r['tir_pct'])}% | {ar(r['paridad_pct'], 1)}% | {ar(r['mep_implicito'])} | {ar(r['monto_d_usd'], 0)} |")
-    l += ["", "## Últimas 15 ruedas: TIR de los tres en foco y riesgo país", "", "| Fecha | Riesgo país | " + " | ".join(f"TIR {b}" for b in FOCO) + " | " + " | ".join(f"Precio {b}D" for b in FOCO) + " |",
-          "|---" * (2 + 2 * len(FOCO)) + "|"]
+    l += ["", "## Últimas 15 ruedas: TIR de los tres en foco y riesgo país", "", "| Fecha | Riesgo país | " + " | ".join(f"TIR {b}" for b in FOCO) + " | " + " | ".join(f"Precio {b}D" for b in FOCO) + " | Ley local AE38−GD38 | Ley local AL41−GD41 |",
+          "|---" * (4 + 2 * len(FOCO)) + "|"]
     for d in fechas[-15:][::-1]:
         rr = [filas.get((d, b), {}) for b in FOCO]
-        l.append(f"| {d} | {ar(filas.get((d, BONOS[0]), {}).get('riesgo_pais'), 0)} | " + " | ".join(f"{ar(r.get('tir_pct'))}%" for r in rr) + " | " + " | ".join(ar(r.get('precio_d')) for r in rr) + " |")
-    l += ["", "Fuentes: precios y montos de PPI (cierre A-24HS); flujos de la calculadora de PPI; riesgo país de argentinadatos.com (JP Morgan EMBI).", ""]
+        l.append(f"| {d} | {ar(filas.get((d, BONOS[0]), {}).get('riesgo_pais'), 0)} | " + " | ".join(f"{ar(r.get('tir_pct'))}%" for r in rr) + " | " + " | ".join(ar(r.get('precio_d')) for r in rr) + f" | {brecha(filas, d, 'AE38', 'GD38')} | {brecha(filas, d, 'AL41', 'GD41')} |")
+    l += ["", "Ley local = TIR del bono de ley argentina menos la de su par de ley Nueva York (puntos). Si se abre sin que suba el riesgo país, el mercado cobra más el riesgo de canje o reperfilamiento de ley local.",
+          "", "Fuentes: precios y montos de PPI (cierre A-24HS); flujos de la calculadora de PPI; riesgo país de argentinadatos.com (JP Morgan EMBI).", ""]
     (SAL / "SEGUIMIENTO.md").write_text("\n".join(l), encoding="utf-8")
 
 
