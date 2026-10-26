@@ -2,8 +2,14 @@ name: Lector tiempo real
 
 on:
   schedule:
-    - cron: "23 12 * * 1-5"   # turno mañana, 09:23 (con margen por las demoras de GitHub)
-    - cron: "53 12 * * 1-5"   # respaldo del turno mañana, 09:53
+    # GitHub puede atrasar las tareas programadas hasta horas (el 26/10 la de 09:23 salió a las 12:00).
+    # Por eso el turno mañana se pide temprano y con varios respaldos: arranca el primero que salga
+    # y los demás se cortan solos al ver que ya hay un lector escuchando.
+    - cron: "31 11 * * 1-5"   # turno mañana, 08:31
+    - cron: "7 12 * * 1-5"    # respaldo del turno mañana, 09:07
+    - cron: "37 12 * * 1-5"   # respaldo del turno mañana, 09:37
+    - cron: "13 13 * * 1-5"   # respaldo del turno mañana, 10:13
+    - cron: "43 13 * * 1-5"   # respaldo del turno mañana, 10:43
     - cron: "37 16 * * 1-5"   # respaldo del turno tarde, 13:37 (solo corre si nadie está escuchando)
   workflow_dispatch:
     inputs:
@@ -21,7 +27,7 @@ permissions:
 jobs:
   escuchar:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 350
     env:
       TZ: America/Argentina/Buenos_Aires
       GH_TOKEN: ${{ github.token }}
@@ -36,14 +42,18 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TURNO="${{ github.event.inputs.turno }}"
-          elif [ $(date +%H) -lt 12 ]; then
+          elif [ "$(date +%H%M)" \< "1330" ]; then
+            # Si GitHub lo largó tarde pero todavía antes de la posta de las 13:30, sigue siendo el turno mañana:
+            # graba lo que queda de la mañana y a las 13:30 larga el turno tarde como siempre.
             TURNO="manana"
           else
             TURNO="tarde"
           fi
           SEGUIR=si
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            OTROS=$(gh run list -R "$GITHUB_REPOSITORY" -w lector.yml -s in_progress --json databaseId -q ".[].databaseId" | grep -v "^${GITHUB_RUN_ID}$" | wc -l)
+            # Solo cuentan los lectores que arrancaron antes que este (número de corrida menor):
+            # si dos respaldos salen juntos, sigue el más viejo y no se cortan los dos.
+            OTROS=$(gh run list -R "$GITHUB_REPOSITORY" -w lector.yml -s in_progress --json databaseId -q ".[].databaseId" | awk -v yo="$GITHUB_RUN_ID" '$1 < yo' | wc -l)
             if [ "$OTROS" -gt 0 ]; then
               echo "Ya hay un lector escuchando; este respaldo no hace falta."
               SEGUIR=no
@@ -108,8 +118,9 @@ jobs:
               OTRAS_FH=$(ls tiempo_real_afuera/$HOY/*.txt.gz 2>/dev/null)
               ACTUAL_FH=""
               if [ -f "../$FH" ]; then cp "../$FH" "/tmp/actual_$FH"; ACTUAL_FH="/tmp/actual_$FH"; fi
-              # el turno tarde publica recien cuando el de la manana ya subio su parte
-              if [ "$TURNO" = "tarde" ] && [ -z "$OTRAS" ]; then echo "$H espero la parte de la manana"; continue; fi
+              # el turno tarde espera la parte de la manana (se sube a las 13:45); si a las 14:00 no aparecio,
+              # es que no hubo turno manana y publica igual con lo que grabo el
+              if [ "$TURNO" = "tarde" ] && [ -z "$OTRAS" ] && [ "$H" \< "14:00" ]; then echo "$H espero la parte de la manana"; continue; fi
               [ -f "../$ARCHIVO" ] || continue
               cp "../$ARCHIVO" "/tmp/actual_$ARCHIVO"
               mkdir -p vivo
