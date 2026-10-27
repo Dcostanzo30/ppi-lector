@@ -49,7 +49,9 @@ jobs:
       - run: pip install ppi-client
       - name: Medir
         id: medir
-        run: python mercado_total.py "${{ github.event.inputs.fecha }}"
+        run: |
+          set -o pipefail
+          python mercado_total.py "${{ github.event.inputs.fecha }}" 2>&1 | tee medir.log || { tail -6 medir.log | sed 's/^/::error::/'; exit 1; }
       - name: Guardar
         run: |
           git config user.name "bot-mercado"
