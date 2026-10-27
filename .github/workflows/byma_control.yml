@@ -1,0 +1,38 @@
+name: Control BYMA
+
+# Baja de BYMADATA (datos abiertos) el monto operado por especie para cruzarlo con la foto del mercado total de PPI. Solo consultas públicas.
+on:
+  push:
+    paths:
+      - "byma_control.py"
+      - ".github/workflows/byma_control.yml"
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha de la foto PPI a cruzar (AAAA-MM-DD)"
+        default: "2026-10-26"
+
+permissions:
+  contents: write
+
+jobs:
+  cruzar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests
+      - name: Bajar
+        run: python byma_control.py "${{ github.event.inputs.fecha || '2026-10-26' }}" 2>&1 | tee bajar.log; tail -20 bajar.log | sed 's/^/::notice::/'
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/control_byma
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Control BYMA $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN byma_control.yml
