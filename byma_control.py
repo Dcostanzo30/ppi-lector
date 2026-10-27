@@ -17,16 +17,21 @@ def main():
     fecha = sys.argv[1]
     sal = Path("estudios/control_byma"); sal.mkdir(parents=True, exist_ok=True)
     crudo, filas = {}, []
+    variantes = [CUERPO, {**CUERPO, "T1": True}, {**CUERPO, "T0": True, "T1": True}, {"excludeZeroPxAndQty": False, "T2": True, "T1": False, "T0": False},
+                 {**CUERPO, "Content-Type": "application/json"}]
     for ep, nombre in PANELES.items():
-        try:
-            r = requests.post(BASE + ep, json=CUERPO, headers=H, timeout=60)
-            print(ep, r.status_code, len(r.content), flush=True)
-            d = r.json()
-            lista = d.get("data", d) if isinstance(d, dict) else d
-            crudo[ep] = lista
-            if lista and isinstance(lista, list): print("  ejemplo:", json.dumps(lista[0], ensure_ascii=False)[:600], flush=True)
-        except Exception as e:
-            print(ep, "error", str(e)[:200], flush=True); crudo[ep] = {"error": str(e)[:300]}
+        lista = None
+        for i, cuerpo in enumerate(variantes):
+            try:
+                r = requests.post(BASE + ep, json=cuerpo, headers=H, timeout=60)
+                d = r.json() if r.content else {}
+                l_ = d.get("data", d) if isinstance(d, dict) else d
+                print(ep, "variante", i, r.status_code, len(r.content), (len(l_) if isinstance(l_, list) else r.text[:160]), flush=True)
+                if isinstance(l_, list) and l_:
+                    lista = l_; break
+            except Exception as e:
+                print(ep, "variante", i, "error", str(e)[:160], flush=True)
+        crudo[ep] = lista or []
     (sal / f"{fecha}_byma.json").write_text(json.dumps(crudo, ensure_ascii=False), encoding="utf-8")
 
 
