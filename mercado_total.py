@@ -25,6 +25,11 @@ except ImportError:          # para rehacer el resumen sin el cliente de PPI
     PPI = None
 
 TOPE_MIN = float(os.environ.get("TOPE_MIN", "75"))
+MODO = os.environ.get("MODO", "rapido")      # rapido: BYMADATA para todo lo que operó + PPI solo para lo nuestro, letras y cauciones; completo: barrido PPI de todo, por liquidez
+BYMA_BASE = "https://open.bymadata.com.ar/vanoms-be-core/rest/api/bymadata/free/"
+BYMA_PANELES = {"leading-equity": "ACCIONES", "general-equity": "ACCIONES", "cedears": "CEDEARS", "public-bonds": "BONOS",
+                "negociable-obligations": "ON", "options": "OPCIONES"}
+MONEDA_BYMA = {"ARS": "Pesos", "USD": "Dólares MEP", "EXT": "Dólares CCL"}
 HILOS = 3
 POR_SEGUNDO = 3.0
 PLAZOS = ["A-24HS", "INMEDIATA"]
@@ -49,6 +54,52 @@ def ritmo():
 
 def tiempo_ok():
     return (time.time() - inicio) / 60 < TOPE_MIN
+
+
+def byma_foto():
+    """Todo lo que operó hoy en BYMA según BYMADATA (datos abiertos): pocas consultas, segundos. Devuelve filas por especie y plazo."""
+    import requests
+    H = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0", "Origin": "https://open.bymadata.com.ar", "Referer": "https://open.bymadata.com.ar/"}
+    base = {"excludeZeroPxAndQty": True, "T2": True, "T1": False, "T0": False}
+    out = []
+    for ep, tipo in BYMA_PANELES.items():
+        lista = []
+        for cuerpo in (base, {**base, "T1": True}, {**base, "T0": True, "T1": True}):
+            try:
+                r = requests.post(BYMA_BASE + ep, json=cuerpo, headers=H, timeout=60)
+                d = r.json() if r.content else {}
+                lista = d.get("data", d) if isinstance(d, dict) else d
+                if isinstance(lista, list) and lista: break
+            except Exception as e:
+                print(f"::warning::BYMADATA {ep}: {str(e)[:120]}", flush=True)
+        for x in lista or []:
+            pl = {"2": "A-24HS", "1": "INMEDIATA"}.get(str(x.get("settlementType")))
+            if not pl or not x.get("symbol"): continue
+            out.append(dict(ticker=str(x["symbol"]).strip().upper(), tipo=tipo, plazo=pl, moneda=MONEDA_BYMA.get(x.get("denominationCcy"), x.get("denominationCcy")),
+                            price=x.get("closingPrice") or x.get("trade") or 0, volume=x.get("volumeAmount") or 0, openingPrice=x.get("openingPrice") or 0,
+                            max=x.get("tradingHighPrice") or 0, min=x.get("tradingLowPrice") or 0, operaciones=x.get("numberOfOrders") or 0))
+        print(f"BYMADATA {ep}: {len(lista or [])} filas", flush=True)
+    return out
+
+
+def liquidos(fecha, dias=20):
+    """Instrumentos que operaron algo en las últimas fotos (PPI o BYMA): van primero en la fila."""
+    vivos = set()
+    for f in sorted(Path("mercado_total").glob("????-??-??.csv"))[-dias:]:
+        if f.stem >= fecha: continue
+        for r in csv.DictReader(open(f, encoding="utf-8")):
+            try:
+                if float(r.get("volume") or 0) > 0: vivos.add((r["ticker"], r["tipo"]))
+            except ValueError: pass
+    return vivos
+
+
+def anillo2():
+    out = set()
+    if Path("universo.csv").exists():
+        for r in csv.DictReader(open("universo.csv", encoding="utf-8")):
+            if r.get("anillo") in ("nucleo", "2"): out.add((r["ticker"], r["tipo"]))
+    return out
 
 
 def ultimo_habil():
@@ -141,21 +192,30 @@ def main():
     hecho = set(r_hecho.read_text(encoding="utf-8").splitlines()) if r_hecho.exists() else set()
     if r_dat.exists() and not hecho:      # corrida vieja sin registro de consultados: cuenta como hecho lo que tiene datos
         with open(r_dat, encoding="utf-8") as fh: hecho = {f"{f['ticker']}|{f['tipo']}" for f in csv.DictReader(fh)}
+    # BYMADATA: solo sirve para el día en curso (muestra la última rueda); para fechas viejas no se usa
+    byma = byma_foto() if fecha == ultimo_habil() else []
+    vivos_hoy = {(b["ticker"], b["tipo"]) for b in byma if float(b["volume"] or 0) > 0}
+    vivos = vivos_hoy | liquidos(fecha)
+    propias = NUESTRAS | anillo2()
     pend = [k for k in inst if f"{k[0]}|{k[1]}" not in hecho]
-    pend.sort(key=lambda k: (k not in NUESTRAS, PRIORIDAD.index(k[1]) if k[1] in PRIORIDAD else 99, k[0]))
-    print(f"{fecha}: {len(inst)} instrumentos, {len(hecho)} ya consultados, {len(pend)} pendientes", flush=True)
+    if MODO == "rapido" and byma:
+        # rápido: PPI solo para lo nuestro (núcleo y anillo 2), letras y cauciones (BYMADATA no las da); el resto lo da BYMADATA
+        pend = [k for k in pend if k in propias or k[1] in ("LETRAS", "CAUCIONES")]
+    # la fila por liquidez: lo nuestro, lo que operó hoy o en las últimas fotos, y al final lo que no opera
+    pend.sort(key=lambda k: (k not in propias, k not in vivos, PRIORIDAD.index(k[1]) if k[1] in PRIORIDAD else 99, k[0]))
+    print(f"{fecha}: modo {MODO}; {len(inst)} instrumentos, {len(hecho)} ya consultados, {len(pend)} pendientes en PPI; BYMADATA {len(byma)} filas", flush=True)
     d0 = datetime.fromisoformat(fecha)
     campos = ["date", "price", "volume", "openingPrice", "max", "min", "previousClose", "marketChange", "marketChangePercent"]
     if r_dat.exists():          # deja el archivo con las columnas en el orden de esta versión
         viejas = list(csv.DictReader(open(r_dat, encoding="utf-8")))
-        cab = ["ticker", "tipo", "plazo", "nuestra"] + campos
+        cab = ["ticker", "tipo", "plazo", "nuestra"] + campos + ["fuente", "moneda"]
         if viejas and list(viejas[0].keys()) != cab:
             with open(r_dat, "w", newline="", encoding="utf-8") as fh:
                 ww = csv.writer(fh); ww.writerow(cab)
                 for f in viejas: ww.writerow([f.get(c, "") for c in cab])
     nuevo = not r_dat.exists()
     fh_d = open(r_dat, "a", newline="", encoding="utf-8"); w = csv.writer(fh_d)
-    if nuevo: w.writerow(["ticker", "tipo", "plazo", "nuestra"] + campos)
+    if nuevo: w.writerow(["ticker", "tipo", "plazo", "nuestra"] + campos + ["fuente", "moneda"])
     fh_h = open(r_hecho, "a", encoding="utf-8")
     if nuevo is False and not r_hecho.stat().st_size and hecho: fh_h.write("\n".join(sorted(hecho)) + "\n")
     lock_w = threading.Lock()
@@ -169,16 +229,31 @@ def main():
             try: r = ppi.marketdata.search(tk, tp, plazo, d0, d0 + timedelta(days=1))
             except Exception: r = None
             dia = next((x for x in (r or []) if isinstance(x, dict) and str(x.get("date", ""))[:10] == fecha), None)
-            if dia: filas.append([tk, tp, plazo, (tk, tp) in NUESTRAS] + [dia.get(c, "") for c in campos])
+            if dia: filas.append([tk, tp, plazo, (tk, tp) in NUESTRAS] + [dia.get(c, "") for c in campos] + ["PPI", ""])
         with lock_w:
             for f in filas: w.writerow(f)
             fh_h.write(f"{tk}|{tp}\n"); fh_d.flush(); fh_h.flush()
 
     with ThreadPoolExecutor(HILOS) as ex:
         list(ex.map(uno, enumerate(pend)))
+    # lo que dio BYMADATA y PPI no consultó se agrega con fuente BYMA; si PPI sí lo consultó, BYMA queda solo como control
+    if byma:
+        ya = {(r["ticker"], r["tipo"], r["plazo"]) for r in csv.DictReader(open(r_dat, encoding="utf-8"))}
+        chk = [(b, next((r for r in csv.DictReader(open(r_dat, encoding="utf-8")) if r["ticker"] == "AL30" and r["plazo"] == "A-24HS" and r.get("fuente") != "BYMA"), None))
+               for b in byma if b["ticker"] == "AL30" and b["plazo"] == "A-24HS"]
+        if chk and chk[0][1] and abs(float(chk[0][1]["price"] or 0) - float(chk[0][0]["price"] or 0)) > 0.01 * float(chk[0][1]["price"] or 1):
+            print("::warning::BYMADATA no coincide con PPI en AL30 (otra fecha?); no se usa", flush=True); byma = []
+        n_b = 0
+        for b in byma:
+            if (b["ticker"], b["tipo"], b["plazo"]) in ya or not float(b["volume"] or 0): continue
+            w.writerow([b["ticker"], b["tipo"], b["plazo"], (b["ticker"], b["tipo"]) in NUESTRAS, fecha, b["price"], b["volume"], b["openingPrice"], b["max"], b["min"], "", "", "", "BYMA", b["moneda"]]); n_b += 1
+        with open(f"mercado_total/{fecha}_byma.csv", "w", newline="", encoding="utf-8") as fb:
+            wb = csv.DictWriter(fb, list(byma[0].keys())) if byma else None
+            if wb: wb.writeheader(); wb.writerows(byma)
+        print(f"BYMADATA: {n_b} filas agregadas a la foto", flush=True)
     fh_d.close(); fh_h.close()
     hecho = set(r_hecho.read_text(encoding="utf-8").splitlines())
-    quedan = sum(1 for k in inst if f"{k[0]}|{k[1]}" not in hecho)
+    quedan = sum(1 for k in inst if f"{k[0]}|{k[1]}" not in hecho and (MODO != "rapido" or not byma or k in propias or k[1] in ("LETRAS", "CAUCIONES")))
     resumen(fecha, inst, r_dat, quedan)
     print(f"QUEDAN={quedan}  consultas={consultas[0]}  minutos={(time.time() - inicio) / 60:.1f}", flush=True)
     if os.environ.get("GITHUB_OUTPUT"):
@@ -203,7 +278,7 @@ def resumen(fecha, inst, r_dat, quedan):
         return None
     mep, ccl = cot("AL30", "AL30D"), cot("AL30", "AL30C")
     def en_pesos(f):
-        v = float(f["volume"] or 0); mon = (inst.get((f["ticker"], f["tipo"])) or {}).get("currency", "Pesos")
+        v = float(f["volume"] or 0); mon = f.get("moneda") or (inst.get((f["ticker"], f["tipo"])) or {}).get("currency", "Pesos")
         if "MEP" in mon: return v * mep if mep else None
         if "CCL" in mon: return v * ccl if ccl else None
         return v

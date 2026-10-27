@@ -10,7 +10,8 @@ on:
       - "mercado_total.py"
       - ".github/workflows/mercado_total.yml"
   schedule:
-    - cron: "0 22 * * 1-5"     # 19:00 de Buenos Aires: mide el día que acaba de cerrar (control de cobertura de la escucha)
+    - cron: "0 22 * * 1-5"     # 19:00 de Buenos Aires, modo rápido (~5 min): BYMADATA para todo lo que operó + PPI para lo nuestro, letras y cauciones
+    - cron: "17 13 * * 6"      # sábado 10:17, modo completo: barrido PPI de todo el padrón, ordenado por liquidez (control cruzado y padrón)
   workflow_dispatch:
     inputs:
       fecha:
@@ -19,6 +20,9 @@ on:
       vuelta:
         description: "Número de vuelta (lo usa el propio workflow)"
         default: "1"
+      modo:
+        description: "rapido o completo"
+        default: "rapido"
 
 permissions:
   contents: write
@@ -37,6 +41,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
       PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+      MODO: ${{ github.event.inputs.modo || (github.event.schedule == '17 13 * * 6' && 'completo') || 'rapido' }}
     steps:
       - name: Fuera del horario de rueda
         run: |
@@ -46,7 +51,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install ppi-client
+      - run: pip install ppi-client requests
       - name: Medir
         id: medir
         run: |
@@ -65,7 +70,7 @@ jobs:
         run: |
           V=${{ github.event.inputs.vuelta || '1' }}
           if [ "$V" -lt 8 ]; then
-            gh workflow run mercado_total.yml --ref main -f fecha=${{ steps.medir.outputs.fecha }} -f vuelta=$((V+1))
+            gh workflow run mercado_total.yml --ref main -f fecha=${{ steps.medir.outputs.fecha }} -f vuelta=$((V+1)) -f modo=$MODO
             echo "Lanzada la vuelta $((V+1))"
           else
             echo "Se llegó a 8 vueltas; queda para la próxima"
