@@ -287,8 +287,15 @@ def resumen(fecha, inst, r_dat, quedan):
          f"Monto = \"volume\" de PPI (monto en la moneda del instrumento), pasado a pesos con MEP {ar(mep or 0, 2)} y CCL {ar(ccl or 0, 2)} (AL30).", ""]
     # capa 1
     tot = defaultdict(lambda: [0, 0, 0.0, 0.0])
+    bil = defaultdict(lambda: [0, 0.0])
+    def bilateral(f):      # especies X (pesos), Y (MEP), Z (cable) de renta fija: operaciones pactadas entre partes y registradas en BYMA (SISTACO/SENEBI)
+        return f.get("fuente") == "BYMA" and f["tipo"] in ("BONOS", "ON", "LETRAS") and f["ticker"][-1:] in ("X", "Y", "Z")
     for f in filas:
         if f["tipo"] not in CON_LIBRO: continue
+        if bilateral(f):
+            m = en_pesos(f)
+            if m: b = bil[f["tipo"]]; b[0] += 1; b[1] += m
+            continue
         m = en_pesos(f)
         if not m: continue
         t = tot[f["tipo"]]; t[0] += 1; t[2] += m
@@ -299,6 +306,10 @@ def resumen(fecha, inst, r_dat, quedan):
         L.append(f"| {tp} | {n} | {nn} | {ar(v)} | {ar(vn)} | {vn / v:.1%} |" if v else f"| {tp} | {n} | {nn} | 0 | 0 | — |")
     V = sum(t[2] for t in tot.values()); VN = sum(t[3] for t in tot.values())
     if V: L += ["", f"**Total con libro: ${ar(V)}; las 37: ${ar(VN)} ({VN / V:.1%}).**"]
+    if bil:
+        B = sum(b[1] for b in bil.values())
+        L += ["", "Aparte, fuera de la pantalla: operaciones bilaterales registradas en BYMA (especies X, Y, Z de bonos y ONs; dato de BYMADATA, PPI no las lista): "
+              + "; ".join(f"{tp} {b[0]} especies por ${ar(b[1])}" for tp, b in bil.items()) + f". Total ${ar(B)} ({B / (V + B):.1%} de todo lo registrado)." ]
     # capa 2: opciones por subyacente
     sub = defaultdict(lambda: [0, 0.0, 0.0, 0.0])        # subyacente -> [series operadas, primas call, primas put, total]
     for f in filas:
