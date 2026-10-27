@@ -14,7 +14,7 @@ No opera ni toca la cuenta: solo consulta.
 Uso: python mercado_total.py [AAAA-MM-DD]   (sin fecha = el último día hábil)
 Al terminar imprime QUEDAN=n (instrumentos sin consultar) para que el workflow sepa si debe seguir.
 """
-import csv, json, os, re, string, sys, threading, time
+import csv, shutil, json, os, re, string, sys, threading, time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
@@ -75,11 +75,19 @@ def listar(ppi, ruta):
     inst = {}
     for tipo in tipos:
         if tipo in SALTEAR: continue
-        ritmo(); lista = ppi.marketdata.search_instrument("", "", "BYMA", tipo) or []
+        # Desde el 26/10/2026 PPI exige ticker y nombre no vacíos: si la lista completa falla, se arma por prefijos (letra/dígito en ticker y nombre)
+        ritmo()
+        try: lista = ppi.marketdata.search_instrument("", "", "BYMA", tipo) or []
+        except Exception: lista = []
         if len(lista) < 20:
             for c in string.ascii_uppercase + string.digits:
-                ritmo(); r = ppi.marketdata.search_instrument(c, "", "BYMA", tipo)
-                if isinstance(r, list): lista += r
+                for tk_, nm_ in ((c, ""), (c, c)):
+                    ritmo()
+                    try: r = ppi.marketdata.search_instrument(tk_, nm_, "BYMA", tipo)
+                    except Exception: r = None
+                    if isinstance(r, list):
+                        lista += r
+                        break
         for r in lista:
             if isinstance(r, dict) and r.get("ticker"):
                 inst.setdefault((str(r["ticker"]).strip().upper(), str(r.get("type") or tipo)), r)
@@ -114,7 +122,17 @@ def main():
     Path("mercado_total").mkdir(exist_ok=True)
     r_inst, r_dat, r_hecho = (Path(f"mercado_total/{fecha}{x}") for x in ("_instrumentos.csv", ".csv", "_consultados.txt"))
     ppis = [ingresar() for _ in range(HILOS)]
-    if not r_inst.exists(): listar(ppis[0], r_inst)
+    if not r_inst.exists():
+        try:
+            listar(ppis[0], r_inst)
+            n = sum(1 for _ in open(r_inst, encoding="utf-8")) - 1
+        except Exception as e:
+            print(f"::warning::listado de instrumentos falló: {str(e)[:150]}", flush=True); n = 0
+        if n < 500:      # listado vacío o recortado: se usa el último listado completo (el catálogo cambia poco de un día a otro)
+            prev = sorted(p for p in Path("mercado_total").glob("*_instrumentos.csv") if p != r_inst)
+            if prev:
+                print(f"::warning::listado de hoy con {n} instrumentos; se usa {prev[-1].name}", flush=True)
+                shutil.copy(prev[-1], r_inst)
     inst = {}
     with open(r_inst, encoding="utf-8") as fh:
         for f in csv.DictReader(fh):
