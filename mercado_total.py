@@ -198,7 +198,7 @@ def main():
     vivos = vivos_hoy | liquidos(fecha)
     propias = NUESTRAS | anillo2()
     pend = [k for k in inst if f"{k[0]}|{k[1]}" not in hecho]
-    if MODO == "rapido" and byma:
+    if MODO == "rapido":
         # rápido: PPI solo para lo nuestro (núcleo y anillo 2), letras y cauciones (BYMADATA no las da); el resto lo da BYMADATA
         pend = [k for k in pend if k in propias or k[1] in ("LETRAS", "CAUCIONES")]
     # la fila por liquidez: lo nuestro, lo que operó hoy o en las últimas fotos, y al final lo que no opera
@@ -219,6 +219,7 @@ def main():
     fh_h = open(r_hecho, "a", encoding="utf-8")
     if nuevo is False and not r_hecho.stat().st_size and hecho: fh_h.write("\n".join(sorted(hecho)) + "\n")
     lock_w = threading.Lock()
+    con_datos, intentos, pendientes_marca = [0], [0], []
 
     def uno(args):
         i, (tk, tp) = args
@@ -232,10 +233,16 @@ def main():
             if dia: filas.append([tk, tp, plazo, (tk, tp) in NUESTRAS] + [dia.get(c, "") for c in campos] + ["PPI", ""])
         with lock_w:
             for f in filas: w.writerow(f)
-            fh_h.write(f"{tk}|{tp}\n"); fh_d.flush(); fh_h.flush()
+            con_datos[0] += len(filas); intentos[0] += 1
+            pendientes_marca.append(f"{tk}|{tp}")
+            if con_datos[0]:          # recién se marcan como consultados cuando PPI ya devuelve datos de ese día
+                fh_h.write("\n".join(pendientes_marca) + "\n"); pendientes_marca.clear()
+            fh_d.flush(); fh_h.flush()
 
     with ThreadPoolExecutor(HILOS) as ex:
         list(ex.map(uno, enumerate(pend)))
+    if intentos[0] >= 20 and not con_datos[0]:
+        print(f"::warning::PPI no devolvió datos de {fecha} en {intentos[0]} consultas (el histórico del día todavía no está); queda para la corrida de la mañana", flush=True)
     # lo que dio BYMADATA y PPI no consultó se agrega con fuente BYMA; si PPI sí lo consultó, BYMA queda solo como control
     if byma:
         ya = {(r["ticker"], r["tipo"], r["plazo"]) for r in csv.DictReader(open(r_dat, encoding="utf-8"))}
@@ -253,7 +260,7 @@ def main():
         print(f"BYMADATA: {n_b} filas agregadas a la foto", flush=True)
     fh_d.close(); fh_h.close()
     hecho = set(r_hecho.read_text(encoding="utf-8").splitlines())
-    quedan = sum(1 for k in inst if f"{k[0]}|{k[1]}" not in hecho and (MODO != "rapido" or not byma or k in propias or k[1] in ("LETRAS", "CAUCIONES")))
+    quedan = sum(1 for k in inst if f"{k[0]}|{k[1]}" not in hecho and (MODO != "rapido" or k in propias or k[1] in ("LETRAS", "CAUCIONES")))
     resumen(fecha, inst, r_dat, quedan)
     print(f"QUEDAN={quedan}  consultas={consultas[0]}  minutos={(time.time() - inicio) / 60:.1f}", flush=True)
     if os.environ.get("GITHUB_OUTPUT"):
@@ -266,6 +273,16 @@ def ar(x, d=0):
 
 def resumen(fecha, inst, r_dat, quedan):
     filas = list(csv.DictReader(open(r_dat, encoding="utf-8")))
+    ppi_k = {(f["ticker"], f["tipo"], f["plazo"]): f for f in filas if f.get("fuente") != "BYMA"}
+    difs = []
+    for f in filas:
+        k = (f["ticker"], f["tipo"], f["plazo"])
+        if f.get("fuente") == "BYMA" and k in ppi_k:
+            try:
+                a, b = float(ppi_k[k]["volume"] or 0), float(f["volume"] or 0)
+                if a: difs.append((abs(b - a) / a * 100, k[0], k[2]))
+            except ValueError: pass
+    filas = [f for f in filas if not (f.get("fuente") == "BYMA" and (f["ticker"], f["tipo"], f["plazo"]) in ppi_k)]
     # Si PPI devuelve el mismo registro para los dos plazos (mismo monto y precio), es uno solo: no se cuenta dos veces
     clave = {}
     for f in filas:
@@ -282,7 +299,9 @@ def resumen(fecha, inst, r_dat, quedan):
         if "MEP" in mon: return v * mep if mep else None
         if "CCL" in mon: return v * ccl if ccl else None
         return v
-    L = [f"# Mercado total — {fecha}", "",
+    control = (f"Control cruzado PPI contra BYMADATA en {len(difs)} especies-plazo: diferencia de monto máxima {max(difs)[0]:.2f}% ({max(difs)[1]} {max(difs)[2]})."
+               if difs else "Control cruzado PPI contra BYMADATA: sin especies en común todavía (PPI completa a la mañana siguiente).")
+    L = [f"# Mercado total — {fecha}", "", control, "",
          f"Instrumentos listados en PPI (sin FCI ni licitaciones): {len(inst)}. Sin consultar todavía: {quedan}.",
          f"Monto = \"volume\" de PPI (monto en la moneda del instrumento), pasado a pesos con MEP {ar(mep or 0, 2)} y CCL {ar(ccl or 0, 2)} (AL30).", ""]
     # capa 1

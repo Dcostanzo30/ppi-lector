@@ -11,6 +11,7 @@ on:
       - ".github/workflows/mercado_total.yml"
   schedule:
     - cron: "0 22 * * 1-5"     # 19:00 de Buenos Aires, modo rápido (~5 min): BYMADATA para todo lo que operó + PPI para lo nuestro, letras y cauciones
+    - cron: "7 10 * * 2-6"     # 07:07 del día siguiente, modo rápido: PPI ya tiene el histórico del día anterior (letras, cauciones, lo nuestro y control cruzado)
     - cron: "17 13 * * 6"      # sábado 10:17, modo completo: barrido PPI de todo el padrón, ordenado por liquidez (control cruzado y padrón)
   workflow_dispatch:
     inputs:
