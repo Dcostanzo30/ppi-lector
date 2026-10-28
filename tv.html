@@ -110,6 +110,9 @@ canvas{display:block;width:100%}
   <div class="estado"><span class="lbl">Semáforo</span><span id="sem" class="pill"><i></i><span>—</span></span></div>
   <div class="estado"><span class="lbl">Panel en verde</span><span id="panelVerde" class="big tab">—</span></div>
   <div class="estado"><span class="lbl">Presión 10' panel</span><span id="panelPres" class="big tab">—</span></div>
+  <div class="estado"><span class="lbl">MEP AL30 · GD30</span><span id="dMep" class="big tab">—</span></div>
+  <div class="estado"><span class="lbl">CCL AL30 · canje</span><span id="dCcl" class="big tab">—</span></div>
+  <div class="estado"><span class="lbl">GGAL vs ADR</span><span id="dAdr" class="big tab">—</span></div>
   <div class="estado"><span class="lbl">Hora</span><span id="hora" class="big tab">—</span></div>
   <div class="acc">
     <span id="modo" class="modo">—</span>
@@ -151,6 +154,11 @@ canvas{display:block;width:100%}
 (() => {
 'use strict';
 const PANEL = ["ALUA","BBAR","BMA","BYMA","CEPU","COME","CRES","ECOG","EDN","GGAL","IRSA","LOMA","METR","PAMP","SUPV","TECO2","TGNO4","TGSU2","TRAN","TXAR","VALO","YPFD"];
+const BONOS_D = ['AE38D', 'AL41D', 'GD38D'];
+const EXTRA = ["AE38D", "AL41D", "GD38D", "VIST"];      // bonos en D y CEDEAR de seguimiento (llegan por el relevo)
+// Órdenes límite de papel vigentes (papel/operaciones.csv): aviso cuando el precio se acerca o toca
+const OBJETIVOS = [{ tk: 'VIST', entrada: 38600, corte: 36000, objetivo: 47000, hasta: '2026-11-06' }];
+const dc = p => p < 100 ? 2 : p < 1000 ? 1 : 0;           // decimales según el nivel de precio (bonos en D con 2)
 const VENTANA = 400;                    // operaciones visibles en el gráfico de cada especie
 const $ = id => document.getElementById(id);
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -226,6 +234,65 @@ function extremo(tk) {
            min: (ahora - t) / 60 };
 }
 
+// ---------- franja del dólar (relevo: $MEP, $CCL, $MEPGD, $CCLGD cada 30 s con medios del libro; $ADR en US$) ----------
+function ultimo(tk) { const e = S[tk]; return e && e.ops.length ? e.ops[e.ops.length - 1] : null; }
+function pintarDolar() {
+  const m = ultimo('$MEP'), mg = ultimo('$MEPGD'), c = ultimo('$CCL'), a = ultimo('$ADR'), g = ultimo('GGAL');
+  const viejo = o => o && ahora - o.t > 180 ? ' <small>(viejo)</small>' : '';
+  $('dMep').innerHTML = m || mg ? `${ar(m?.p, 0)} · ${ar(mg?.p, 0)}${viejo(m || mg)}` : '—';
+  $('dCcl').innerHTML = c ? `${ar(c.p, 0)} · ${m ? sg((c.p / m.p - 1) * 100, 1) : '—'}${viejo(c)}` : '—';
+  // GGAL local en dólares CCL (1 ADR = 10 acciones) contra el ADR: positivo = la local está más cara
+  $('dAdr').innerHTML = a && c && g ? `${sg((g.p * 10 / c.p / a.p - 1) * 100, 1)}${viejo(a)}` : '—';
+}
+
+// ---------- soportes y resistencias del día (se rehacen cada día con la cinta de hoy) ----------
+// Giros: el precio se aleja del último extremo al menos media volatilidad propia (zigzag por operación, no por minuto).
+// Los giros a menos de media volatilidad entre sí se agrupan en un nivel; vale si tiene 2 o más toques.
+function niveles(e) {
+  const m = Math.floor(ahora / 60); if (e._nivM === m) return e._niv;
+  const L = e.ops; if (!L.length) return [];
+  const vol = Math.max(0.1, volPropia(e) ?? 0.6), giro = vol / 100, umb = vol / 2 / 100;   // giro: 1 volatilidad propia; agrupar: media
+  const giros = []; let dir = 0, hi = L[0], lo = L[0];
+  for (const o of L) {
+    if (dir === 0) {
+      if (o.p > hi.p) hi = o; if (o.p < lo.p) lo = o;
+      if (o.p >= lo.p * (1 + giro)) { giros.push({ p: lo.p, t: lo.t }); dir = 1; hi = o; }
+      else if (o.p <= hi.p * (1 - giro)) { giros.push({ p: hi.p, t: hi.t }); dir = -1; lo = o; }
+    } else if (dir > 0) {
+      if (o.p > hi.p) hi = o; else if (o.p <= hi.p * (1 - giro)) { giros.push({ p: hi.p, t: hi.t }); dir = -1; lo = o; }
+    } else {
+      if (o.p < lo.p) lo = o; else if (o.p >= lo.p * (1 + giro)) { giros.push({ p: lo.p, t: lo.t }); dir = 1; hi = o; }
+    }
+  }
+  const grupos = [];
+  for (const gq of giros.slice().sort((a, b) => a.p - b.p)) {
+    const u = grupos[grupos.length - 1];
+    if (u && gq.p <= u.ref * (1 + umb)) { u.toques.push(gq); u.p = u.toques.reduce((x, y) => x + y.p, 0) / u.toques.length; }
+    else grupos.push({ ref: gq.p, p: gq.p, toques: [gq] });
+  }
+  const u = L.length ? L[L.length - 1].p : 0;
+  const vale = grupos.filter(x => x.toques.length >= 2).map(x => ({ p: x.p, n: x.toques.length, toques: x.toques, tipo: x.p >= u ? 'R' : 'S' }));
+  const separar = arr => { const r = []; for (const x of arr) if (r.length < 2 && (!r.length || Math.abs(x.p / r[r.length - 1].p - 1) >= giro)) r.push(x); return r; };
+  const R = separar(vale.filter(x => x.tipo === 'R').sort((a, b) => a.p - b.p));
+  const Sx = separar(vale.filter(x => x.tipo === 'S').sort((a, b) => b.p - a.p));
+  e._nivM = m; e._niv = [...R, ...Sx];
+  return e._niv;
+}
+function cierreAnterior(e) { const u = e.ops[e.ops.length - 1]; return e.varp != null && e.varp > -99 ? u.p / (1 + e.varp / 100) : null; }
+
+// ---------- órdenes de papel: aviso cuando el precio se acerca (1%) o toca ----------
+function avisosObjetivo() {
+  const hoy = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10), res = [];
+  for (const ob of OBJETIVOS) {
+    if (hoy > ob.hasta || (descartadas['obj:' + ob.tk] || 0) > ahora) continue;
+    const e = S[ob.tk]; if (!e || !e.ops.length) continue;
+    const u = e.ops[e.ops.length - 1].p, dist = (u / ob.entrada - 1) * 100;
+    if (e.lo <= ob.entrada) res.push({ tk: ob.tk, obj: true, fuerte: true, md: medidas(ob.tk), mot: [`TOCÓ la entrada de papel ${ar(ob.entrada)} (mínimo ${ar(e.lo)}). Corte ${ar(ob.corte)}, objetivo ${ar(ob.objetivo)}`] });
+    else if (dist <= 1) res.push({ tk: ob.tk, obj: true, fuerte: false, md: medidas(ob.tk), mot: [`a ${sg(dist, 2)} de la entrada de papel ${ar(ob.entrada)}`] });
+  }
+  return res;
+}
+
 // ---------- señales de la batería ----------
 // Solo las hipótesis en escalón 1 (señal de atención) del parte del 22/10, con 3 días de cinta: son avisos para mirar, no órdenes.
 // Mismas reglas que bateria.py (v1): martillazo ≥ 3,5 volatilidades en ≤ 150 s; contraparte ±30% en 2'; desequilibrio 5 niveles ≥ 0,7;
@@ -264,7 +331,7 @@ function senalesBat(tk) {
   const e = S[tk]; if (!e || e.ops.length < 20) return [];
   const out = [], v = volPropia(e), { L, v: val } = serie(e), act = enT(L, ahora);
   if (!v || !act) return out;
-  const fmt = x => ar(x, x < 1000 ? 1 : 0), m = val(act);
+  const fmt = x => ar(x, dc(x)), m = val(act);
   // martillazo + respuesta de la contraparte (C1 / C4)
   const ref = [];
   for (let t = ahora - 270; t <= ahora - 150; t += 5) { const x = enT(L, t); if (x) ref.push(val(x)); }
@@ -345,11 +412,31 @@ function dibujar(cv, tk) {
   const Y = p => 6 + (1 - (p - mn) / (mx - mn)) * (hp - 12);
   // grilla y escala de precio
   g.strokeStyle = css('--line'); g.fillStyle = css('--muted'); g.lineWidth = 1;
-  for (let k = 0; k <= 3; k++) { const p = mn + (mx - mn) * k / 3, y = Y(p); g.beginPath(); g.moveTo(izq, y); g.lineTo(izq + xw, y); g.stroke(); g.fillText(ar(p, p < 1000 ? 1 : 0), izq + xw + 6, y); }
+  for (let k = 0; k <= 3; k++) { const p = mn + (mx - mn) * k / 3, y = Y(p); g.beginPath(); g.moveTo(izq, y); g.lineTo(izq + xw, y); g.stroke(); g.fillText(ar(p, dc(p)), izq + xw + 6, y); }
   // máximo y mínimo del día si entran
   g.setLineDash([4, 4]);
   for (const [p, c] of [[e.hi, '--ok'], [e.lo, '--bad']]) { if (p >= mn && p <= mx) { g.strokeStyle = css(c); g.beginPath(); g.moveTo(izq, Y(p)); g.lineTo(izq + xw, Y(p)); g.stroke(); } }
   g.setLineDash([]);
+  // cierre anterior (tenue) y entrada de papel
+  const ca = cierreAnterior(e);
+  if (ca && ca >= mn && ca <= mx) { g.globalAlpha = 0.45; g.setLineDash([2, 5]); g.strokeStyle = css('--muted'); g.beginPath(); g.moveTo(izq, Y(ca)); g.lineTo(izq + xw, Y(ca)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+  for (const ob of OBJETIVOS) if (ob.tk === tk && ob.entrada >= mn && ob.entrada <= mx) {
+    g.strokeStyle = css('--accent'); g.lineWidth = 1.2; g.setLineDash([8, 3]); g.beginPath(); g.moveTo(izq, Y(ob.entrada)); g.lineTo(izq + xw, Y(ob.entrada)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = css('--accent'); g.fillText('papel ' + ar(ob.entrada), izq + 4, Y(ob.entrada) - 8);
+  }
+  // soportes y resistencias del día: línea, rótulo "R 5.960 x3" y marca en cada toque visible
+  g.lineWidth = 1; const rotulos = [];
+  for (const nv of niveles(e)) {
+    if (nv.p < mn || nv.p > mx) continue;
+    const y = Y(nv.p), c = css(nv.tipo === 'R' ? '--bad' : '--ok');
+    g.strokeStyle = c; g.globalAlpha = 0.8; g.beginPath(); g.moveTo(izq, y); g.lineTo(izq + xw, y); g.stroke(); g.globalAlpha = 1;
+    const txt = `${nv.tipo} ${ar(nv.p, dc(nv.p))} x${nv.n}`, tw = g.measureText(txt).width;
+    if (!rotulos.some(yy => Math.abs(yy - y) < 15)) { rotulos.push(y);
+      g.fillStyle = css('--panel') || '#000'; g.fillRect(izq + xw - tw - 6, y - 8, tw + 4, 15);
+      g.fillStyle = c; g.fillText(txt, izq + xw - tw - 4, y); }
+    for (const tq of nv.toques) { const k = L.findIndex(o => o.t >= tq.t); if (k >= 0 && L[0].t <= tq.t) { g.beginPath(); g.arc(X(k), Y(tq.p), 3, 0, 7); g.stroke(); } }
+  }
+  g.lineWidth = 1;
   // precio
   g.strokeStyle = css('--fg'); g.lineWidth = 1.6; g.beginPath();
   L.forEach((o, k) => k ? g.lineTo(X(k), Y(o.p)) : g.moveTo(X(k), Y(o.p))); g.stroke();
@@ -359,7 +446,7 @@ function dibujar(cv, tk) {
   const y0 = hp + 8 + hb, bw = Math.max(1, xw / L.length * 0.7);
   L.forEach((o, k) => { const bh = Math.min(1, o.m / tope) * hb; g.fillStyle = col[o.l] || col.M; g.fillRect(X(k) - bw / 2, y0 - bh, bw, Math.max(1, bh)); });
   g.fillStyle = css('--muted'); g.fillText('monto', izq + xw + 6, hp + 8 + 8);
-  g.fillText(ar(tope / 1e6, 1) + ' M$', izq + xw + 6, hp + 8 + 24);
+  g.fillText(BONOS_D.includes(tk) ? ar(tope / 1e3, 1) + ' mil US$' : ar(tope / 1e6, 1) + ' M$', izq + xw + 6, hp + 8 + 24);
   // horas en el eje
   g.textBaseline = 'alphabetic';
   g.fillText(hhmm(L[0].t), izq, h - 2);
@@ -410,7 +497,7 @@ function tip(ev, cv) {
   const r = cv.getBoundingClientRect(), x = ev.clientX - r.left;
   const k = Math.round((x - D.izq) / D.xw * (D.L.length - 1)); const o = D.L[k]; if (!o) return;
   const t = $('tip'); t.hidden = false;
-  t.textContent = `${hhmmss(o.t)}  $${ar(o.p, o.p < 1000 ? 1 : 0)}  ${ar(o.n)} nom  ${ar(o.m / 1e6, 2)} M$  ${o.l === 'C' ? 'compra' : o.l === 'V' ? 'venta' : 'cruce'}`;
+  t.textContent = `${hhmmss(o.t)}  $${ar(o.p, dc(o.p))}  ${ar(o.n)} nom  ${ar(o.m / 1e6, 2)} M$  ${o.l === 'C' ? 'compra' : o.l === 'V' ? 'venta' : 'cruce'}`;
   const tw = t.offsetWidth; t.style.left = Math.min(window.innerWidth - tw - 8, ev.clientX + 12) + 'px'; t.style.top = (ev.clientY + 14) + 'px';
 }
 function llenar(d, tk, pn) {
@@ -418,9 +505,9 @@ function llenar(d, tk, pn) {
   if (!md) { d.querySelector('.px').textContent = 'sin operaciones'; return; }
   const lz = luz(tk, md, pn);
   d.className = 'card luz-' + lz.c;
-  d.querySelector('.px').textContent = '$' + ar(md.u.p, md.u.p < 1000 ? 1 : 0);
+  d.querySelector('.px').textContent = (BONOS_D.includes(tk) ? 'US$ ' : '$') + ar(md.u.p, dc(md.u.p));
   const vv = d.querySelector('.var'); vv.textContent = sg(e.varp, 2); vv.className = 'var tab ' + claseVar(e.varp);
-  d.querySelector('.rango').textContent = `mín ${ar(e.lo, e.lo < 1000 ? 1 : 0)} · máx ${ar(e.hi, e.hi < 1000 ? 1 : 0)}`;
+  d.querySelector('.rango').textContent = `mín ${ar(e.lo, dc(e.lo))} · máx ${ar(e.hi, dc(e.hi))}`;
   const pl = d.querySelector('.pill'); pl.className = 'pill bg-' + lz.c + ' ' + lz.c;
   pl.querySelector('i').className = 'dot-' + lz.c; pl.querySelector('span').textContent = lz.n ? lz.senales.join(' · ') : 'sin señales de salida';
   const pc = (el, v) => { el.textContent = sg(v, 0); el.className = 'v tab ' + el.classList[2] + ' ' + claseVar(v); };
@@ -428,16 +515,16 @@ function llenar(d, tk, pn) {
   d.querySelector('.acel').innerHTML = `${md.ops2} <small>${md.acel == null ? '' : '×' + ar(md.acel, 1)}</small>`;
   d.querySelector('.rit').innerHTML = `${ar(md.ritmo, 1)}x <small>del día</small>`;
   d.querySelector('.cad').innerHTML = md.cadencia == null ? '—' : `${ar(md.cadencia, md.cadencia < 10 ? 1 : 0)} <small>s entre ops</small>`;
-  d.querySelector('.dia').innerHTML = `${ar(e.ops.length)} <small>· ${ar(md.monto / 1e6, 0)} M$</small>`;
+  d.querySelector('.dia').innerHTML = BONOS_D.includes(tk) ? `${ar(e.ops.length)} <small>· ${ar(md.monto / 1e3, 0)} mil US$</small>` : `${ar(e.ops.length)} <small>· ${ar(md.monto / 1e6, 0)} M$</small>`;
   const x = extremo(tk);
-  d.querySelector('.extremo').innerHTML = `<span class="lbl">Último extremo</span><br><b class="${x.esMin ? 'dn' : 'up'}">${x.esMin ? 'Mínimo' : 'Máximo'} ${ar(x.p, x.p < 1000 ? 1 : 0)}</b> a las ${hhmmss(x.t)} (hace ${ar(x.min, 0)}'). Después: <b>${x.ops}</b> ops, presión <b class="${claseVar(x.pres)}">${sg(x.pres, 0)}</b>, precio <b class="${claseVar(x.mov)}">${sg(x.mov, 2)}</b>.`;
+  d.querySelector('.extremo').innerHTML = `<span class="lbl">Último extremo</span><br><b class="${x.esMin ? 'dn' : 'up'}">${x.esMin ? 'Mínimo' : 'Máximo'} ${ar(x.p, dc(x.p))}</b> a las ${hhmmss(x.t)} (hace ${ar(x.min, 0)}'). Después: <b>${x.ops}</b> ops, presión <b class="${claseVar(x.pres)}">${sg(x.pres, 0)}</b>, precio <b class="${claseVar(x.mov)}">${sg(x.mov, 2)}</b>.`;
   const lb = d.querySelector('.libro');
   if (e.libro && (e.libro.bids?.length || e.libro.offers?.length)) {
     lb.hidden = false;
     let hh = '<span class="t" style="text-align:right">Compran</span><span class="t">Venden</span>';
     for (let k = 0; k < 5; k++) {
       const b = e.libro.bids?.[k], o = e.libro.offers?.[k];
-      hh += `<span class="c">${b ? ar(b[1]) + ' × ' + ar(b[0], b[0] < 1000 ? 1 : 0) : ''}</span><span class="vv">${o ? ar(o[0], o[0] < 1000 ? 1 : 0) + ' × ' + ar(o[1]) : ''}</span>`;
+      hh += `<span class="c">${b ? ar(b[1]) + ' × ' + ar(b[0], dc(b[0])) : ''}</span><span class="vv">${o ? ar(o[0], dc(o[0])) + ' × ' + ar(o[1]) : ''}</span>`;
     }
     lb.innerHTML = hh;
   } else lb.hidden = true;
@@ -450,13 +537,13 @@ function llenar(d, tk, pn) {
 
 // ---------- alertas (especies fuera de la selección) ----------
 function alertasDe(pn) {
-  const res = [];
+  const res = avisosObjetivo();
   for (const tk of PANEL) {
     if (elegidas.includes(tk) || (descartadas[tk] || 0) > ahora) continue;
     const e = S[tk]; if (!e || e.ops.length < 20) continue;
     const md = medidas(tk), mot = [];
-    if (ahora - e.tLo < 180 && e.iLo > 10 && md.ops2 >= 5) mot.push(`rompió el mínimo del día (${ar(e.lo, e.lo < 1000 ? 1 : 0)})`);
-    if (ahora - e.tHi < 180 && e.iHi > 10 && md.ops2 >= 5) mot.push(`rompió el máximo del día (${ar(e.hi, e.hi < 1000 ? 1 : 0)})`);
+    if (ahora - e.tLo < 180 && e.iLo > 10 && md.ops2 >= 5) mot.push(`rompió el mínimo del día (${ar(e.lo, dc(e.lo))})`);
+    if (ahora - e.tHi < 180 && e.iHi > 10 && md.ops2 >= 5) mot.push(`rompió el máximo del día (${ar(e.hi, dc(e.hi))})`);
     if (md.acel != null && md.acel >= 3 && md.ops2 >= 10) mot.push(`aceleró ×${ar(md.acel, 1)} (${md.ops2} ops en 2')`);
     if (md.p5 != null && Math.abs(md.p5) >= 70 && desde(e, 300).length >= 15) mot.push(`presión 5' ${sg(md.p5, 0)}`);
     for (const x of senalesBat(tk)) if (x.alerta) mot.push(x.plano);
@@ -473,11 +560,12 @@ function pintarAlertas(pn) {
     d.innerHTML = `<div class="fila"><span class="tk"></span><span class="px tab"></span><span class="var tab"></span></div><div class="motivo"></div>
       <canvas class="mini" height="50" aria-hidden="true"></canvas><div class="bot"><button type="button" class="sumar">Sumar a la mesa</button><button type="button" class="cerrar">Cerrar 15'</button></div>`;
     d.querySelector('.tk').textContent = a.tk;
-    d.querySelector('.px').textContent = '$' + ar(a.md.u.p, a.md.u.p < 1000 ? 1 : 0);
+    d.querySelector('.px').textContent = '$' + ar(a.md.u.p, dc(a.md.u.p));
     const vv = d.querySelector('.var'); vv.textContent = sg(e.varp, 2); vv.className = 'var tab ' + claseVar(e.varp); vv.style.fontSize = '20px';
     d.querySelector('.motivo').textContent = a.mot.join(' · ');
     d.querySelector('.sumar').onclick = () => { elegidas.push(a.tk); guardar('mesa.elegidas', elegidas); armar(); };
-    d.querySelector('.cerrar').onclick = () => { descartadas[a.tk] = ahora + 900; pintar(); };
+    d.querySelector('.cerrar').onclick = () => { descartadas[(a.obj ? 'obj:' : '') + a.tk] = ahora + 900; pintar(); };
+    if (elegidas.includes(a.tk)) d.querySelector('.sumar').hidden = true;
     requestAnimationFrame(() => { const cv = d.querySelector('.mini'); const { g, w, h } = lienzo(cv, 50); const L = e.ops.slice(-120);
       const mn = Math.min(...L.map(o => o.p)), mx = Math.max(...L.map(o => o.p)) || mn + 1;
       g.strokeStyle = css('--fg'); g.lineWidth = 1.4; g.beginPath();
@@ -497,7 +585,7 @@ function pintarTodas(pn) {
   for (const f of filas) {
     const lz = luz(f.tk, f.md, pn), tr = document.createElement('tr');
     if (elegidas.includes(f.tk)) tr.className = 'sel';
-    tr.innerHTML = `<td></td><td>${ar(f.md.u.p, f.md.u.p < 1000 ? 1 : 0)}</td><td class="${claseVar(f.e.varp)}">${sg(f.e.varp, 2)}</td><td>${ar(f.e.ops.length)}</td><td>${ar(f.md.monto / 1e6, 0)}</td><td class="${claseVar(f.md.p10)}">${sg(f.md.p10, 0)}</td><td>${ar(f.md.ritmo, 1)}x</td><td><span class="pill bg-${lz.c} ${lz.c}"><i class="dot-${lz.c}"></i>${lz.n}</span></td>`;
+    tr.innerHTML = `<td></td><td>${ar(f.md.u.p, dc(f.md.u.p))}</td><td class="${claseVar(f.e.varp)}">${sg(f.e.varp, 2)}</td><td>${ar(f.e.ops.length)}</td><td>${ar(f.md.monto / 1e6, 0)}</td><td class="${claseVar(f.md.p10)}">${sg(f.md.p10, 0)}</td><td>${ar(f.md.ritmo, 1)}x</td><td><span class="pill bg-${lz.c} ${lz.c}"><i class="dot-${lz.c}"></i>${lz.n}</span></td>`;
     tr.firstChild.textContent = f.tk; tr.firstChild.title = 'Tocá para sumar o sacar de la mesa';
     tr.firstChild.onclick = () => alternar(f.tk);
     tb.appendChild(tr);
@@ -511,7 +599,7 @@ function alternar(tk) {
   guardar('mesa.elegidas', elegidas); armar();
 }
 function chips() {
-  $('chips').replaceChildren(...PANEL.map(tk => { const b = document.createElement('button'); b.type = 'button'; b.textContent = tk;
+  $('chips').replaceChildren(...[...PANEL, ...EXTRA].map(tk => { const b = document.createElement('button'); b.type = 'button'; b.textContent = tk;
     b.className = elegidas.includes(tk) ? 'on' : ''; b.setAttribute('aria-pressed', elegidas.includes(tk)); b.onclick = () => alternar(tk); return b; }));
 }
 function armar() {
@@ -526,6 +614,7 @@ function pintar() {
     pendiente = false;
     const pn = panel();
     $('hora').textContent = ahora ? hhmmss(ahora) : '—';
+    pintarDolar();
     $('panelVerde').textContent = pn.conDato ? `${pn.verdes} de ${pn.conDato}` : '—';
     const pp = $('panelPres'); pp.textContent = sg(pn.pres, 0); pp.className = 'big tab ' + claseVar(pn.pres);
     // semáforo de la mesa: panel en rojo y presión vendedora del panel (las señales externas siguen en la pantalla de texto)

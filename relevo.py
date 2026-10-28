@@ -13,6 +13,13 @@ _puntas, _libro, _vistas = {}, {}, set()
 _n = {"enviadas": 0, "errores": 0}
 # Solo las acciones del panel líder van a la mesa (aunque el lector escuche más instrumentos)
 PANEL = {t.strip() for t in os.environ.get("TICKERS", "").split(",") if t.strip()}
+# Especies extra para la mesa (bonos en D y CEDEARs de seguimiento): van con todas sus operaciones, igual que el panel
+MESA_EXTRA = {t.strip() for t in os.environ.get("MESA_EXTRA", "AE38D,AL41D,GD38D,VIST").split(",") if t.strip()}
+# Franja del dólar: no se mandan las operaciones de AL30/GD30 (son decenas de miles), solo cada 30 s el valor implícito
+# calculado con los medios del libro. Claves (ticker, tipo) para no confundir GGAL local con el ADR (ACCIONES-USA).
+DOLAR = {("AL30", "BONOS"), ("AL30D", "BONOS"), ("AL30C", "BONOS"), ("GD30", "BONOS"), ("GD30D", "BONOS"), ("GD30C", "BONOS"),
+         ("GGAL", "ACCIONES-USA"), ("GGAL", "ACCIONES")}
+_medios = {}   # (ticker, tipo) -> (medio del libro, hora)
 
 
 def _cab(extra=None):
@@ -32,9 +39,18 @@ def recibir(crudo):
         if not isinstance(m, dict):
             return
         tk = str(m.get("Ticker", "?"))
-        if str(m.get("Type", "ACCIONES")).upper() != "ACCIONES":
-            return
-        if PANEL and tk not in PANEL:
+        tipo = str(m.get("Type", "ACCIONES")).upper()
+        if (tk, tipo) in DOLAR and m.get("Trade") not in (True, "true", "True"):
+            bc, bv = mejor(m.get("Bids")), mejor(m.get("Offers"))
+            if bc and bv and bc < bv:
+                _medios[(tk, tipo)] = ((bc + bv) / 2, time.time())
+        if tipo == "ACCIONES":
+            if PANEL and tk not in PANEL and tk not in MESA_EXTRA:
+                return
+        elif tipo in ("BONOS", "CEDEARS"):
+            if tk not in MESA_EXTRA:
+                return
+        else:
             return
         if m.get("Trade") not in (True, "true", "True"):
             bc, bv = mejor(m.get("Bids")), mejor(m.get("Offers"))
@@ -62,10 +78,35 @@ def recibir(crudo):
         pass
 
 
+def _dolar():
+    """Cada 30 s: MEP y CCL implícitos (AL30 y GD30, con medios del libro de hace menos de 2 minutos) y el ADR de GGAL en US$.
+    Se guardan como operaciones de tickers sintéticos ($MEP, $CCL, $MEPGD, $CCLGD, $ADR) con monto 0."""
+    ahora, ts = time.time(), datetime.now()
+    def md(k):
+        v = _medios.get(k)
+        return v[0] if v and ahora - v[1] < 120 else None
+    out = {}
+    for nom, a, b in (("$MEP", "AL30", "AL30D"), ("$CCL", "AL30", "AL30C"), ("$MEPGD", "GD30", "GD30D"), ("$CCLGD", "GD30", "GD30C")):
+        pa, pb = md((a, "BONOS")), md((b, "BONOS"))
+        if pa and pb: out[nom] = round(pa / pb, 2)
+    adr = md(("GGAL", "ACCIONES-USA"))
+    if adr: out["$ADR"] = round(adr, 3)
+    for tk, v in out.items():
+        _cola.put({"clave": f"{tk}|{ts:%Y-%m-%dT%H:%M:%S}", "fecha": ts.strftime("%Y-%m-%d"), "ts": ts.isoformat(timespec="milliseconds"),
+                   "tk": tk, "precio": v, "nom": 0.0, "monto": 0.0, "acum": None, "lado": "M", "var": None, "maxd": None, "mind": None})
+
+
 def _enviar():
     s = requests.Session()
+    ultimo_dolar = 0.0
     while True:
         time.sleep(1.5)
+        if time.time() - ultimo_dolar >= 30:
+            ultimo_dolar = time.time()
+            try:
+                _dolar()
+            except Exception:
+                pass
         lote = []
         while not _cola.empty() and len(lote) < 400:
             lote.append(_cola.get())
