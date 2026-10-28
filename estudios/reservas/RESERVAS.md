@@ -7,12 +7,12 @@
 | Reservas brutas (BCRA) | 50,0 | 50,0 | 41,1 |
 | − Encajes en dólares | 16,6 | 15,9 | 15,0 |
 | − Swaps y otros pasivos (incluye China) | 23,7 | 23,9 | 24,6 |
-| − Crédito neto del FMI desde 2025 | 14,1 | 15,0 | 14,0 |
-| **= Netas método FMI** | -3,6 | -4,1 | -11,8 |
-| Netas FMI a tipos del programa (oro a US$4.326) | -3,3 | -4,0 | -11,8 |
+| − Crédito neto del FMI desde 2025 | 14,2 | 15,0 | 14,0 |
+| **= Netas método FMI** | -3,7 | -4,1 | -11,8 |
+| Netas FMI a tipos del programa (oro a US$4.326) | -3,4 | -4,0 | -11,8 |
 | − BOPREAL | 5,0 | 5,0 | 13,1 |
 | − Depósitos del Gobierno | 5,8 | 7,7 | 4,8 |
-| **= Netas ácidas** | -14,4 | -16,8 | -29,7 |
+| **= Netas ácidas** | -14,5 | -16,8 | -29,7 |
 
 Fechas: hace 4 balances = 2026-09-15; fin de 2025 = 2025-12-31.
 
@@ -31,9 +31,9 @@ Ajuste de calibración: 0,76 (otros pasivos del FMI que el balance no muestra po
 
 | Fecha | Brutas | Netas FMI | Netas FMI (tipos programa) | Netas ácidas |
 |---|---|---|---|---|
-| 2026-10-15 | 50,0 | -3,6 | -3,3 | -14,4 |
-| 2026-10-07 | 49,1 | -4,1 | -3,7 | -15,6 |
-| 2026-09-30 | 46,1 | -4,4 | -4,1 | -15,8 |
+| 2026-10-15 | 50,0 | -3,7 | -3,4 | -14,5 |
+| 2026-10-07 | 49,1 | -4,2 | -3,8 | -15,7 |
+| 2026-09-30 | 46,1 | -4,5 | -4,2 | -15,9 |
 | 2026-09-23 | 48,9 | -4,2 | -4,2 | -16,7 |
 | 2026-09-15 | 50,0 | -4,1 | -4,0 | -16,8 |
 | 2026-09-07 | 50,7 | -3,7 | -3,8 | -16,6 |
