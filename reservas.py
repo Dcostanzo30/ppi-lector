@@ -20,8 +20,11 @@ CLAVES = {"brutas": ["ORO, DIVISAS"], "oro": ["- ORO (NETO"], "encajes": ["CUENT
           "dep_gobierno": ["DEPOSITOS DEL GOBIERNO"], "bopreal": ["EN MONEDA EXTRANJERA"], "pases": ["OBLIGACIONES POR OPERACIONES DE PASE"],
           "otros_pasivos": ["OTROS PASIVOS"], "tc": ["TIPO DE CAMBIO"]}
 # Crédito neto del FMI desde 2025 (miles de millones de US$, acumulado): desembolsos menos devoluciones de capital.
-# Supuestos a verificar: 12,0 (abril 2025), 2,0 (agosto 2025), 1,0 (mayo 2026), −0,9 (fines de sep. 2026, primera devolución del EFF 2022).
-FMI = [(date(2025, 4, 15), 12.0), (date(2025, 8, 4), 2.0), (date(2026, 5, 21), 1.0), (date(2026, 9, 25), -0.9)]
+# Verificado contra el staff report del 21/5/2026 (Tabla 13 y Tabla 12): desembolsos DEG 9.160 (abril 2025, ~US$12,0), DEG 1.529 (agosto 2025,
+# ~US$2,0), DEG 763 (segunda revisión, aprobada el 21/5/2026, ~US$1,0). El TMU resta las "compras netas desde el inicio del programa",
+# así que las devoluciones del EFF 2022 restan: en 2026 son DEG 833 (Tabla 12) = 1/12 de la compra de marzo 2022 (DEG ~583, ~US$0,8,
+# 25/9/2026) + 1/12 de la de junio 2022 (DEG ~250, ~US$0,34, fines de dic. 2026). La tercera revisión (DEG 636) no está aprobada.
+FMI = [(date(2025, 4, 15), 12.0), (date(2025, 8, 4), 2.0), (date(2026, 5, 21), 1.0), (date(2026, 9, 25), -0.8), (date(2026, 12, 28), -0.34)]
 OFICIAL = {date(2023, 12, 31): -11.2, date(2024, 12, 31): -2.4, date(2025, 12, 31): -11.7}   # FMI, a tipos corrientes
 CALIBRA = [date(2024, 12, 31), date(2025, 12, 31)]
 ORO_PROGRAMA = 4326.01
