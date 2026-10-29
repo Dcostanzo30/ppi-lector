@@ -5,7 +5,7 @@ Sin dinero real. Entrada con orden límite fijada de antemano (si abre por debaj
 | Id | Especie | Entrada | Último | Objetivo | Corte | Resultado neto | Estado |
 |---|---|---|---|---|---|---|---|
 | P1 | YPFD | 8.240,00 | 8.260,00 | 10.000,00 | 7.900,00 | -5,61% | cerrada por corte el 2026-10-26 (vence 2027-01-15) |
-| P2 | VIST | límite 38.600,00 | — | 47.000,00 | 36.000,00 | — | esperando entrada (vence 2027-01-15) |
+| P2 | VIST | 38.600,00 | 39.160,00 | 47.000,00 | 36.000,00 | -0,12% | abierta desde el 2026-10-29 (vence 2027-01-15) |
 
 ## Motivos
 

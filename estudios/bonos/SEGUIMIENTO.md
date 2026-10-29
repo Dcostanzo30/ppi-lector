@@ -1,22 +1,21 @@
 # Seguimiento de soberanos largos en dólares
 
-Última rueda: **2026-10-28**. Riesgo país: **763**. Brent: **US$ 115,32**.
+Última rueda: **2026-10-29**. Riesgo país: **—**. Brent: **US$ 111,55**.
 
 Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Paridad = precio / (residual + corrido).
 
 | Bono | Precio D | Var. día | TIR | Paridad | MEP implícito | Monto D (US$) |
 |---|---|---|---|---|---|---|
-| **AE38** | 70,31 | -1,87% | 13,84% | 69,3% | 1.573,03 | 1.395.881 |
-| **GD38** | 76,20 | -1,35% | 11,73% | 75,1% | 1.565,75 | 515.465 |
-| **AL41** | 62,37 | -1,55% | 13,18% | 61,7% | 1.575,12 | 910.969 |
-| AL35 | 67,53 | -1,44% | 13,14% | 66,7% | 1.571,15 | 1.556.110 |
-| AL30 | 54,05 | -0,73% | 11,21% | 84,3% | 1.571,14 | 71.733.138 |
-| GD30 | 55,42 | -1,14% | 9,68% | 86,4% | 1.575,24 | 612.412 |
+| **AE38** | 71,09 | 1,11% | 13,55% | 70,0% | 1.564,92 | 3.435.591 |
+| **AL41** | 63,60 | 1,97% | 12,78% | 62,9% | 1.562,89 | 354.337 |
+| AL35 | 68,18 | 0,96% | 12,94% | 67,3% | 1.569,38 | 2.118.314 |
+| AL30 | 54,30 | 0,46% | 10,94% | 84,7% | 1.560,77 | 79.133.960 |
 
 ## Últimas 15 ruedas: TIR de los tres en foco y riesgo país
 
 | Fecha | Riesgo país | Brent | TIR AE38 | TIR AL41 | TIR GD38 | Precio AE38D | Precio AL41D | Precio GD38D | Ley local AE38−GD38 | Ley local AL41−GD41 |
 |---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-29 | — | 111,55 | 13,55% | 12,78% | —% | 71,09 | 63,60 | — | — | — |
 | 2026-10-28 | 763 | 115,32 | 13,84% | 13,18% | 11,73% | 70,31 | 62,37 | 76,20 | 2,11 | — |
 | 2026-10-27 | 753 | 113,88 | 13,33% | 12,85% | 11,37% | 71,65 | 63,35 | 77,24 | 1,96 | — |
 | 2026-10-26 | 765 | 115,81 | 13,48% | 12,91% | 11,45% | 71,21 | 63,14 | 77,00 | 2,03 | 1,30 |
@@ -31,7 +30,6 @@ Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Parida
 | 2026-10-13 | 597 | 105,69 | 12,07% | 11,74% | 10,28% | 74,84 | 66,60 | 80,40 | 1,79 | 1,01 |
 | 2026-10-09 | 589 | 104,72 | 12,06% | 11,76% | 10,28% | 74,82 | 66,50 | 80,35 | 1,78 | 1,06 |
 | 2026-10-08 | 588 | 104,28 | 12,04% | 11,76% | 10,34% | 74,80 | 66,44 | 80,11 | 1,70 | 1,05 |
-| 2026-10-07 | 586 | 100,20 | 12,07% | 11,73% | 10,32% | 74,70 | 66,54 | 80,15 | 1,75 | 1,01 |
 
 Ley local = TIR del bono de ley argentina menos la de su par de ley Nueva York (puntos). Si se abre sin que suba el riesgo país, el mercado cobra más el riesgo de canje o reperfilamiento de ley local.
 
