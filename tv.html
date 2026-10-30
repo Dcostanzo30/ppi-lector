@@ -91,6 +91,13 @@ canvas{display:block;width:100%}
 .todas td{padding:5px 8px;text-align:right;font-family:var(--f-dat);border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent)}
 .todas tr.sel td:first-child{color:var(--accent)}
 .todas td:first-child{font-family:var(--f-num);font-size:18px;font-weight:600;cursor:pointer}
+.cierre{margin:0 0 14px}
+.cierre h2{font-family:var(--f-num);font-size:20px;margin:4px 0 8px}
+.cierre h3{font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:500;margin:14px 0 6px}
+.cierre .res{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--f-dat);font-size:14px}
+.cierre .res b{font-family:var(--f-num);font-size:18px}
+.cierre td small{color:var(--muted)}
+.cierre td{white-space:nowrap}
 
 /* panel de configuración */
 .config{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:10px;max-width:720px}
@@ -119,6 +126,7 @@ canvas{display:block;width:100%}
     <select id="velocidad" title="Velocidad de la reproducción" hidden>
       <option value="1">x1</option><option value="10">x10</option><option value="60" selected>x60</option><option value="300">x300</option>
     </select>
+    <button id="btnCierre" type="button">Cierre</button>
     <button id="btnTodas" type="button">Ver las 22</button>
     <button id="btnElegir" type="button">Elegir especies</button>
     <button id="btnConfig" type="button">Conexión</button>
@@ -141,6 +149,8 @@ canvas{display:block;width:100%}
   <div class="nota">Se guarda solo en este navegador. Nunca pegues acá la clave secreta.</div>
   <div id="cfgEstado" class="nota"></div>
 </section>
+
+<section id="cierre" class="todas cierre" hidden></section>
 
 <main id="cuerpo" class="cuerpo">
   <div id="grilla" class="grilla"><div class="vacia">Cargando la cinta…</div></div>
@@ -172,6 +182,7 @@ let elegidas = recuperar('mesa.elegidas', ["GGAL", "BMA", "YPFD", "TXAR"]);
 let descartadas = {};      // alertas cerradas: tk -> hasta qué hora
 let vistas = new Set();
 let modo = 'espera';
+let fechaVista = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
 function nuevo(tk) { return S[tk] || (S[tk] = { ops: [], hi: -Infinity, lo: Infinity, tHi: 0, iHi: 0, tLo: 0, iLo: 0, varp: null, libro: null }); }
 
 function agregar(tk, t, p, n, m, l, v) {
@@ -593,6 +604,59 @@ function pintarTodas(pn) {
   t.appendChild(tb); box.replaceChildren(t);
 }
 
+// ---------- pantalla de CIERRE (se abre sola desde las 17:00; con ?fecha=AAAA-MM-DD muestra otro día) ----------
+let cierreAuto = false;
+function datosCierre(tk) {
+  const e = S[tk]; if (!e || !e.ops.length) return null;
+  const L = e.ops, u = L[L.length - 1], ap = L[0];
+  let sm = 0, spm = 0, c = 0, v = 0;
+  for (const o of L) { sm += o.m; spm += o.p * o.m; if (o.l === 'C') c += o.m; else if (o.l === 'V') v += o.m; }
+  const ult = L.slice(-100); let c2 = 0, v2 = 0, t2 = 0;
+  for (const o of ult) { t2 += o.m; if (o.l === 'C') c2 += o.m; else if (o.l === 'V') v2 += o.m; }
+  const desde16 = L.filter(o => o.t >= 16 * 3600).reduce((a, o) => a + o.m, 0);
+  const rango = e.hi - e.lo, nv = niveles(e);
+  const R = nv.filter(x => x.tipo === 'R').sort((a, b) => a.p - b.p)[0], Sp = nv.filter(x => x.tipo === 'S').sort((a, b) => b.p - a.p)[0];
+  const lb = e.libro, b1 = lb?.bids?.[0]?.[0], a1 = lb?.offers?.[0]?.[0];
+  const d5b = (lb?.bids || []).reduce((x, y) => x + (y[1] || 0), 0), d5a = (lb?.offers || []).reduce((x, y) => x + (y[1] || 0), 0);
+  return { tk, u, ap, var: e.varp, hi: e.hi, lo: e.lo, vwap: sm ? spm / sm : null, monto: sm, ops: L.length,
+           pres: sm ? (c - v) / sm * 100 : null, presFin: t2 ? (c2 - v2) / t2 * 100 : null,
+           pos: rango > 0 ? (u.p - e.lo) / rango * 100 : null, vsVwap: sm ? (u.p / (spm / sm) - 1) * 100 : null,
+           ultHora: sm ? desde16 / sm * 100 : null, R, S: Sp,
+           spread: b1 > 0 && a1 > b1 ? (a1 - b1) / ((a1 + b1) / 2) * 1e4 : null,
+           deseq: d5b + d5a > 0 ? (d5b - d5a) / (d5b + d5a) * 100 : null };
+}
+function pintarCierre(pn) {
+  const box = $('cierre'); if (box.hidden) return;
+  const filas = PANEL.map(datosCierre).filter(Boolean).sort((a, b) => (b.var ?? 0) - (a.var ?? 0));
+  const extra = EXTRA.map(datosCierre).filter(Boolean);
+  const total = filas.reduce((a, f) => a + f.monto, 0), pres = filas.reduce((a, f) => a + (f.pres ?? 0) * f.monto, 0) / Math.max(1, total);
+  const m = ultimo('$MEP'), c = ultimo('$CCL'), a = ultimo('$ADR'), g = ultimo('GGAL');
+  const m0 = S['$MEP']?.ops[0], c0 = S['$CCL']?.ops[0];
+  const px = (tk, p) => (BONOS_D.includes(tk) ? 'US$ ' : '') + ar(p, dc(p));
+  const nivel = x => x ? `${ar(x.p, dc(x.p))} <small>x${x.n}</small>` : '—';
+  const fila = f => `<tr><td>${f.tk}</td><td>${px(f.tk, f.u.p)}</td><td class="${claseVar(f.var)}">${sg(f.var, 2)}</td>
+    <td>${ar(f.lo, dc(f.lo))} – ${ar(f.hi, dc(f.hi))}</td><td>${f.pos == null ? '—' : ar(f.pos, 0) + '%'}</td>
+    <td class="${claseVar(f.vsVwap)}">${sg(f.vsVwap, 2)}</td><td class="${claseVar(f.pres)}">${sg(f.pres, 0)}</td><td class="${claseVar(f.presFin)}">${sg(f.presFin, 0)}</td>
+    <td>${BONOS_D.includes(f.tk) ? ar(f.monto / 1e3, 0) + ' <small>mil US$</small>' : ar(f.monto / 1e6, 0)}</td><td>${ar(f.ops)}</td><td>${f.ultHora == null ? '—' : ar(f.ultHora, 0) + '%'}</td>
+    <td>${nivel(f.S)}</td><td>${nivel(f.R)}</td><td>${f.spread == null ? '—' : ar(f.spread, 0)}</td><td class="${claseVar(f.deseq)}">${sg(f.deseq, 0)}</td></tr>`;
+  const cab = '<thead><tr><th>Especie</th><th>Cierre</th><th>Var.</th><th>Mín – máx</th><th>Dónde cerró en el rango</th><th>vs. precio promedio</th><th>Presión día</th><th>Presión últimas 100</th><th>Monto M$</th><th>Ops</th><th>Monto desde 16:00</th><th>Soporte</th><th>Resistencia</th><th>Spread final (pb)</th><th>Libro final compra−venta</th></tr></thead>';
+  const sube = filas.filter(f => (f.var ?? 0) > 0).length;
+  box.innerHTML = `<h2>Cierre ${fechaVista.split('-').reverse().join('/')} ${ahora ? '· ' + hhmmss(ahora) : ''}</h2>
+    <div class="res"><span>Panel en verde <b>${sube} de ${filas.length}</b></span><span>Monto del panel <b>${ar(total / 1e6, 0)} M$</b></span>
+    <span>Presión del día <b class="${claseVar(pres)}">${sg(pres, 0)}</b></span>
+    <span>MEP <b>${ar(m?.p, 0)}</b> <small>${m && m0 ? sg((m.p / m0.p - 1) * 100, 2) + ' en el día' : ''}</small></span>
+    <span>CCL <b>${ar(c?.p, 0)}</b> <small>${c && c0 ? sg((c.p / c0.p - 1) * 100, 2) + ' en el día' : ''}</small></span>
+    <span>Canje <b>${m && c ? sg((c.p / m.p - 1) * 100, 1) : '—'}</b></span>
+    <span>GGAL vs ADR <b>${a && c && g ? sg((g.p * 10 / c.p / a.p - 1) * 100, 1) : '—'}</b></span></div>
+    <h3>Panel líder (de mayor a menor variación)</h3><table>${cab}<tbody>${filas.map(fila).join('')}</tbody></table>
+    <h3>Bonos en D y VIST</h3><table>${cab}<tbody>${extra.map(fila).join('')}</tbody></table>
+    <p class="nota">"Dónde cerró en el rango": 0% = en el mínimo del día, 100% = en el máximo. "vs. precio promedio": cierre contra el precio promedio ponderado por monto del día.
+    Presión = compras menos ventas sobre el monto (agresor según la punta); "últimas 100" = las 100 operaciones finales de cada especie.
+    Soporte y resistencia: los niveles del día con 2 o más rebotes, los más cercanos al cierre. Libro final: profundidad de 5 niveles, positivo = más compra.</p>`;
+  for (const tr of box.querySelectorAll('tbody tr')) { const tk = tr.firstChild.textContent; tr.firstChild.onclick = () => alternar(tk); }
+}
+$('btnCierre').onclick = () => { const b = $('cierre'); b.hidden = !b.hidden; $('btnCierre').classList.toggle('on', !b.hidden); pintar(); };
+
 // ---------- armado y refresco ----------
 function alternar(tk) {
   elegidas = elegidas.includes(tk) ? elegidas.filter(x => x !== tk) : [...elegidas, tk];
@@ -624,6 +688,8 @@ function pintar() {
     sem.querySelector('span').textContent = !pn.conDato ? 'sin datos' : rojas >= 2 ? 'rojo' : rojas === 1 ? 'amarillo' : 'verde';
     for (const d of $('grilla').querySelectorAll('.card')) llenar(d, d.dataset.tk, pn);
     pintarAlertas(pn); pintarTodas(pn);
+    if (!cierreAuto && ahora >= 17 * 3600 && modo === 'vivo') { cierreAuto = true; $('cierre').hidden = false; $('btnCierre').classList.add('on'); }
+    pintarCierre(pn);
   });
 }
 window.addEventListener('resize', pintar);
@@ -640,7 +706,7 @@ async function demo() {
   let D;
   try { D = window.DEMO || await (await fetch('demo_1610.json')).json(); }
   catch (e) { $('grilla').innerHTML = '<div class="vacia">Para ver la cinta en vivo, cargá la conexión de Supabase con el botón "Conexión".</div>'; $('config').hidden = false; $('modo').textContent = 'sin conexión'; return; }
-  const ops = D.ops; let k = 0;
+  const ops = D.ops; let k = 0; fechaVista = D.fecha;
   const inicio = 12 * 3600;                       // arranca con la mañana ya cargada
   while (k < ops.length && ops[k][1] < inicio) { const o = ops[k++]; agregar(D.tks[o[0]], o[1], o[2], o[3], o[4], o[5], o[6]); }
   ahora = inicio;
@@ -666,7 +732,12 @@ async function vivo(url, key) {
   armar();
   try {
     cliente = window.supabase.createClient(url, key, { realtime: { params: { eventsPerSecond: 20 } } });
-    const hoy = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);   // fecha de Buenos Aires
+    let hoy = new URLSearchParams(location.search).get('fecha') || new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);   // fecha de Buenos Aires
+    {   // fin de semana o feriado: muestra el último día con operaciones
+      const { data: hay } = await cliente.from('ops').select('fecha').eq('fecha', hoy).limit(1);
+      if (!hay?.length) { const { data: ult } = await cliente.from('ops').select('fecha').lte('fecha', hoy).order('fecha', { ascending: false }).limit(1); if (ult?.length) hoy = ult[0].fecha; }
+    }
+    fechaVista = hoy;
     // primero el aviso en vivo (para no perder nada mientras se carga lo anterior)
     const cola = []; let listo = false;
     canal = cliente.channel('cinta').on('broadcast', { event: 'ops' }, ({ payload }) => {
@@ -683,7 +754,9 @@ async function vivo(url, key) {
       if (data.length < 1000) break; desdeN += 1000;
     }
     listo = true; for (const p of cola) recibirLote(p);
-    $('modo').innerHTML = '<b>EN VIVO</b> cinta de PPI vía Supabase';
+    const esHoy = fechaVista === new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
+    $('modo').innerHTML = esHoy ? '<b>EN VIVO</b> cinta de PPI vía Supabase' : `<b>RUEDA DEL ${fechaVista.split('-').reverse().join('/')}</b> (cerrada)`;
+    if (!esHoy) { cierreAuto = true; $('cierre').hidden = false; $('btnCierre').classList.add('on'); }
     pintar();
   } catch (e) {
     $('modo').innerHTML = '<b style="color:var(--bad)">SIN CONEXIÓN</b>';
