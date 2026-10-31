@@ -106,6 +106,8 @@ jobs:
             HOY=$(date +%F)
             git clone -q --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" vivo_repo || exit 0
             cd vivo_repo
+            # las operaciones procesadas de los días anteriores ya no están en git: se bajan de las publicaciones
+            GH_TOKEN="$DATOS_TOKEN" DATOS_REPO=Dcostanzo30/ppi--datos PROC_ULTIMOS=6 python procesados.py bajar "*operaciones.csv.gz" || echo "procesados: no se pudieron bajar"
             git config user.name "bot-pantalla"
             git config user.email "bot@users.noreply.github.com"
             while true; do
