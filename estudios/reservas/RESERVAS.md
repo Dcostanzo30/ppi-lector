@@ -44,6 +44,23 @@ Ajuste de calibración: 0,76 (otros pasivos del FMI que el balance no muestra po
 | 2026-08-07 | 49,5 | -4,5 | -4,5 | -18,5 |
 | 2026-07-31 | 47,6 | -4,2 | -3,7 | -19,1 |
 
+## Proyección a fin de año contra la meta del FMI
+
+Meta de reservas netas de fin de diciembre (tipos del programa): **-4,1**. Último balance: 2026-10-23 con -3,02.
+
+| Paso | Miles de millones de US$ |
+|---|---|
+| Netas del último balance (2026-10-23) | -3,02 |
+| + Compras del BCRA ya publicadas después del balance (hasta 2026-10-27) | 0,00 |
+| + Pagos comprometidos que bajan las netas (intereses y cargos al FMI) | -0,88 |
+| + Resto (lo que se fue por otros lados): -0,101 por semana × 9,3 semanas | -0,93 |
+| **= Netas a fin de año si el BCRA no compra más** | **-4,83** |
+| Netas a fin de año al ritmo de compras de las últimas 8 semanas (0,233 por semana) | -2,67 |
+
+**Para llegar a la meta, el BCRA tiene que comprar unos US$ 79 millones por semana** de acá a fin de año (viene comprando US$ 233 millones por semana). Al ritmo actual llega.
+
+El "resto" junta todo lo que no son compras: pagos a otros organismos, BOPREAL, encajes, valuación del oro. Se estima con las últimas 8 semanas y cambia cada jueves. Los desembolsos y devoluciones de capital al FMI no mueven las netas (cambian igual reservas y crédito del FMI); los intereses sí.
+
 Notas: el FMI resta el swap con China completo, los encajes y su propio crédito desde 2025, y no resta los depósitos del Tesoro.
 "Netas ácidas" además resta BOPREAL y los depósitos del Gobierno (que incluyen pesos, así que es una cota exigente).
 El crédito del FMI es un supuesto cargado a mano en reservas.py (desembolsos y devoluciones); hay que actualizarlo en cada movimiento.
