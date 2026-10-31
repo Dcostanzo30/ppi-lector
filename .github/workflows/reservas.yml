@@ -39,7 +39,8 @@ jobs:
           done
           ls -la
       - name: Compras del BCRA (API de estadísticas)
-        run: python monetarias.py || echo "monetarias: falló, la proyección usa lo que haya"
+        run: |
+          python monetarias.py || echo "monetarias falló; la proyección usa lo que haya"
       - name: Calcular
         run: |
           python reservas.py
