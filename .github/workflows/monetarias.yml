@@ -1,0 +1,42 @@
+name: Monetarias BCRA
+
+# Base monetaria y factores de explicación (API del BCRA).
+# Solo consultas. No corre en horario de rueda.
+on:
+  push:
+    paths:
+      - ".github/workflows/monetarias.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bajar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+    steps:
+      - name: Fuera del horario de rueda
+        run: |
+          D=$(date +%u); H=$(date +%H)
+          true
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pandas requests
+      - name: Bajar
+        run: python monetarias.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Monetarias $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN monetarias.yml
