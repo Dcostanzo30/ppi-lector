@@ -40,3 +40,4 @@ jobs:
           git commit -m "Monetarias $(date +%F)"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
 # FIN monetarias.yml
+# reintento
