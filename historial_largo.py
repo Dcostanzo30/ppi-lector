@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 SAL = Path("estudios/historico"); SAL.mkdir(parents=True, exist_ok=True)
-LOCALES = {"GGAL": "ACCIONES", "BMA": "ACCIONES", "TGSU2": "ACCIONES", "YPFD": "ACCIONES", "VIST": "CEDEARS"}
+LOCALES = {"GGAL": "ACCIONES", "BMA": "ACCIONES", "TGSU2": "ACCIONES", "TGNO4": "ACCIONES", "YPFD": "ACCIONES", "VIST": "CEDEARS"}
 ADR = ["GGAL", "BMA", "TGS", "YPF", "VIST"]
 DESDE = "2022-01-01"
 
