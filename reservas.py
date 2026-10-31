@@ -10,7 +10,7 @@ Validación fuera de muestra: fin de marzo 2026 a tipos del programa (FMI: −12
 Escribe estudios/reservas/reservas.csv y estudios/reservas/RESERVAS.md. Solo lee archivos públicos ya descargados.
 """
 import re, unicodedata
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 import pandas as pd
 
@@ -28,6 +28,15 @@ FMI = [(date(2025, 4, 15), 12.0), (date(2025, 8, 4), 2.0), (date(2026, 5, 21), 1
 OFICIAL = {date(2023, 12, 31): -11.2, date(2024, 12, 31): -2.4, date(2025, 12, 31): -11.7}   # FMI, a tipos corrientes
 CALIBRA = [date(2024, 12, 31), date(2025, 12, 31)]
 ORO_PROGRAMA = 4326.01
+# Proyección a fin de año contra la meta. Meta de reservas netas de fin de diciembre de 2026 a tipos del programa
+# (staff report de mayo 2026), comparada como nivel, igual que veníamos haciendo.
+META_DIC = -4.1
+FIN_ANIO = date(2026, 12, 31)
+# Pagos ya comprometidos que BAJAN las netas (miles de millones de US$). Los desembolsos y las devoluciones de capital
+# al FMI NO mueven las netas con la definición del FMI (cambian igual las reservas y el crédito del FMI que se resta);
+# los intereses y cargos sí.
+PAGOS_NETAS = [(date(2026, 11, 2), -0.88, "intereses y cargos al FMI")]
+SERIES_BCRA = Path("estudios/monetarias/series.csv")     # monetarias.py: id 78 = compras de divisas del BCRA (US$ millones por día)
 
 
 def norm(s):
@@ -75,7 +84,8 @@ def main():
     df["netas_acidas"] = df["netas_fmi"] - df["bopreal"] - df["dep_gobierno"]
     SAL.mkdir(parents=True, exist_ok=True)
     df.round(3).to_csv(SAL / "reservas.csv", index=False)
-    escribir_md(df, ajuste, en)
+    proy = proyeccion(df)
+    escribir_md(df, ajuste, en, proy)
     u = df.iloc[-1]
     print(f"Reservas {u['fecha']}: brutas {u['brutas']:.2f}, netas FMI {u['netas_fmi']:.2f}, ajuste {ajuste:.2f}", flush=True)
 
@@ -84,7 +94,34 @@ def ar(x, d=1):
     return f"{x:,.{d}f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def escribir_md(df, ajuste, en):
+def proyeccion(df):
+    """Netas (tipos del programa) proyectadas a fin de año: último balance + compras del BCRA posteriores (ya publicadas)
+    + pagos comprometidos + el "resto" (lo que se fue por otros lados en las últimas 8 semanas, por semana) × semanas que faltan.
+    Devuelve también cuánto tendría que comprar el BCRA por semana para llegar a la meta."""
+    if not SERIES_BCRA.exists(): return None
+    s = pd.read_csv(SERIES_BCRA); s = s[s.id == 78].copy()
+    if s.empty: return None
+    s["fecha"] = pd.to_datetime(s.fecha).dt.date
+    compras = s.groupby("fecha").valor.sum() / 1000                       # miles de millones de US$
+    u = df.iloc[-1]; f0 = u["fecha"]; ult_dato = max(compras.index)
+    # resto por semana: variación de las netas entre balances menos lo comprado en ese lapso (últimas ~8 semanas)
+    ref = df[df["fecha"] <= f0 - timedelta(days=56)]
+    if ref.empty: return None
+    r0 = ref.iloc[-1]
+    comp_lapso = float(compras[(compras.index > r0["fecha"]) & (compras.index <= f0)].sum())
+    semanas_lapso = max((f0 - r0["fecha"]).days / 7, 1)
+    resto_sem = (u["netas_fmi_tipos_programa"] - r0["netas_fmi_tipos_programa"] - comp_lapso) / semanas_lapso
+    ritmo_compras = comp_lapso / semanas_lapso
+    comp_ya = float(compras[compras.index > f0].sum())
+    pagos = sum(m for d, m, _ in PAGOS_NETAS if d > f0 and d <= FIN_ANIO)
+    semanas = max((FIN_ANIO - ult_dato).days / 7, 0.1)
+    sin_compras = u["netas_fmi_tipos_programa"] + comp_ya + pagos + resto_sem * semanas
+    return dict(balance=f0, netas=u["netas_fmi_tipos_programa"], ult_dato=ult_dato, compras_ya=comp_ya, pagos=pagos, resto_sem=resto_sem,
+                ritmo_compras=ritmo_compras, semanas=semanas, sin_compras=sin_compras, al_ritmo=sin_compras + ritmo_compras * semanas,
+                necesita_sem=max(0.0, (META_DIC - sin_compras) / semanas), desde_ref=r0["fecha"])
+
+
+def escribir_md(df, ajuste, en, proy=None):
     u = df.iloc[-1]
     l = ["# Reservas del BCRA: brutas y netas (método FMI, estimación propia)", "",
          f"Último balance semanal: **{u['fecha']}** (el BCRA lo publica con una semana de demora). En miles de millones de US$.", "",
@@ -108,6 +145,22 @@ def escribir_md(df, ajuste, en):
           "## Últimos 12 balances", "", "| Fecha | Brutas | Netas FMI | Netas FMI (tipos programa) | Netas ácidas |", "|---|---|---|---|---|"]
     for _, r in df.tail(12).iloc[::-1].iterrows():
         l.append(f"| {r['fecha']} | {ar(r['brutas'])} | {ar(r['netas_fmi'])} | {ar(r['netas_fmi_tipos_programa'])} | {ar(r['netas_acidas'])} |")
+    if proy:
+        p = proy
+        l += ["", "## Proyección a fin de año contra la meta del FMI", "",
+              f"Meta de reservas netas de fin de diciembre (tipos del programa): **{ar(META_DIC)}**. Último balance: {p['balance']} con {ar(p['netas'], 2)}.", "",
+              "| Paso | Miles de millones de US$ |", "|---|---|",
+              f"| Netas del último balance ({p['balance']}) | {ar(p['netas'], 2)} |",
+              f"| + Compras del BCRA ya publicadas después del balance (hasta {p['ult_dato']}) | {ar(p['compras_ya'], 2)} |",
+              f"| + Pagos comprometidos que bajan las netas ({'; '.join(n for d, m, n in PAGOS_NETAS if d > p['balance'])}) | {ar(p['pagos'], 2)} |",
+              f"| + Resto (lo que se fue por otros lados): {ar(p['resto_sem'], 3)} por semana × {ar(p['semanas'], 1)} semanas | {ar(p['resto_sem'] * p['semanas'], 2)} |",
+              f"| **= Netas a fin de año si el BCRA no compra más** | **{ar(p['sin_compras'], 2)}** |",
+              f"| Netas a fin de año al ritmo de compras de las últimas 8 semanas ({ar(p['ritmo_compras'], 3)} por semana) | {ar(p['al_ritmo'], 2)} |", "",
+              f"**Para llegar a la meta, el BCRA tiene que comprar unos US$ {ar(p['necesita_sem'] * 1000, 0)} millones por semana** de acá a fin de año "
+              f"(viene comprando US$ {ar(p['ritmo_compras'] * 1000, 0)} millones por semana). "
+              + ("Al ritmo actual llega." if p['al_ritmo'] >= META_DIC else "Al ritmo actual NO llega."), "",
+              "El \"resto\" junta todo lo que no son compras: pagos a otros organismos, BOPREAL, encajes, valuación del oro. Se estima con las últimas 8 semanas y cambia cada jueves. "
+              "Los desembolsos y devoluciones de capital al FMI no mueven las netas (cambian igual reservas y crédito del FMI); los intereses sí."]
     l += ["", "Notas: el FMI resta el swap con China completo, los encajes y su propio crédito desde 2025, y no resta los depósitos del Tesoro.",
           "\"Netas ácidas\" además resta BOPREAL y los depósitos del Gobierno (que incluyen pesos, así que es una cota exigente).",
           "El crédito del FMI es un supuesto cargado a mano en reservas.py (desembolsos y devoluciones); hay que actualizarlo en cada movimiento.", ""]

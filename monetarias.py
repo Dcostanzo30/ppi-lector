@@ -7,7 +7,8 @@ import requests
 
 SAL = Path("estudios/monetarias"); SAL.mkdir(parents=True, exist_ok=True)
 URLS = ["https://api.bcra.gob.ar/estadisticas/v4.0/monetarias", "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias"]
-DESDE = os.environ.get("DESDE", "2026-08-01")
+from datetime import date, timedelta
+DESDE = os.environ.get("DESDE") or (date.today() - timedelta(days=150)).isoformat()
 s = requests.Session(); s.headers["User-Agent"] = "Mozilla/5.0"
 def pedir(url, **kw):
     try:
