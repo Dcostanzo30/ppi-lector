@@ -635,7 +635,10 @@ function pintarPre() {
       <td>${f.abrio ? px(f.tk, f.abrio.p) : '—'}</td><td class="${claseVar(f.abrioVsCierre)}">${sg(f.abrioVsCierre, 2)}</td><td class="${claseVar(f.abrioVsTeo)}">${sg(f.abrioVsTeo, 2)}</td></tr>`;
   };
   const m = ultimo('$MEP'), c = ultimo('$CCL');
-  box.innerHTML = `<h2>Preapertura ${fechaVista.split('-').reverse().join('/')} ${ahora ? '· ' + hhmmss(ahora) : ''}</h2>
+  const sinPre = !Object.keys(PRE).length && ahora >= 10 * 3600 + 5 * 60;
+  const aviso = sinPre ? `<p class="nota" style="color:var(--warn)">PPI todavía no mandó libros de preapertura${ahora >= 10.5 * 3600 ? ' ni (si no hay especies abiertas) los primeros minutos de rueda' : ''}.
+    Pasó el 29 y el 30/10 (todo llegó recién a las 10:35); el lector vuelve a suscribir solo si BYMA queda callado.</p>` : '';
+  box.innerHTML = aviso + `<h2>Preapertura ${fechaVista.split('-').reverse().join('/')} ${ahora ? '· ' + hhmmss(ahora) : ''}</h2>
     <div class="res"><span>En preapertura <b>${enPre.length}</b> de ${filas.length}</span><span>Con libro cruzado <b>${cruz.length}</b></span>
     <span>Arriba del cierre anterior <b class="up">${arriba}</b></span><span>Abajo <b class="dn">${abajo}</b></span>
     <span>MEP <b>${ar(m?.p, 0)}</b></span><span>CCL <b>${ar(c?.p, 0)}</b></span></div>
