@@ -99,9 +99,13 @@ def main(hasta, archivo):
         out.close()
         os._exit(1)
 
+    ult_local = {"t": None, "resus": 0.0}      # último mensaje de un instrumento de BYMA (no el ADR de Nueva York)
+
     def al_recibir(msj):
         out.write(datetime.now().isoformat(timespec="milliseconds") + "\t" + str(msj).replace("\n", " ") + "\n")
         n["msjs"] += 1
+        if '"ACCIONES-USA"' not in str(msj)[:400]:
+            ult_local["t"] = time.time()
         if relevo:
             relevo.recibir(msj)
         if n["msjs"] in (1, 100, 1000) or n["msjs"] % 10000 == 0:
@@ -112,6 +116,26 @@ def main(hasta, archivo):
         out.close()
         os._exit(0)
 
+    def vigia():
+        """El 29 y el 30/10 PPI no mandó nada de BYMA hasta las 10:35 (se perdió la preapertura y los primeros 5 minutos de rueda),
+        aunque el ADR de GGAL llegaba desde las 09:13. Si los instrumentos locales están callados, se vuelve a suscribir todo."""
+        inicio = time.time()
+        while True:
+            time.sleep(30)
+            try:
+                h = datetime.now().hour * 60 + datetime.now().minute
+                callado = time.time() - (ult_local["t"] or inicio)
+                if 10 * 60 <= h < 10 * 60 + 30: limite = 300          # preapertura: 5 minutos sin nada local
+                elif 10 * 60 + 30 <= h < 17 * 60: limite = 60           # rueda: 1 minuto sin nada local
+                else: continue
+                if callado > limite and time.time() - ult_local["resus"] > limite:
+                    ult_local["resus"] = time.time()
+                    log(f"vigía: {int(callado)} s sin mensajes de BYMA; vuelvo a suscribir todo")
+                    al_conectar()
+            except Exception as e:
+                log(f"vigía: error {e}")
+
+    threading.Thread(target=vigia, daemon=True).start()
     threading.Timer(segundos, terminar).start()
     try:
         ppi.realtime.connect_to_market_data(al_conectar, al_desconectar, al_recibir)

@@ -142,8 +142,9 @@ jobs:
           ' > pantalla.log 2>&1 &
           echo "Turno $TURNO, escuchando hasta $HASTA"
           while [ "$(date +%H:%M)" \< "$HASTA" ]; do
-            python lector.py "$HASTA" "$ARCHIVO" || sleep 20
+            python lector.py "$HASTA" "$ARCHIVO" >> lector.log 2>&1 || sleep 20
           done
+          tail -40 lector.log 2>/dev/null || true
           cat posta.log 2>/dev/null || true
           cat pantalla.log 2>/dev/null || true
           tail -5 finnhub.log 2>/dev/null || true
@@ -189,6 +190,8 @@ jobs:
           git clone --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
           mkdir -p "datos/tiempo_real/$(date +%F)"
           cp "$ARCHIVO" "datos/tiempo_real/$(date +%F)/"
+          # registro del lector (conexión, suscripciones, vigía): para poder diagnosticar huecos en la cinta
+          [ -f lector.log ] && cp lector.log "datos/tiempo_real/$(date +%F)/registro_${ARCHIVO%.txt.gz}.txt"
           if [ -f "$FH" ]; then mkdir -p "datos/tiempo_real_afuera/$(date +%F)"; cp "$FH" "datos/tiempo_real_afuera/$(date +%F)/"; fi
           cd datos
           git config user.name "bot-lector"

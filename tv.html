@@ -126,6 +126,7 @@ canvas{display:block;width:100%}
     <select id="velocidad" title="Velocidad de la reproducción" hidden>
       <option value="1">x1</option><option value="10">x10</option><option value="60" selected>x60</option><option value="300">x300</option>
     </select>
+    <button id="btnPre" type="button">Preapertura</button>
     <button id="btnCierre" type="button">Cierre</button>
     <button id="btnTodas" type="button">Ver las 22</button>
     <button id="btnElegir" type="button">Elegir especies</button>
@@ -150,6 +151,7 @@ canvas{display:block;width:100%}
   <div id="cfgEstado" class="nota"></div>
 </section>
 
+<section id="pre" class="todas cierre" hidden></section>
 <section id="cierre" class="todas cierre" hidden></section>
 
 <main id="cuerpo" class="cuerpo">
@@ -604,6 +606,56 @@ function pintarTodas(pn) {
   t.appendChild(tb); box.replaceChildren(t);
 }
 
+// ---------- pantalla de PREAPERTURA (cada especie hasta su primera operación real; se abre sola antes de las 10:40) ----------
+let PRE = {}, CIERRE_ANT = {}, preAuto = false;
+function datosPre(tk) {
+  const pr = PRE[tk], e = S[tk], ca = CIERRE_ANT[tk];
+  const abrio = e && e.ops.length ? e.ops[0] : null;
+  if (!pr && !abrio) return null;
+  const ref = pr ? pr.p : null;
+  return { tk, pr, abrio, ca,
+           vsCierre: ref && ca ? (ref / ca - 1) * 100 : null,
+           deseq: pr && pr.pc + pr.pv > 0 ? (pr.pc - pr.pv) / (pr.pc + pr.pv) * 100 : null,
+           abrioVsTeo: abrio && pr && pr.cruz ? (abrio.p / pr.p - 1) * 100 : null,
+           abrioVsCierre: abrio && ca ? (abrio.p / ca - 1) * 100 : null };
+}
+function pintarPre() {
+  const box = $('pre'); if (box.hidden) return;
+  const filas = [...PANEL, ...EXTRA].map(datosPre).filter(Boolean);
+  const px = (tk, p) => p == null ? '—' : (BONOS_D.includes(tk) ? 'US$ ' : '') + ar(p, dc(p));
+  const enPre = filas.filter(f => !f.abrio), cruz = enPre.filter(f => f.pr?.cruz);
+  const arriba = enPre.filter(f => (f.vsCierre ?? 0) > 0).length, abajo = enPre.filter(f => (f.vsCierre ?? 0) < 0).length;
+  const fila = f => {
+    const pr = f.pr;
+    const est = f.abrio ? `abrió ${hhmmss(f.abrio.t)}` : pr ? `preapertura <small>${hhmmss(pr.t)}</small>` : '—';
+    return `<tr><td>${f.tk}</td><td>${est}</td><td>${px(f.tk, pr?.b1)}</td><td>${px(f.tk, pr?.a1)}</td>
+      <td>${pr?.cruz ? '<b>' + px(f.tk, pr.p) + '</b>' : '<small>sin cruce</small>'}</td><td>${pr?.cruz ? ar(pr.ejec) : '—'}</td>
+      <td>${pr ? ar(pr.pc) : '—'}</td><td>${pr ? ar(pr.pv) : '—'}</td><td class="${claseVar(f.deseq)}">${sg(f.deseq, 0)}</td>
+      <td>${px(f.tk, f.ca)}</td><td class="${claseVar(f.vsCierre)}">${sg(f.vsCierre, 2)}</td>
+      <td>${f.abrio ? px(f.tk, f.abrio.p) : '—'}</td><td class="${claseVar(f.abrioVsCierre)}">${sg(f.abrioVsCierre, 2)}</td><td class="${claseVar(f.abrioVsTeo)}">${sg(f.abrioVsTeo, 2)}</td></tr>`;
+  };
+  const m = ultimo('$MEP'), c = ultimo('$CCL');
+  box.innerHTML = `<h2>Preapertura ${fechaVista.split('-').reverse().join('/')} ${ahora ? '· ' + hhmmss(ahora) : ''}</h2>
+    <div class="res"><span>En preapertura <b>${enPre.length}</b> de ${filas.length}</span><span>Con libro cruzado <b>${cruz.length}</b></span>
+    <span>Arriba del cierre anterior <b class="up">${arriba}</b></span><span>Abajo <b class="dn">${abajo}</b></span>
+    <span>MEP <b>${ar(m?.p, 0)}</b></span><span>CCL <b>${ar(c?.p, 0)}</b></span></div>
+    <table><thead><tr><th>Especie</th><th>Estado</th><th>Mejor compra</th><th>Mejor venta</th><th>Apertura teórica</th><th>Ejecutable</th>
+    <th>Prof. compra</th><th>Prof. venta</th><th>Libro compra−venta</th><th>Cierre anterior</th><th>Teórica vs. cierre</th>
+    <th>Primer precio</th><th>Abrió vs. cierre</th><th>Abrió vs. teórica</th></tr></thead><tbody>${filas.map(fila).join('')}</tbody></table>
+    <p class="nota">Cada especie se muestra en preapertura hasta su primera operación real; desde ahí, su primer precio contra la última apertura teórica y contra el cierre anterior.
+    Apertura teórica: el precio que más cantidad ejecutaría con los 5 niveles visibles cuando el libro está cruzado (compra ≥ venta); "sin cruce" = todavía no hay precio de equilibrio.
+    Si una especie no aparece, PPI no mandó su libro de preapertura.</p>`;
+}
+$('btnPre').onclick = () => { const b = $('pre'); b.hidden = !b.hidden; $('btnPre').classList.toggle('on', !b.hidden); pintar(); };
+async function cargarCierresAnteriores(hoy) {
+  try {
+    await Promise.all([...PANEL, ...EXTRA].map(async tk => {
+      const { data } = await cliente.from('ops').select('precio').eq('tk', tk).lt('fecha', hoy).order('ts', { ascending: false }).limit(1);
+      if (data?.length) CIERRE_ANT[tk] = data[0].precio;
+    }));
+  } catch (e) {}
+}
+
 // ---------- pantalla de CIERRE (se abre sola desde las 17:00; con ?fecha=AAAA-MM-DD muestra otro día) ----------
 let cierreAuto = false;
 function datosCierre(tk) {
@@ -690,6 +742,8 @@ function pintar() {
     pintarAlertas(pn); pintarTodas(pn);
     if (!cierreAuto && ahora >= 17 * 3600 && modo === 'vivo') { cierreAuto = true; $('cierre').hidden = false; $('btnCierre').classList.add('on'); }
     pintarCierre(pn);
+    if (!preAuto && modo === 'vivo' && ahora && ahora < 10 * 3600 + 40 * 60) { preAuto = true; $('pre').hidden = false; $('btnPre').classList.add('on'); }
+    pintarPre();
   });
 }
 window.addEventListener('resize', pintar);
@@ -727,7 +781,7 @@ async function vivo(url, key) {
   if (!window.supabase) { $('cfgEstado').textContent = 'No cargó la librería de Supabase; revisá la conexión.'; return; }
   if (demoTimer) clearInterval(demoTimer);
   $('velocidad').hidden = true;
-  modo = 'vivo'; S = {}; ahora = 0; vistas = new Set();
+  modo = 'vivo'; S = {}; ahora = 0; vistas = new Set(); PRE = {}; CIERRE_ANT = {};
   $('modo').innerHTML = '<b>CONECTANDO…</b>';
   armar();
   try {
@@ -746,7 +800,7 @@ async function vivo(url, key) {
     }).subscribe(st => { if (st === 'SUBSCRIBED') $('cfgEstado').textContent = 'Escuchando la cinta en vivo.'; });
     let desdeN = 0;
     for (;;) {
-      const { data, error } = await cliente.from('ops').select('clave,ts,tk,precio,nom,monto,lado,var').eq('fecha', hoy)
+      const { data, error } = await cliente.from('ops').select('clave,ts,tk,precio,nom,monto,lado,var,acum,maxd,mind').eq('fecha', hoy)
         .order('ts', { ascending: true }).order('clave', { ascending: true }).range(desdeN, desdeN + 999);
       if (error) throw error;
       for (const r of data) cargarFila(r);
@@ -754,6 +808,7 @@ async function vivo(url, key) {
       if (data.length < 1000) break; desdeN += 1000;
     }
     listo = true; for (const p of cola) recibirLote(p);
+    cargarCierresAnteriores(hoy).then(pintar);
     const esHoy = fechaVista === new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
     $('modo').innerHTML = esHoy ? '<b>EN VIVO</b> cinta de PPI vía Supabase' : `<b>RUEDA DEL ${fechaVista.split('-').reverse().join('/')}</b> (cerrada)`;
     if (!esHoy) { cierreAuto = true; $('cierre').hidden = false; $('btnCierre').classList.add('on'); }
@@ -766,6 +821,12 @@ async function vivo(url, key) {
 }
 function cargarFila(r) {
   if (vistas.has(r.clave)) return; vistas.add(r.clave);
+  if (r.tk && r.tk.startsWith('PRE:')) {      // libro de preapertura (ver relevo.py)
+    const tk = r.tk.slice(4), t = segDe(r.ts);
+    if (!PRE[tk] || PRE[tk].t <= t) PRE[tk] = { t, p: r.precio, ejec: r.nom, pc: r.acum, pv: r.var, a1: r.maxd, b1: r.mind, cruz: r.lado === 'X' };
+    if (t > ahora) ahora = t;
+    return;
+  }
   agregar(r.tk, segDe(r.ts), r.precio, r.nom, r.monto, r.lado, r.var);
 }
 function recibirLote(p) {
