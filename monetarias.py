@@ -36,6 +36,9 @@ desc = cat.columns[[("desc" in c.lower()) for c in cat.columns]][0]
 idc = cat.columns[[("idvariable" in c.lower()) for c in cat.columns]][0]
 claves = ["base monetaria", "efecto", "circulación", "circulacion", "reservas internacionales", "depósitos en cuenta", "pases", "lefi", "tesoro"]
 elegidas = cat[cat[desc].str.lower().str.contains("|".join(claves), na=False)]
+# agregados monetarios (M1, M2, M3 y sus componentes) y tipo de cambio / BADLAR, por id
+IDS_FIJOS = {4, 5, 7, 17, 21, 22, 23, 24, 25, 109, 197}
+elegidas = pd.concat([elegidas, cat[pd.to_numeric(cat[idc], errors="coerce").isin(IDS_FIJOS)]]).drop_duplicates(subset=[idc])
 filas = []
 for _, v in elegidas.iterrows():
     try:
