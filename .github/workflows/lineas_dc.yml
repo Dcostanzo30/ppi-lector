@@ -21,7 +21,7 @@ jobs:
           python-version: "3.11"
       - run: pip install ppi-client
       - name: Consultar
-        run: python lineas_dc.py
+        run: python lineas_dc.py && python lineas_dc_buscar.py
       - name: Guardar
         run: |
           git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
