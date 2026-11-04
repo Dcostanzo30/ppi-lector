@@ -1,4 +1,4 @@
-name: Canal de salida (datos diarios)
+name: Canal de salida y semaforo (diario)
 
 on:
   workflow_dispatch:
@@ -11,17 +11,22 @@ permissions:
 jobs:
   datos:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
+    env:
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install pandas
+      - run: pip install pandas ppi-client
       - run: python canal_salida_datos.py
+      - run: python semaforo_datos.py
+      - run: python semaforo.py
       - name: Guardar
         run: |
           git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
-          git add estudios/historico/dolares_diarios.csv estudios/historico/riesgo_pais.csv
+          git add estudios/historico/dolares_diarios.csv estudios/historico/riesgo_pais.csv estudios/historico/semaforo_precios.csv estudios/historico/semaforo.csv estudios/SEMAFORO.md
           git commit -m "Dólares diarios y riesgo país" || exit 0
           for i in 1 2 3; do git pull --rebase -X theirs && git push && break; sleep 5; done
