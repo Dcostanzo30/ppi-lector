@@ -1,0 +1,43 @@
+name: A3 market data
+
+# Baja los datos públicos de A3 (cauciones por plazo, futuros de dólar, derivados, forex, volumen por categoría). Solo lectura.
+# Corre al cierre de los días hábiles (18:10 hora argentina), cuando se edita el archivo y a mano.
+on:
+  push:
+    paths:
+      - "mae.py"
+      - ".github/workflows/mae_diario.yml"
+  schedule:
+    - cron: "10 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mae-diario
+  cancel-in-progress: false
+
+jobs:
+  mae:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TZ: America/Argentina/Buenos_Aires
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests
+      - name: Leer A3
+        run: python mae.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/mae
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "A3 market data $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN mae_diario.yml

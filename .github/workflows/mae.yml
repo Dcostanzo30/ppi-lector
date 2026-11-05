@@ -1,0 +1,41 @@
+name: Explorar A3 market data
+
+# Abre el sitio público de datos de A3 con un navegador sin pantalla y anota qué datos consulta cada sección.
+# Solo lectura. Corre cuando se edita el archivo y a mano.
+on:
+  push:
+    paths:
+      - "mae_probe.py"
+      - ".github/workflows/mae.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mae
+  cancel-in-progress: false
+
+jobs:
+  explorar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: America/Argentina/Buenos_Aires
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install playwright && python -m playwright install --with-deps chromium
+      - name: Explorar
+        run: python mae_probe.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/mae
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Exploración A3 market data $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN mae.yml
