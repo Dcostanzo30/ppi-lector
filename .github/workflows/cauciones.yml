@@ -1,0 +1,46 @@
+name: Cauciones y opciones
+
+# Baja de PPI las cauciones y las opciones (dólar y otras): precio actual e historia diaria.
+# Solo consultas. Usa los mismos secretos PPI_API_KEY y PPI_API_SECRET que el resto de los lectores.
+# Corre al cierre de los días hábiles (17:55 hora argentina), cuando se edita el archivo, y a mano.
+on:
+  push:
+    paths:
+      - "cauciones.py"
+      - ".github/workflows/cauciones.yml"
+  schedule:
+    - cron: "55 20 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cauciones
+  cancel-in-progress: false
+
+jobs:
+  cauciones:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+      - name: Leer cauciones y opciones
+        run: python cauciones.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/cauciones estudios/opciones
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Cauciones y opciones $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN cauciones.yml
