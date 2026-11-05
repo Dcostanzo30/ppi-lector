@@ -1,0 +1,46 @@
+name: Lecap tasas
+
+# Tasa de las Lecap día por día desde junio, con precios históricos de PPI y el pago final de cada letra.
+# Solo consultas. Mismos secretos PPI_API_KEY y PPI_API_SECRET que el resto de los lectores.
+# Corre a mano y cuando se edita el archivo; los días hábiles a las 17:50 hora argentina.
+on:
+  push:
+    paths:
+      - "letras.py"
+      - ".github/workflows/letras.yml"
+  schedule:
+    - cron: "50 20 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: letras
+  cancel-in-progress: false
+
+jobs:
+  letras:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+      - name: Calcular tasas de Lecap
+        run: python letras.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/letras
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Lecap tasas $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN letras.yml
