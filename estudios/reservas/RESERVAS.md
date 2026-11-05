@@ -1,20 +1,20 @@
 # Reservas del BCRA: brutas y netas (método FMI, estimación propia)
 
-Último balance semanal: **2026-10-23** (el BCRA lo publica con una semana de demora). En miles de millones de US$.
+Último balance semanal: **2026-10-31** (el BCRA lo publica con una semana de demora). En miles de millones de US$.
 
 | | Último | Hace 4 balances | Fin de 2025 |
 |---|---|---|---|
-| Reservas brutas (BCRA) | 50,2 | 48,9 | 41,1 |
-| − Encajes en dólares | 16,6 | 15,1 | 15,0 |
-| − Swaps y otros pasivos (incluye China) | 23,8 | 23,8 | 24,6 |
-| − Crédito neto del FMI desde 2025 | 14,2 | 15,0 | 14,0 |
-| **= Netas método FMI** | -3,7 | -4,2 | -11,8 |
+| Reservas brutas (BCRA) | 48,6 | 46,1 | 41,1 |
+| − Encajes en dólares | 14,9 | 13,3 | 15,0 |
+| − Swaps y otros pasivos (incluye China) | 24,0 | 23,9 | 24,6 |
+| − Crédito neto del FMI desde 2025 | 14,2 | 14,2 | 14,0 |
+| **= Netas método FMI** | -3,8 | -4,5 | -11,8 |
 | Netas FMI a tipos del programa (oro a US$4.326) | -3,0 | -4,2 | -11,8 |
 | − BOPREAL | 5,0 | 5,0 | 13,1 |
-| − Depósitos del Gobierno | 6,8 | 7,5 | 4,8 |
-| **= Netas ácidas** | -15,4 | -16,7 | -29,7 |
+| − Depósitos del Gobierno | 6,7 | 6,4 | 4,8 |
+| **= Netas ácidas** | -15,5 | -15,9 | -29,7 |
 
-Fechas: hace 4 balances = 2026-09-23; fin de 2025 = 2025-12-31.
+Fechas: hace 4 balances = 2026-09-30; fin de 2025 = 2025-12-31.
 
 ## Control contra los datos oficiales del FMI
 
@@ -31,6 +31,7 @@ Ajuste de calibración: 0,76 (otros pasivos del FMI que el balance no muestra po
 
 | Fecha | Brutas | Netas FMI | Netas FMI (tipos programa) | Netas ácidas |
 |---|---|---|---|---|
+| 2026-10-31 | 48,6 | -3,8 | -3,0 | -15,5 |
 | 2026-10-23 | 50,2 | -3,7 | -3,0 | -15,4 |
 | 2026-10-15 | 50,0 | -3,7 | -3,4 | -14,5 |
 | 2026-10-07 | 49,1 | -4,2 | -3,8 | -15,7 |
@@ -42,22 +43,21 @@ Ajuste de calibración: 0,76 (otros pasivos del FMI que el balance no muestra po
 | 2026-08-23 | 50,7 | -3,6 | -4,2 | -16,9 |
 | 2026-08-15 | 49,5 | -4,1 | -4,2 | -17,5 |
 | 2026-08-07 | 49,5 | -4,5 | -4,5 | -18,5 |
-| 2026-07-31 | 47,6 | -4,2 | -3,7 | -19,1 |
 
 ## Proyección a fin de año contra la meta del FMI
 
-Meta de reservas netas de fin de diciembre (tipos del programa): **-4,1**. Último balance: 2026-10-23 con -3,02.
+Meta de reservas netas de fin de diciembre (tipos del programa): **-4,1**. Último balance: 2026-10-31 con -2,95.
 
 | Paso | Miles de millones de US$ |
 |---|---|
-| Netas del último balance (2026-10-23) | -3,02 |
-| + Compras del BCRA ya publicadas después del balance (hasta 2026-10-29) | 0,05 |
+| Netas del último balance (2026-10-31) | -2,95 |
+| + Compras del BCRA ya publicadas después del balance (hasta 2026-11-02) | 0,00 |
 | + Pagos comprometidos que bajan las netas (intereses y cargos al FMI) | -0,88 |
-| + Resto (lo que se fue por otros lados): -0,101 por semana × 9,0 semanas | -0,91 |
-| **= Netas a fin de año si el BCRA no compra más** | **-4,76** |
-| Netas a fin de año al ritmo de compras de las últimas 8 semanas (0,233 por semana) | -2,66 |
+| + Resto (lo que se fue por otros lados): -0,105 por semana × 8,4 semanas | -0,89 |
+| **= Netas a fin de año si el BCRA no compra más** | **-4,72** |
+| Netas a fin de año al ritmo de compras de las últimas 8 semanas (0,215 por semana) | -2,91 |
 
-**Para llegar a la meta, el BCRA tiene que comprar unos US$ 73 millones por semana** de acá a fin de año (viene comprando US$ 233 millones por semana). Al ritmo actual llega.
+**Para llegar a la meta, el BCRA tiene que comprar unos US$ 74 millones por semana** de acá a fin de año (viene comprando US$ 215 millones por semana). Al ritmo actual llega.
 
 El "resto" junta todo lo que no son compras: pagos a otros organismos, BOPREAL, encajes, valuación del oro. Se estima con las últimas 8 semanas y cambia cada jueves. Los desembolsos y devoluciones de capital al FMI no mueven las netas (cambian igual reservas y crédito del FMI); los intereses sí.
 

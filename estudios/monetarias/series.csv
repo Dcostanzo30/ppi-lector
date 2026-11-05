@@ -1,4 +1,6 @@
 id,descripcion,fecha,valor
+1,Reservas internacionales,2026-11-03,50298.0
+1,Reservas internacionales,2026-11-02,50439.0
 1,Reservas internacionales,2026-10-30,48565.0
 1,Reservas internacionales,2026-10-29,50164.0
 1,Reservas internacionales,2026-10-28,50603.0
@@ -99,6 +101,8 @@ id,descripcion,fecha,valor
 1,Reservas internacionales,2026-06-10,47559.0
 1,Reservas internacionales,2026-06-09,47834.0
 1,Reservas internacionales,2026-06-08,47800.0
+15,Base monetaria,2026-11-03,46998823.0
+15,Base monetaria,2026-11-02,47241558.0
 15,Base monetaria,2026-10-30,47321620.0
 15,Base monetaria,2026-10-29,46205273.0
 15,Base monetaria,2026-10-28,45680819.0
@@ -199,6 +203,8 @@ id,descripcion,fecha,valor
 15,Base monetaria,2026-06-10,41998049.0
 15,Base monetaria,2026-06-09,41830730.0
 15,Base monetaria,2026-06-08,42401196.0
+16,Circulación monetaria ,2026-11-03,29571184.0
+16,Circulación monetaria ,2026-11-02,29355590.0
 16,Circulación monetaria ,2026-10-30,29146386.0
 16,Circulación monetaria ,2026-10-29,28966791.0
 16,Circulación monetaria ,2026-10-28,28808790.0
@@ -299,6 +305,8 @@ id,descripcion,fecha,valor
 16,Circulación monetaria ,2026-06-10,26301838.0
 16,Circulación monetaria ,2026-06-09,26279086.0
 16,Circulación monetaria ,2026-06-08,26222905.0
+46,Total de factores de explicación de la base monetaria,2026-11-02,-80062.0
+46,Total de factores de explicación de la base monetaria,2026-10-30,1116347.0
 46,Total de factores de explicación de la base monetaria,2026-10-29,524454.0
 46,Total de factores de explicación de la base monetaria,2026-10-28,110896.0
 46,Total de factores de explicación de la base monetaria,2026-10-27,-1234595.0
@@ -398,6 +406,8 @@ id,descripcion,fecha,valor
 46,Total de factores de explicación de la base monetaria,2026-06-10,167319.0
 46,Total de factores de explicación de la base monetaria,2026-06-09,-570466.0
 46,Total de factores de explicación de la base monetaria,2026-06-08,-105015.0
+47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-11-02,0.0
+47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-10-30,147570.7
 47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-10-29,72380.0
 47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-10-28,0.0
 47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-10-27,0.0
@@ -497,6 +507,8 @@ id,descripcion,fecha,valor
 47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-06-10,173753.5
 47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-06-09,174930.0
 47,Efecto monetario de las compras netas de divisas al sector privado y otros ,2026-06-08,102607.0
+48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-11-02,-199855.331
+48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-10-30,0.0
 48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-10-29,0.0
 48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-10-28,0.0
 48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-10-27,0.0
@@ -596,6 +608,8 @@ id,descripcion,fecha,valor
 48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-06-10,0.0
 48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-06-09,0.0
 48,Efecto monetario de las compras netas de divisas al tesoro nacional ,2026-06-08,0.0
+49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-11-02,0.0
+49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-10-30,0.0
 49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-10-29,0.0
 49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-10-28,0.0
 49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-10-27,0.0
@@ -695,6 +709,8 @@ id,descripcion,fecha,valor
 49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-06-10,0.0
 49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-06-09,0.0
 49,Efecto monetario de los adelantos transitorios al tesoro nacional,2026-06-08,0.0
+50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-11-02,0.0
+50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-10-30,0.0
 50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-10-29,0.0
 50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-10-28,0.0
 50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-10-27,0.0
@@ -794,6 +810,8 @@ id,descripcion,fecha,valor
 50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-06-10,0.0
 50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-06-09,0.0
 50,Efecto monetario de las transferencia de utilidades al tesoro nacional ,2026-06-08,0.0
+51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-11-02,215084.0554
+51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-10-30,-51456.1215
 51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-10-29,15124.5723
 51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-10-28,-391.5455
 51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-10-27,67776.3711
@@ -893,6 +911,8 @@ id,descripcion,fecha,valor
 51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-06-10,-269.9134
 51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-06-09,723.9837
 51,Efecto monetario del resto de operaciones con el tesoro nacional,2026-06-08,-1434.2421
+52,Efecto monetario de las operaciones de pases ,2026-11-02,0.0
+52,Efecto monetario de las operaciones de pases ,2026-10-30,0.0
 52,Efecto monetario de las operaciones de pases ,2026-10-29,0.0
 52,Efecto monetario de las operaciones de pases ,2026-10-28,0.0
 52,Efecto monetario de las operaciones de pases ,2026-10-27,0.0
@@ -992,6 +1012,8 @@ id,descripcion,fecha,valor
 52,Efecto monetario de las operaciones de pases ,2026-06-10,0.0
 52,Efecto monetario de las operaciones de pases ,2026-06-09,0.0
 52,Efecto monetario de las operaciones de pases ,2026-06-08,0.0
+53,Efecto monetario de las LELIQ y NOTALQ ,2026-11-02,0.0
+53,Efecto monetario de las LELIQ y NOTALQ ,2026-10-30,0.0
 53,Efecto monetario de las LELIQ y NOTALQ ,2026-10-29,0.0
 53,Efecto monetario de las LELIQ y NOTALQ ,2026-10-28,0.0
 53,Efecto monetario de las LELIQ y NOTALQ ,2026-10-27,0.0
@@ -1091,6 +1113,8 @@ id,descripcion,fecha,valor
 53,Efecto monetario de las LELIQ y NOTALQ ,2026-06-10,0.0
 53,Efecto monetario de las LELIQ y NOTALQ ,2026-06-09,0.0
 53,Efecto monetario de las LELIQ y NOTALQ ,2026-06-08,0.0
+54,Efecto monetario de los redescuentos y adelantos ,2026-11-02,0.0
+54,Efecto monetario de los redescuentos y adelantos ,2026-10-30,0.0
 54,Efecto monetario de los redescuentos y adelantos ,2026-10-29,0.0
 54,Efecto monetario de los redescuentos y adelantos ,2026-10-28,0.0
 54,Efecto monetario de los redescuentos y adelantos ,2026-10-27,0.0
@@ -1190,6 +1214,8 @@ id,descripcion,fecha,valor
 54,Efecto monetario de los redescuentos y adelantos ,2026-06-10,0.0
 54,Efecto monetario de los redescuentos y adelantos ,2026-06-09,0.0
 54,Efecto monetario de los redescuentos y adelantos ,2026-06-08,0.0
+55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-11-02,0.0
+55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-10-30,0.0
 55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-10-29,0.0
 55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-10-28,0.0
 55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-10-27,0.0
@@ -1289,6 +1315,8 @@ id,descripcion,fecha,valor
 55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-06-10,0.0
 55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-06-09,0.0
 55,"Efecto monetario de los intereses, primas y remuneración de cuentas corrientes asociados a op. de pases, LELIQ, NOTALQ, redescuentos y adel. ",2026-06-08,0.0
+56,Efecto monetario de las LEBAC y NOBAC ,2026-11-02,0.0
+56,Efecto monetario de las LEBAC y NOBAC ,2026-10-30,0.0
 56,Efecto monetario de las LEBAC y NOBAC ,2026-10-29,0.0
 56,Efecto monetario de las LEBAC y NOBAC ,2026-10-28,0.0
 56,Efecto monetario de las LEBAC y NOBAC ,2026-10-27,0.0
@@ -1388,6 +1416,8 @@ id,descripcion,fecha,valor
 56,Efecto monetario de las LEBAC y NOBAC ,2026-06-10,0.0
 56,Efecto monetario de las LEBAC y NOBAC ,2026-06-09,0.0
 56,Efecto monetario de las LEBAC y NOBAC ,2026-06-08,0.0
+57,Efecto monetario del rescate de cuasimonedas ,2026-11-02,0.0
+57,Efecto monetario del rescate de cuasimonedas ,2026-10-30,0.0
 57,Efecto monetario del rescate de cuasimonedas ,2026-10-29,0.0
 57,Efecto monetario del rescate de cuasimonedas ,2026-10-28,0.0
 57,Efecto monetario del rescate de cuasimonedas ,2026-10-27,0.0
@@ -1487,6 +1517,8 @@ id,descripcion,fecha,valor
 57,Efecto monetario del rescate de cuasimonedas ,2026-06-10,0.0
 57,Efecto monetario del rescate de cuasimonedas ,2026-06-09,0.0
 57,Efecto monetario del rescate de cuasimonedas ,2026-06-08,0.0
+58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-11-02,0.0
+58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-10-30,0.0
 58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-10-29,0.0
 58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-10-28,0.0
 58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-10-27,0.0
@@ -1586,6 +1618,8 @@ id,descripcion,fecha,valor
 58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-06-10,0.0
 58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-06-09,0.0
 58,Efecto monetario de las operaciones con letras fiscales de liquidez ,2026-06-08,0.0
+59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-11-02,-95290.7244
+59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-10-30,1020232.4215
 59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-10-29,436949.4277
 59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-10-28,111287.5455
 59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-10-27,-1302371.3711
@@ -1685,6 +1719,8 @@ id,descripcion,fecha,valor
 59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-06-10,-6164.5866
 59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-06-09,-746119.9837
 59,Efecto monetario de otras operaciones que explican la variación de la base monetaria ,2026-06-08,-206187.7579
+64,Base monetaria,2026-11-02,-80062.0
+64,Base monetaria,2026-10-30,1116347.0
 64,Base monetaria,2026-10-29,524454.0
 64,Base monetaria,2026-10-28,110896.0
 64,Base monetaria,2026-10-27,-1234595.0
@@ -1784,6 +1820,8 @@ id,descripcion,fecha,valor
 64,Base monetaria,2026-06-10,167319.0
 64,Base monetaria,2026-06-09,-570466.0
 64,Base monetaria,2026-06-08,-105015.0
+66,Base monetaria más cuasimonedas ,2026-11-02,-80062.0
+66,Base monetaria más cuasimonedas ,2026-10-30,1116347.0
 66,Base monetaria más cuasimonedas ,2026-10-29,524454.0
 66,Base monetaria más cuasimonedas ,2026-10-28,110896.0
 66,Base monetaria más cuasimonedas ,2026-10-27,-1234595.0
@@ -1883,6 +1921,8 @@ id,descripcion,fecha,valor
 66,Base monetaria más cuasimonedas ,2026-06-10,167319.0
 66,Base monetaria más cuasimonedas ,2026-06-09,-570466.0
 66,Base monetaria más cuasimonedas ,2026-06-08,-105015.0
+71,Base monetaria,2026-11-02,47241558.0
+71,Base monetaria,2026-10-30,47321620.0
 71,Base monetaria,2026-10-29,46205273.0
 71,Base monetaria,2026-10-28,45680819.0
 71,Base monetaria,2026-10-27,45569923.0
@@ -1982,6 +2022,8 @@ id,descripcion,fecha,valor
 71,Base monetaria,2026-06-10,41998049.0
 71,Base monetaria,2026-06-09,41830730.0
 71,Base monetaria,2026-06-08,42401196.0
+73,Base monetaria más cuasimonedas,2026-11-02,47241558.0
+73,Base monetaria más cuasimonedas,2026-10-30,47321620.0
 73,Base monetaria más cuasimonedas,2026-10-29,46205273.0
 73,Base monetaria más cuasimonedas,2026-10-28,45680819.0
 73,Base monetaria más cuasimonedas,2026-10-27,45569923.0
@@ -2081,6 +2123,8 @@ id,descripcion,fecha,valor
 73,Base monetaria más cuasimonedas,2026-06-10,41998049.0
 73,Base monetaria más cuasimonedas,2026-06-09,41830730.0
 73,Base monetaria más cuasimonedas,2026-06-08,42401196.0
+74,Reservas internacionales (excluidas asignaciones deg 2009),2026-11-02,50439.0
+74,Reservas internacionales (excluidas asignaciones deg 2009),2026-10-30,48565.0
 74,Reservas internacionales (excluidas asignaciones deg 2009),2026-10-29,50164.0
 74,Reservas internacionales (excluidas asignaciones deg 2009),2026-10-28,50603.0
 74,Reservas internacionales (excluidas asignaciones deg 2009),2026-10-27,50579.0
@@ -2180,6 +2224,8 @@ id,descripcion,fecha,valor
 74,Reservas internacionales (excluidas asignaciones deg 2009),2026-06-10,47559.0
 74,Reservas internacionales (excluidas asignaciones deg 2009),2026-06-09,47834.0
 74,Reservas internacionales (excluidas asignaciones deg 2009),2026-06-08,47800.0
+77,Reservas internacionales ,2026-11-02,1873.541
+77,Reservas internacionales ,2026-10-30,-1598.5088
 77,Reservas internacionales ,2026-10-29,-439.0012
 77,Reservas internacionales ,2026-10-28,23.7967
 77,Reservas internacionales ,2026-10-27,97.452
@@ -2279,6 +2325,8 @@ id,descripcion,fecha,valor
 77,Reservas internacionales ,2026-06-10,-274.5941
 77,Reservas internacionales ,2026-06-09,33.5686
 77,Reservas internacionales ,2026-06-08,-66.6421
+78,Variación de reservas internacionales por compra de divisas ,2026-11-02,0.0
+78,Variación de reservas internacionales por compra de divisas ,2026-10-30,96.0
 78,Variación de reservas internacionales por compra de divisas ,2026-10-29,47.0
 78,Variación de reservas internacionales por compra de divisas ,2026-10-28,0.0
 78,Variación de reservas internacionales por compra de divisas ,2026-10-27,0.0
@@ -2378,6 +2426,8 @@ id,descripcion,fecha,valor
 78,Variación de reservas internacionales por compra de divisas ,2026-06-10,121.0
 78,Variación de reservas internacionales por compra de divisas ,2026-06-09,121.0
 78,Variación de reservas internacionales por compra de divisas ,2026-06-08,71.0
+79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-11-02,0.0
+79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-10-30,-2.8735
 79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-10-29,0.0604
 79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-10-28,0.0
 79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-10-27,0.0
@@ -2477,6 +2527,8 @@ id,descripcion,fecha,valor
 79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-06-10,0.0
 79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-06-09,0.1772
 79,Variación de reservas internacionales por operaciones con organismos internacionales,2026-06-08,0.0
+80,Variación de reservas internacionales por otras operaciones del sector público ,2026-11-02,0.0
+80,Variación de reservas internacionales por otras operaciones del sector público ,2026-10-30,-28.4769
 80,Variación de reservas internacionales por otras operaciones del sector público ,2026-10-29,9.9967
 80,Variación de reservas internacionales por otras operaciones del sector público ,2026-10-28,-0.4347
 80,Variación de reservas internacionales por otras operaciones del sector público ,2026-10-27,21.8977
@@ -2576,6 +2628,8 @@ id,descripcion,fecha,valor
 80,Variación de reservas internacionales por otras operaciones del sector público ,2026-06-10,-0.8061
 80,Variación de reservas internacionales por otras operaciones del sector público ,2026-06-09,0.0
 80,Variación de reservas internacionales por otras operaciones del sector público ,2026-06-08,-13.8026
+81,Variación de reservas internacionales por efectivo mínimo ,2026-11-02,1844.2306
+81,Variación de reservas internacionales por efectivo mínimo ,2026-10-30,-1498.2936
 81,Variación de reservas internacionales por efectivo mínimo ,2026-10-29,-475.8534
 81,Variación de reservas internacionales por efectivo mínimo ,2026-10-28,55.0483
 81,Variación de reservas internacionales por efectivo mínimo ,2026-10-27,-14.0943
@@ -2675,6 +2729,8 @@ id,descripcion,fecha,valor
 81,Variación de reservas internacionales por efectivo mínimo ,2026-06-10,-102.5788
 81,Variación de reservas internacionales por efectivo mínimo ,2026-06-09,44.918
 81,Variación de reservas internacionales por efectivo mínimo ,2026-06-08,-95.4807
+82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-11-02,29.3104
+82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-10-30,-164.8648
 82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-10-29,-20.2049
 82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-10-28,-30.817
 82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-10-27,89.6486
@@ -2774,6 +2830,8 @@ id,descripcion,fecha,valor
 82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-06-10,-292.2092
 82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-06-09,-132.5266
 82,Variación de reservas internacionales por otras operaciones no incluidas en otros rubros ,2026-06-08,-28.3588
+150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-11-04,22.06
+150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-11-03,21.87
 150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-11-02,22.12
 150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-10-30,21.86
 150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-10-29,20.7
@@ -2875,6 +2933,8 @@ id,descripcion,fecha,valor
 150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-06-10,20.19
 150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-06-09,20.13
 150,Tasa de interés por operaciones de pases entre terceros a 1 día,2026-06-08,20.14
+151,Operaciones de pases entre terceros a 1 día,2026-11-04,2322982.0
+151,Operaciones de pases entre terceros a 1 día,2026-11-03,2301780.0
 151,Operaciones de pases entre terceros a 1 día,2026-11-02,1788106.0
 151,Operaciones de pases entre terceros a 1 día,2026-10-30,2199217.0
 151,Operaciones de pases entre terceros a 1 día,2026-10-29,2493203.0
@@ -2976,6 +3036,8 @@ id,descripcion,fecha,valor
 151,Operaciones de pases entre terceros a 1 día,2026-06-10,1335974.0
 151,Operaciones de pases entre terceros a 1 día,2026-06-09,1449519.0
 151,Operaciones de pases entre terceros a 1 día,2026-06-08,1398217.0
+152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-11-04,0.0
+152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-11-03,0.0
 152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-11-02,0.0
 152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-10-30,0.0
 152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-10-29,0.0
@@ -3077,6 +3139,8 @@ id,descripcion,fecha,valor
 152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-06-10,0.0
 152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-06-09,0.0
 152,Pases pasivos para el BCRA (incluye pases pasivos con fci),2026-06-08,0.0
+153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-11-04,0.0
+153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-11-03,0.0
 153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-11-02,0.0
 153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-10-30,0.0
 153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-10-29,0.0
@@ -3178,6 +3242,8 @@ id,descripcion,fecha,valor
 153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-06-10,0.0
 153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-06-09,0.0
 153,Pases pasivos para el BCRA con fondos comunes de inversión,2026-06-08,0.0
+154,Pases activos para el BCRA,2026-11-04,0.0
+154,Pases activos para el BCRA,2026-11-03,0.0
 154,Pases activos para el BCRA,2026-11-02,0.0
 154,Pases activos para el BCRA,2026-10-30,0.0
 154,Pases activos para el BCRA,2026-10-29,0.0
@@ -3510,6 +3576,8 @@ id,descripcion,fecha,valor
 1021,Depósitos en cuentas corrientes de las sociedades autorizadas para actuar como fiduciario financiero,2026-08-31,291493.0
 1021,Depósitos en cuentas corrientes de las sociedades autorizadas para actuar como fiduciario financiero,2026-07-31,257755.0
 1021,Depósitos en cuentas corrientes de las sociedades autorizadas para actuar como fiduciario financiero,2026-06-30,192493.0
+4,Tipo de cambio minorista (promedio vendedor),2026-11-05,1571.84
+4,Tipo de cambio minorista (promedio vendedor),2026-11-04,1571.4
 4,Tipo de cambio minorista (promedio vendedor),2026-11-03,1572.65
 4,Tipo de cambio minorista (promedio vendedor),2026-11-02,1567.17
 4,Tipo de cambio minorista (promedio vendedor),2026-10-30,1562.04
@@ -3612,6 +3680,8 @@ id,descripcion,fecha,valor
 4,Tipo de cambio minorista (promedio vendedor),2026-06-10,1460.67
 4,Tipo de cambio minorista (promedio vendedor),2026-06-09,1463.83
 4,Tipo de cambio minorista (promedio vendedor),2026-06-08,1464.3
+5,Tipo de cambio mayorista de referencia,2026-11-05,1545.3974
+5,Tipo de cambio mayorista de referencia,2026-11-04,1548.4941
 5,Tipo de cambio mayorista de referencia,2026-11-03,1549.7194
 5,Tipo de cambio mayorista de referencia,2026-11-02,1544.6507
 5,Tipo de cambio mayorista de referencia,2026-10-30,1537.3487
@@ -3714,6 +3784,8 @@ id,descripcion,fecha,valor
 5,Tipo de cambio mayorista de referencia,2026-06-10,1436.585
 5,Tipo de cambio mayorista de referencia,2026-06-09,1446.1668
 5,Tipo de cambio mayorista de referencia,2026-06-08,1445.3978
+7,Tasa de interés BADLAR de bancos privados,2026-11-04,21.5
+7,Tasa de interés BADLAR de bancos privados,2026-11-03,22.75
 7,Tasa de interés BADLAR de bancos privados,2026-11-02,22.3125
 7,Tasa de interés BADLAR de bancos privados,2026-10-30,22.75
 7,Tasa de interés BADLAR de bancos privados,2026-10-29,23.125
@@ -3815,13 +3887,15 @@ id,descripcion,fecha,valor
 7,Tasa de interés BADLAR de bancos privados,2026-06-10,19.6875
 7,Tasa de interés BADLAR de bancos privados,2026-06-09,20.375
 7,Tasa de interés BADLAR de bancos privados,2026-06-08,19.875
-17,Billetes y monedas en poder del público,2026-10-30,26856719.0
+17,Billetes y monedas en poder del público,2026-11-03,26971999.0
+17,Billetes y monedas en poder del público,2026-11-02,27025309.0
+17,Billetes y monedas en poder del público,2026-10-30,26859169.0
 17,Billetes y monedas en poder del público,2026-10-29,26787894.0
-17,Billetes y monedas en poder del público,2026-10-28,26670237.0
-17,Billetes y monedas en poder del público,2026-10-27,26608177.0
+17,Billetes y monedas en poder del público,2026-10-28,26665934.0
+17,Billetes y monedas en poder del público,2026-10-27,26596999.0
 17,Billetes y monedas en poder del público,2026-10-26,26603460.0
-17,Billetes y monedas en poder del público,2026-10-23,26561976.0
-17,Billetes y monedas en poder del público,2026-10-22,26498391.0
+17,Billetes y monedas en poder del público,2026-10-23,26561622.0
+17,Billetes y monedas en poder del público,2026-10-22,26496126.0
 17,Billetes y monedas en poder del público,2026-10-21,26486656.0
 17,Billetes y monedas en poder del público,2026-10-20,26495507.0
 17,Billetes y monedas en poder del público,2026-10-19,26567460.0
@@ -3915,16 +3989,18 @@ id,descripcion,fecha,valor
 17,Billetes y monedas en poder del público,2026-06-10,24315805.0
 17,Billetes y monedas en poder del público,2026-06-09,24227406.0
 17,Billetes y monedas en poder del público,2026-06-08,24193656.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-30,254654236.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-29,253153386.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-28,251799030.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-27,251277650.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-26,250640819.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-23,249824377.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-22,249844490.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-21,249208526.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-20,248357285.0
-21,Depósitos en efectivo en las entidades financieras ,2026-10-19,247984545.0
+21,Depósitos en efectivo en las entidades financieras ,2026-11-03,252219971.0
+21,Depósitos en efectivo en las entidades financieras ,2026-11-02,252285272.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-30,254435708.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-29,253164523.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-28,251798931.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-27,251261236.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-26,250616371.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-23,249796417.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-22,249820221.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-21,249211478.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-20,248362655.0
+21,Depósitos en efectivo en las entidades financieras ,2026-10-19,247982438.0
 21,Depósitos en efectivo en las entidades financieras ,2026-10-16,246895113.0
 21,Depósitos en efectivo en las entidades financieras ,2026-10-15,247042617.0
 21,Depósitos en efectivo en las entidades financieras ,2026-10-14,245142428.0
@@ -3936,28 +4012,28 @@ id,descripcion,fecha,valor
 21,Depósitos en efectivo en las entidades financieras ,2026-10-05,244037051.0
 21,Depósitos en efectivo en las entidades financieras ,2026-10-02,246117155.0
 21,Depósitos en efectivo en las entidades financieras ,2026-10-01,246757310.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-30,248378196.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-29,246587011.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-28,245410352.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-25,244679955.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-24,243776511.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-23,242108514.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-22,241624376.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-21,240775600.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-18,240585303.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-17,239954274.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-16,238657215.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-15,239281463.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-14,238690101.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-11,238204761.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-10,236406993.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-09,235433317.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-08,235110610.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-07,235340050.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-04,237416888.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-03,237287292.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-02,237460271.0
-21,Depósitos en efectivo en las entidades financieras ,2026-09-01,238718841.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-30,248375043.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-29,246589320.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-28,245409704.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-25,244680018.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-24,243776673.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-23,242107222.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-22,241624019.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-21,240822535.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-18,240586578.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-17,239889501.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-16,238662265.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-15,239281699.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-14,238689088.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-11,238202260.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-10,236407357.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-09,235434060.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-08,235111020.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-07,235340028.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-04,237416634.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-03,237288078.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-02,237460386.0
+21,Depósitos en efectivo en las entidades financieras ,2026-09-01,238720147.0
 21,Depósitos en efectivo en las entidades financieras ,2026-08-31,239575880.0
 21,Depósitos en efectivo en las entidades financieras ,2026-08-28,239938600.0
 21,Depósitos en efectivo en las entidades financieras ,2026-08-27,238741967.0
@@ -4015,16 +4091,18 @@ id,descripcion,fecha,valor
 21,Depósitos en efectivo en las entidades financieras ,2026-06-10,216693971.0
 21,Depósitos en efectivo en las entidades financieras ,2026-06-09,216501570.0
 21,Depósitos en efectivo en las entidades financieras ,2026-06-08,216986116.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-30,35477281.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-29,38348199.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-28,37281153.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-27,36856900.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-26,36959871.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-23,36115736.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-22,36523453.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-21,36804387.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-20,35974701.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-19,34916484.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-11-03,34240728.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-11-02,34982683.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-30,35408920.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-29,38355418.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-28,37267321.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-27,36837038.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-26,36942893.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-23,36115229.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-22,36520034.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-21,36800968.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-20,35971926.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-19,34912564.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-16,34484620.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-15,36361359.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-14,36096340.0
@@ -4036,28 +4114,28 @@ id,descripcion,fecha,valor
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-05,32652527.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-02,32417246.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-10-01,33850891.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-30,35555255.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-29,37364887.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-28,36561322.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-25,35919907.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-24,36078753.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-23,35759253.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-22,35237087.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-21,34849582.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-18,32773120.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-17,32178315.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-16,32208134.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-15,35088560.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-14,34973034.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-11,34533065.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-10,33007783.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-09,31838856.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-08,32086892.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-07,31790796.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-04,32080647.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-03,32563985.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-02,32674028.0
-22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-01,33148317.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-30,35552182.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-29,37364999.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-28,36561424.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-25,35920915.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-24,36078796.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-23,35759397.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-22,35237319.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-21,34896194.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-18,32774611.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-17,32198601.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-16,32212608.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-15,35088975.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-14,34973189.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-11,34533320.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-10,33008423.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-09,31838971.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-08,32086981.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-07,31790894.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-04,32080670.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-03,32564215.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-02,32674165.0
+22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-09-01,33148489.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-08-31,35037028.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-08-28,35803804.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-08-27,36268830.0
@@ -4115,16 +4193,18 @@ id,descripcion,fecha,valor
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-06-10,31002560.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-06-09,29282631.0
 22,Depósitos en efectivo en las entidades financieras en cuentas corrientes(neto de utilización FUCO),2026-06-08,29743852.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-30,83578563.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-29,80362793.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-28,78950086.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-27,78054290.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-26,78087591.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-23,78136389.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-22,78436564.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-21,77928630.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-20,77483984.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-19,78037012.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-11-03,82747743.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-11-02,82909642.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-30,83542717.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-29,80368013.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-28,78967524.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-27,78064716.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-26,78090056.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-23,78138650.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-22,78439931.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-21,77931996.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-20,77487731.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-19,78037486.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-16,78197589.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-15,78738324.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-14,78762496.0
@@ -4136,28 +4216,28 @@ id,descripcion,fecha,valor
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-05,81424161.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-02,83245162.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-10-01,83025938.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-30,82566121.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-29,78888524.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-28,78139879.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-25,77715985.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-24,77219457.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-23,76832518.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-22,76069482.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-21,76584510.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-18,77277871.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-17,77051060.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-16,76565253.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-15,76664545.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-14,77709225.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-11,78014460.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-10,77738177.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-09,78376122.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-08,78487643.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-07,79155633.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-04,80770148.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-03,79936105.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-02,80340749.0
-23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-01,80596344.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-30,82566036.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-29,78889520.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-28,78138878.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-25,77714993.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-24,77219458.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-23,76832521.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-22,76069512.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-21,76584624.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-18,77277889.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-17,76966111.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-16,76565313.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-15,76664626.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-14,77709503.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-11,78014725.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-10,77738265.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-09,78376186.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-08,78487814.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-07,79155825.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-04,80771702.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-03,79936261.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-02,80340839.0
+23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-09-01,80596354.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-08-31,79960993.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-08-28,78073917.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-08-27,76308171.0
@@ -4215,16 +4295,18 @@ id,descripcion,fecha,valor
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-06-10,72746931.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-06-09,73469741.0
 23,Depósitos en efectivo en las entidades financieras en cajas de ahorro,2026-06-08,74062855.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-30,119725893.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-29,118793159.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-28,119972907.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-27,120552241.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-26,119968202.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-23,120015258.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-22,119377229.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-21,118804284.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-20,119263435.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-19,118252929.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-11-03,119174514.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-11-02,118342404.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-30,119599131.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-29,118790385.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-28,119969347.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-27,120547240.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-26,119962334.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-23,119985545.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-22,119353012.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-21,118807289.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-20,119267832.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-19,118254268.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-16,118455223.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-15,116405206.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-14,114561005.0
@@ -4236,7 +4318,7 @@ id,descripcion,fecha,valor
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-05,114606532.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-02,115287209.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-10-01,114430883.0
-24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-09-30,114350764.0
+24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-09-30,114350772.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-09-29,114966854.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-09-28,115520175.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-09-25,116011550.0
@@ -4315,7 +4397,11 @@ id,descripcion,fecha,valor
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-06-10,100001902.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-06-09,100731002.0
 24,Depósitos a plazo en efectivo en las entidades financieras (incluye inversiones y excluye CEDROs) ,2026-06-08,100083650.0
-25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-10-30,20.9
+25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-11-03,21.4
+25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-11-02,21.3
+25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-11-01,21.2
+25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-10-31,21.1
+25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-10-30,20.8
 25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-10-29,20.6
 25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-10-28,20.5
 25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-10-27,20.5
@@ -4460,16 +4546,17 @@ id,descripcion,fecha,valor
 25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-06-10,16.4
 25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-06-09,16.2
 25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-06-08,16.2
-25,Variación interanual del promedio móvil de 30 días del M2 privado.,2026-06-07,16.0
-109,M2 ,2026-10-29,96187392.0
-109,M2 ,2026-10-28,93549033.0
-109,M2 ,2026-10-27,92168235.0
-109,M2 ,2026-10-26,92250270.0
-109,M2 ,2026-10-23,91799649.0
-109,M2 ,2026-10-22,92212709.0
-109,M2 ,2026-10-21,91948313.0
-109,M2 ,2026-10-20,90885340.0
-109,M2 ,2026-10-19,90373065.0
+109,M2 ,2026-11-02,95375207.0
+109,M2 ,2026-10-30,96440854.0
+109,M2 ,2026-10-29,96199828.0
+109,M2 ,2026-10-28,93548298.0
+109,M2 ,2026-10-27,92145949.0
+109,M2 ,2026-10-26,92235808.0
+109,M2 ,2026-10-23,91801050.0
+109,M2 ,2026-10-22,92209618.0
+109,M2 ,2026-10-21,91947488.0
+109,M2 ,2026-10-20,90884788.0
+109,M2 ,2026-10-19,90369619.0
 109,M2 ,2026-10-16,90671002.0
 109,M2 ,2026-10-15,93031369.0
 109,M2 ,2026-10-14,92865088.0
@@ -4481,28 +4568,28 @@ id,descripcion,fecha,valor
 109,M2 ,2026-10-05,93235270.0
 109,M2 ,2026-10-02,94646159.0
 109,M2 ,2026-10-01,95602772.0
-109,M2 ,2026-09-30,96201743.0
-109,M2 ,2026-09-29,95060265.0
-109,M2 ,2026-09-28,93310916.0
-109,M2 ,2026-09-25,92418984.0
-109,M2 ,2026-09-24,92426429.0
-109,M2 ,2026-09-23,91886858.0
-109,M2 ,2026-09-22,90620078.0
-109,M2 ,2026-09-21,90600730.0
-109,M2 ,2026-09-18,89263839.0
-109,M2 ,2026-09-17,88846425.0
-109,M2 ,2026-09-16,88578907.0
-109,M2 ,2026-09-15,91393730.0
-109,M2 ,2026-09-14,92392181.0
-109,M2 ,2026-09-11,92309919.0
-109,M2 ,2026-09-10,90634093.0
-109,M2 ,2026-09-09,90032176.0
-109,M2 ,2026-09-08,90518058.0
-109,M2 ,2026-09-07,90866204.0
-109,M2 ,2026-09-04,93010886.0
-109,M2 ,2026-09-03,92720237.0
-109,M2 ,2026-09-02,93210357.0
-109,M2 ,2026-09-01,93847061.0
+109,M2 ,2026-09-30,96198585.0
+109,M2 ,2026-09-29,95061380.0
+109,M2 ,2026-09-28,93310018.0
+109,M2 ,2026-09-25,92419001.0
+109,M2 ,2026-09-24,92426473.0
+109,M2 ,2026-09-23,91887006.0
+109,M2 ,2026-09-22,90620339.0
+109,M2 ,2026-09-21,90647455.0
+109,M2 ,2026-09-18,89265350.0
+109,M2 ,2026-09-17,88781762.0
+109,M2 ,2026-09-16,88583441.0
+109,M2 ,2026-09-15,91394225.0
+109,M2 ,2026-09-14,92392615.0
+109,M2 ,2026-09-11,92310439.0
+109,M2 ,2026-09-10,90634820.0
+109,M2 ,2026-09-09,90032356.0
+109,M2 ,2026-09-08,90518319.0
+109,M2 ,2026-09-07,90866494.0
+109,M2 ,2026-09-04,93010958.0
+109,M2 ,2026-09-03,92720624.0
+109,M2 ,2026-09-02,93210584.0
+109,M2 ,2026-09-01,93847244.0
 109,M2 ,2026-08-31,95499495.0
 109,M2 ,2026-08-28,94195031.0
 109,M2 ,2026-08-27,92914200.0
@@ -4560,15 +4647,17 @@ id,descripcion,fecha,valor
 109,M2 ,2026-06-10,84388419.0
 109,M2 ,2026-06-09,83043450.0
 109,M2 ,2026-06-08,84014517.0
-197,M2 transaccional del sector privado,2026-10-29,66418974.925
-197,M2 transaccional del sector privado,2026-10-28,64077076.596
-197,M2 transaccional del sector privado,2026-10-27,63067485.811
-197,M2 transaccional del sector privado,2026-10-26,62874121.805
-197,M2 transaccional del sector privado,2026-10-23,62301522.388
-197,M2 transaccional del sector privado,2026-10-22,62718976.587
-197,M2 transaccional del sector privado,2026-10-21,62403874.422
-197,M2 transaccional del sector privado,2026-10-20,62351252.028
-197,M2 transaccional del sector privado,2026-10-19,62652731.626
+197,M2 transaccional del sector privado,2026-11-02,68889620.497
+197,M2 transaccional del sector privado,2026-10-30,69236685.899
+197,M2 transaccional del sector privado,2026-10-29,66431365.925
+197,M2 transaccional del sector privado,2026-10-28,64076840.498
+197,M2 transaccional del sector privado,2026-10-27,63019279.145
+197,M2 transaccional del sector privado,2026-10-26,62859659.805
+197,M2 transaccional del sector privado,2026-10-23,62296854.995
+197,M2 transaccional del sector privado,2026-10-22,62715885.587
+197,M2 transaccional del sector privado,2026-10-21,62403049.422
+197,M2 transaccional del sector privado,2026-10-20,62350700.028
+197,M2 transaccional del sector privado,2026-10-19,62649285.626
 197,M2 transaccional del sector privado,2026-10-16,63061268.172
 197,M2 transaccional del sector privado,2026-10-15,64194037.244
 197,M2 transaccional del sector privado,2026-10-14,64525005.61
@@ -4580,28 +4669,28 @@ id,descripcion,fecha,valor
 197,M2 transaccional del sector privado,2026-10-05,67833085.321
 197,M2 transaccional del sector privado,2026-10-02,68659610.073
 197,M2 transaccional del sector privado,2026-10-01,69368977.46
-197,M2 transaccional del sector privado,2026-09-30,69310150.464
-197,M2 transaccional del sector privado,2026-09-29,65789689.991
-197,M2 transaccional del sector privado,2026-09-28,64393845.34
-197,M2 transaccional del sector privado,2026-09-25,63379099.328
-197,M2 transaccional del sector privado,2026-09-24,63152705.63
-197,M2 transaccional del sector privado,2026-09-23,62700838.715
-197,M2 transaccional del sector privado,2026-09-22,62683705.519
-197,M2 transaccional del sector privado,2026-09-21,62773869.346
-197,M2 transaccional del sector privado,2026-09-18,62967917.742
-197,M2 transaccional del sector privado,2026-09-17,63552785.978
-197,M2 transaccional del sector privado,2026-09-16,63464993.469
-197,M2 transaccional del sector privado,2026-09-15,64470519.786
-197,M2 transaccional del sector privado,2026-09-14,64719630.464
-197,M2 transaccional del sector privado,2026-09-11,64775456.016
-197,M2 transaccional del sector privado,2026-09-10,64512680.884
-197,M2 transaccional del sector privado,2026-09-09,64698320.225
-197,M2 transaccional del sector privado,2026-09-08,65266604.208
-197,M2 transaccional del sector privado,2026-09-07,66113307.901
-197,M2 transaccional del sector privado,2026-09-04,67582535.706
-197,M2 transaccional del sector privado,2026-09-03,67680919.664
-197,M2 transaccional del sector privado,2026-09-02,67283699.691
-197,M2 transaccional del sector privado,2026-09-01,67751221.093
+197,M2 transaccional del sector privado,2026-09-30,69306991.464
+197,M2 transaccional del sector privado,2026-09-29,65790666.991
+197,M2 transaccional del sector privado,2026-09-28,64392842.34
+197,M2 transaccional del sector privado,2026-09-25,63378983.328
+197,M2 transaccional del sector privado,2026-09-24,63152687.63
+197,M2 transaccional del sector privado,2026-09-23,62700894.715
+197,M2 transaccional del sector privado,2026-09-22,62683727.519
+197,M2 transaccional del sector privado,2026-09-21,62773986.346
+197,M2 transaccional del sector privado,2026-09-18,62967930.742
+197,M2 transaccional del sector privado,2026-09-17,63552851.978
+197,M2 transaccional del sector privado,2026-09-16,63465049.469
+197,M2 transaccional del sector privado,2026-09-15,64470594.786
+197,M2 transaccional del sector privado,2026-09-14,64719906.464
+197,M2 transaccional del sector privado,2026-09-11,64775722.016
+197,M2 transaccional del sector privado,2026-09-10,64513243.884
+197,M2 transaccional del sector privado,2026-09-09,64698397.225
+197,M2 transaccional del sector privado,2026-09-08,65266775.208
+197,M2 transaccional del sector privado,2026-09-07,66113524.901
+197,M2 transaccional del sector privado,2026-09-04,67582578.706
+197,M2 transaccional del sector privado,2026-09-03,67681072.664
+197,M2 transaccional del sector privado,2026-09-02,67283781.691
+197,M2 transaccional del sector privado,2026-09-01,67751286.093
 197,M2 transaccional del sector privado,2026-08-31,68898160.774
 197,M2 transaccional del sector privado,2026-08-28,65705495.541
 197,M2 transaccional del sector privado,2026-08-27,63987210.941
