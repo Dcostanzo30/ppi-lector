@@ -1,4 +1,4 @@
-# Diagnóstico opciones — 2026-11-05 18:24
+# Diagnóstico opciones — 2026-11-05 19:47
 
 - OPCIONES mercado='': 1164 nuevos
 - OPCIONES mercado='BYMA': 0 nuevos
@@ -14,7 +14,7 @@ Muestra de registros crudos (para ajustar la lectura):
 - ALUC1100FE: {"ticker": "ALUC1100FE", "description": "Opción compra ALUA AR$ 1100.00 Vto. 19/02/2027", "currency": "Pesos", "type": "OPCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
 - ALUC1150DI: {"ticker": "ALUC1150DI", "description": "Opción compra ALUA AR$ 1150.00 Vto. 18/12/2026", "currency": "Pesos", "type": "OPCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
 - ALUC1150FE: {"ticker": "ALUC1150FE", "description": "Opción compra ALUA AR$ 1150.00 Vto. 19/02/2027", "currency": "Pesos", "type": "OPCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
-- Con precio actual: 397; sin precio: 3 ['BMAV9600FE(JSONDecodeError Expecting value: line 1 column 1 (char 0))', 'BYMC220.FE(JSONDecodeError Expecting value: line 1 column 1 (char 0))', 'BYMV240.DI(JSONDecodeError Expecting value: line 1 column 1 (char 0))']
+- Con precio actual: 396; sin precio: 4 ['ALUC1450FE(JSONDecodeError Expecting value: line 1 column 1 (char 0))', 'ALUC700.FE(JSONDecodeError Expecting value: line 1 column 1 (char 0))', 'ALUC750.DI(JSONDecodeError Expecting value: line 1 column 1 (char 0))', 'BMAV13600D(JSONDecodeError Expecting value: line 1 column 1 (char 0))']
 - Filas de historia diaria: 0
 Muestra de precios actuales crudos:
 - ALUC1000DI: {"date": "2026-10-02T17:00:01.23-03:00", "price": 17.99, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 15, "marketChange": 2.99, "marketChangePercent": "0%"}
