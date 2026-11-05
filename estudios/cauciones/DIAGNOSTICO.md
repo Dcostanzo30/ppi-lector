@@ -1,4 +1,4 @@
-# Diagnóstico cauciones — 2026-11-05 19:45
+# Diagnóstico cauciones — 2026-11-05 20:01
 
 - CAUCIONES mercado='': 18 nuevos
 - CAUCIONES mercado='BYMA': 0 nuevos
@@ -14,6 +14,7 @@ Muestra de registros crudos (para ajustar la lectura):
 - DOLAR6: {"ticker": "DOLAR6", "description": "DOLAR 6", "currency": "Dolares billete | MEP", "type": "CAUCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
 - DOLAR7: {"ticker": "DOLAR7", "description": "DOLAR 7", "currency": "Dolares billete | MEP", "type": "CAUCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
 - DOLAR8: {"ticker": "DOLAR8", "description": "DOLAR 8", "currency": "Dolares billete | MEP", "type": "CAUCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
+- Subyacentes de los instrumentos encontrados: {'?': 18}
 - Con precio actual: 18; sin precio: 0 []
 - Filas de historia diaria: 1312
 Muestra de precios actuales crudos:
