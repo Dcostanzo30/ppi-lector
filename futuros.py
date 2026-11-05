@@ -86,15 +86,21 @@ def listar(ppi):
     return hallados, tipos_fut
 
 
+ERRORES = {}
+
+
 def precio_hoy(ppi, tk, tipo):
-    for pl in PLAZOS:
-        time.sleep(PAUSA)
-        try:
-            c = ppi.marketdata.current(tk, tipo, pl)
-            if c:
-                return pl, c
-        except Exception:
-            continue
+    """Precio actual con reintentos (hasta 3 vueltas por plazo); guarda el último error para el diagnóstico."""
+    for intento in range(3):
+        for pl in PLAZOS:
+            time.sleep(PAUSA + intento * 0.8)
+            try:
+                c = ppi.marketdata.current(tk, tipo, pl)
+                if c and c.get("price"):
+                    return pl, c
+                ERRORES[tk] = f"respuesta vacía en {pl}: {str(c)[:120]}"
+            except Exception as e:
+                ERRORES[tk] = f"{type(e).__name__} en {pl}: {str(e)[:120]}"
     return None, None
 
 
@@ -122,12 +128,15 @@ def ultimo_dia_habil(a, m):
     return d
 
 
+VTO = {}   # ticker -> fecha de vencimiento que informa PPI en la descripción del contrato ("Futuro DLR Vto. 30/01/2027")
+
+
 def vencimiento(tk):
-    """DLR/NOV26 -> último día hábil de nov-2026 (los DLR vencen el último día hábil del mes; feriados no considerados)."""
+    """Fecha de vencimiento: la que informa PPI; si no, el último día hábil del mes (feriados no considerados)."""
     m = re.fullmatch(r"DLR/([A-Z]{3})(\d{2})", tk.upper())
     if not m or m.group(1) not in MESES:
         return None
-    return ultimo_dia_habil(2000 + int(m.group(2)), MESES[m.group(1)])
+    return VTO.get(tk.upper()) or ultimo_dia_habil(2000 + int(m.group(2)), MESES[m.group(1)])
 
 
 def mayorista():
@@ -195,6 +204,10 @@ def main():
     diag(f"\n**Futuros encontrados: {len(hallados)}**\n")
     csv_dic(SAL / "instrumentos.csv", [dict(ticker=k[0], tipo=k[1], registro=json.dumps(r, ensure_ascii=False, default=str))
                                        for k, r in sorted(hallados.items())])
+    for (tk, _), r in hallados.items():
+        m = re.search(r"Vto\.\s*(\d{2})/(\d{2})/(\d{4})", str(r.get("description", "")))
+        if m:
+            VTO[tk] = date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
     # primero los DLR simples, luego el resto
     orden = sorted(hallados, key=lambda k: (0 if vencimiento(k[0]) else 1, k[0]))[:MAX_FUTUROS]
     hoy, hist, sin_precio = [], [], []
@@ -202,14 +215,20 @@ def main():
         pl, c = precio_hoy(ppi, tk, tipo)
         if not c:
             sin_precio.append(tk)
+            if vencimiento(tk):      # igual intentamos la historia de los DLR simples
+                hist += historia(ppi, tk, tipo, None)
             continue
         hoy.append(dict(ticker=tk, tipo=tipo, plazo=pl, fecha=str(c.get("date", ""))[:19], precio=c.get("price"),
                         volumen=c.get("volume"), apertura=c.get("openingPrice"), maximo=c.get("max"), minimo=c.get("min"),
+                        cierre_previo=c.get("previousClose"), variacion=c.get("marketChangePercent"),
                         ajuste=c.get("settlementPrice") or c.get("adjustment"), interes_abierto=c.get("openInterest"),
                         registro=json.dumps(c, ensure_ascii=False, default=str)))
         if vencimiento(tk):          # historia solo de los DLR simples (la de los demás, en una segunda etapa)
             hist += historia(ppi, tk, tipo, pl)
     diag(f"- Con precio actual: {len(hoy)}; sin precio: {len(sin_precio)} {sin_precio[:15]}")
+    for tk in sin_precio[:20]:
+        diag(f"  - {tk}: {ERRORES.get(tk, 'sin detalle')}")
+    diag(f"- Vencimientos tomados de PPI: {len(VTO)} contratos")
     diag(f"- Filas de historia diaria (DLR simples): {len(hist)}")
     csv_dic(SAL / "precios_hoy.csv", hoy)
     csv_dic(SAL / "historico.csv", hist)
@@ -222,7 +241,7 @@ def main():
             md.append(f"| {f['ticker']} | {f['vencimiento']} | {f['dias']} | {f['precio']} | {f.get('devaluacion_implicita_pct', '')}% | {f.get('anualizada_pct', '')}% |")
         fm, spot = mayorista()
         md += ["", f"Mayorista de referencia usado: {spot} ({fm}). Devaluación implícita = precio del futuro / mayorista − 1. "
-                   "Los vencimientos se suponen el último día hábil del mes (sin ajustar feriados)."]
+                   "Vencimientos según la descripción del contrato en PPI (si falta, último día hábil del mes)."]
     else:
         md.append("No se pudo armar la curva (ver DIAGNOSTICO.md).")
     (SAL / "CURVA.md").write_text("\n".join(md), encoding="utf-8")
