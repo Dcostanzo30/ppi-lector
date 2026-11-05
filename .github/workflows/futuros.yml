@@ -1,0 +1,46 @@
+name: Futuros Rofex
+
+# Baja de PPI los futuros de Matba Rofex (dólar y el resto del panel): precio actual, historia diaria y curva de dólar futuro.
+# Solo consultas. Usa los mismos secretos PPI_API_KEY y PPI_API_SECRET que el resto de los lectores.
+# Corre al cierre de los días hábiles (17:45 hora argentina), cuando se edita el archivo, y a mano.
+on:
+  push:
+    paths:
+      - "futuros.py"
+      - ".github/workflows/futuros.yml"
+  schedule:
+    - cron: "45 20 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: futuros
+  cancel-in-progress: false
+
+jobs:
+  futuros:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+      - name: Leer futuros
+        run: python futuros.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/futuros
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Futuros Rofex $(date +%F)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN futuros.yml
