@@ -16,7 +16,7 @@ HISTORIA_DESDE = date(2026, 6, 1)
 PLAZOS = ("INMEDIATA", "A-24HS")
 PAUSA = 0.15
 MAX_OPC = 400
-SEM = list(string.ascii_uppercase) + list(string.digits) + ["DLR", "GGAL", "YPF", "PAMP", "CAUC", "CAUCION"]
+SEM = list(string.ascii_uppercase) + list(string.digits) + ["DLR", "DLR/", "DOLAR", "GGAL", "YPF", "PAMP", "CAUC", "CAUCION"]
 DIAG = {"cauciones": [], "opciones": []}
 ACT = "cauciones"
 
@@ -98,7 +98,7 @@ def csv_dic(ruta, filas):
         w.writerows(filas)
 
 
-def procesar(ppi, tipo, carpeta, filtro_hist, tope=None):
+def procesar(ppi, tipo, carpeta, filtro_hist, elegir=None):
     global ACT
     ACT = carpeta
     sal = Path("estudios") / carpeta
@@ -112,7 +112,17 @@ def procesar(ppi, tipo, carpeta, filtro_hist, tope=None):
     csv_dic(sal / "instrumentos.csv", [dict(ticker=k, registro=json.dumps(r, ensure_ascii=False, default=str))
                                        for k, r in sorted(hallados.items())])
     hoy, hist, sin = [], [], []
-    for tk in sorted(hallados)[:tope]:
+    elegidos = [tk for tk in sorted(hallados) if elegir is None or elegir(hallados[tk])]
+    if elegir is not None:
+        diag(f"- De {len(hallados)} instrumentos, se consultan precios de {len(elegidos)} que cumplen el filtro (opciones sobre dólar).")
+        if not elegidos:
+            diag("- **No hay opciones sobre dólar en PPI (esto se revisa todos los días: si PPI las suma, aparecen acá solas).**")
+    resumen = {}
+    for r in hallados.values():
+        m = re.search(r'(?:compra|venta)\s+(\S+)', str(r.get('description', '')))
+        resumen[m.group(1) if m else '?'] = resumen.get(m.group(1) if m else '?', 0) + 1
+    diag(f"- Subyacentes de los instrumentos encontrados: {dict(sorted(resumen.items(), key=lambda x: -x[1])[:15])}")
+    for tk in elegidos:
         pl, c, err = precio_hoy(ppi, tk, tipo)
         if not c:
             sin.append(f"{tk}({err})" if err else tk)
@@ -140,7 +150,8 @@ def main():
         print(f"No se pudo ingresar: {type(e).__name__} {str(e)[:200]}")
         return
     procesar(ppi, "CAUCIONES", "cauciones", lambda tk: True)
-    procesar(ppi, "OPCIONES", "opciones", lambda tk: "DLR" in tk, tope=MAX_OPC)
+    procesar(ppi, "OPCIONES", "opciones", lambda tk: True,
+             elegir=lambda r: bool(re.search(r"DLR|D[ÓO]LAR", str(r.get("description", "")) + " " + str(r.get("ticker", "")), re.I)))
     summ = os.environ.get("GITHUB_STEP_SUMMARY")
     if summ:
         with open(summ, "a", encoding="utf-8") as fh:
