@@ -86,13 +86,25 @@ def main(hasta, archivo):
     n = {"msjs": 0}
 
     def al_conectar():
+        """Suscribe todo; devuelve (fallidas, total)."""
         lista = instrumentos()
         log(f"conectado; suscribiendo {len(lista)} instrumentos")
+        fallas = 0
         for t, tipo, plazo in lista:
             try:
                 ppi.realtime.subscribe_to_element(Instrument(t, tipo, plazo))
             except Exception as e:
+                fallas += 1
                 log(f"no se pudo suscribir {t} {tipo} {plazo}: {e}")
+        return fallas, len(lista)
+
+    def reiniciar(motivo):
+        """La conexión murió sin avisar (5/11: PPI cortó a las 15:49 y quedaba "Hub is not running"). Se cierra la cinta y se
+        sale con código 1: el workflow relanza el lector en ~20 s con una conexión nueva, que sigue grabando al final de la misma
+        cinta. No hay dos sesiones a la vez: la vieja ya está muerta."""
+        log(f"vigía: {motivo}; cierro y reinicio la conexión")
+        try: out.close()
+        finally: os._exit(1)
 
     def al_desconectar():
         log(f"desconectado tras {n['msjs']} mensajes; se reinicia")
@@ -129,9 +141,13 @@ def main(hasta, archivo):
                 elif 10 * 60 + 30 <= h < 17 * 60: limite = 60           # rueda: 1 minuto sin nada local
                 else: continue
                 if callado > limite and time.time() - ult_local["resus"] > limite:
+                    if ult_local["resus"] and (ult_local["t"] or 0) < ult_local["resus"]:
+                        reiniciar(f"{int(callado)} s sin mensajes de BYMA y la resuscripción anterior no trajo nada")
                     ult_local["resus"] = time.time()
                     log(f"vigía: {int(callado)} s sin mensajes de BYMA; vuelvo a suscribir todo")
-                    al_conectar()
+                    fallas, total = al_conectar()
+                    if total and fallas >= total / 2:
+                        reiniciar(f"fallaron {fallas} de {total} suscripciones")
             except Exception as e:
                 log(f"vigía: error {e}")
 
