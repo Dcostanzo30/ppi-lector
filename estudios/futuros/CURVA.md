@@ -1,19 +1,19 @@
-# Curva de dólar futuro — 05/11/2026
+# Curva de dólar futuro — 06/11/2026
 
 | Contrato | Vence | Días | Precio | Devaluación implícita | Anualizada |
 |---|---|---|---|---|---|
-| DLR/NOV26 | 2026-12-01 | 26 | 1573 | 1.5% | 23.3% |
-| DLR/DIC26 | 2026-12-31 | 56 | 1601.5 | 3.34% | 23.9% |
-| DLR/ENE27 | 2027-01-30 | 86 | 1630.5 | 5.21% | 24.1% |
-| DLR/FEB27 | 2027-02-27 | 114 | 1658.5 | 7.02% | 24.3% |
-| DLR/MAR27 | 2027-04-01 | 147 | 1692.5 | 9.21% | 24.5% |
-| DLR/ABR27 | 2027-05-01 | 177 | 1725 | 11.31% | 24.7% |
-| DLR/MAY27 | 2027-06-01 | 208 | 1757.5 | 13.41% | 24.7% |
-| DLR/JUN27 | 2027-07-01 | 238 | 1791.5 | 15.6% | 24.9% |
-| DLR/JUL27 | 2027-07-31 | 268 | 1825.5 | 17.8% | 25.0% |
-| DLR/AGO27 | 2027-09-01 | 300 | 1864 | 20.28% | 25.2% |
-| DLR/SEP27 | 2027-10-01 | 330 | 1914 | 23.51% | 26.3% |
-| DLR/OCT27 | 2027-10-30 | 359 | 1963 | 26.67% | 27.2% |
-| DLR/NOV27 | 2027-12-01 | 391 | 2035 | 31.31% | 29.0% |
+| DLR/NOV26 | 2026-12-01 | 25 | 1569.5 | 1.56% | 25.4% |
+| DLR/DIC26 | 2026-12-31 | 55 | 1598.5 | 3.44% | 25.1% |
+| DLR/ENE27 | 2027-01-30 | 85 | 1628 | 5.35% | 25.1% |
+| DLR/FEB27 | 2027-02-27 | 113 | 1657 | 7.22% | 25.3% |
+| DLR/MAR27 | 2027-04-01 | 146 | 1691 | 9.42% | 25.2% |
+| DLR/ABR27 | 2027-05-01 | 176 | 1723 | 11.49% | 25.3% |
+| DLR/MAY27 | 2027-06-01 | 207 | 1755 | 13.56% | 25.1% |
+| DLR/JUN27 | 2027-07-01 | 237 | 1789 | 15.76% | 25.3% |
+| DLR/JUL27 | 2027-07-31 | 267 | 1822 | 17.9% | 25.2% |
+| DLR/AGO27 | 2027-09-01 | 299 | 1860 | 20.36% | 25.4% |
+| DLR/SEP27 | 2027-10-01 | 329 | 1910 | 23.59% | 26.5% |
+| DLR/OCT27 | 2027-10-30 | 358 | 1959 | 26.76% | 27.4% |
+| DLR/NOV27 | 2027-12-01 | 390 | 2031 | 31.42% | 29.1% |
 
-Mayorista de referencia usado: 1549.7194 (2026-11-03). Devaluación implícita = precio del futuro / mayorista − 1. Vencimientos según la descripción del contrato en PPI (si falta, último día hábil del mes).
+Mayorista de referencia usado: 1545.3974 (2026-11-05). Devaluación implícita = precio del futuro / mayorista − 1. Vencimientos según la descripción del contrato en PPI (si falta, último día hábil del mes).
