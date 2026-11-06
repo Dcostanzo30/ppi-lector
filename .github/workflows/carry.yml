@@ -1,0 +1,45 @@
+name: Carry minorista
+
+# Calcula todos los días, con los datos del propio repositorio, cuánto deja el carry del inversor de a pie neto de costos:
+# Lecap sin cobertura, Lecap cubierta con dólar futuro y caución en pesos. No usa secretos ni fuentes externas.
+# Corre a las 18:30 hora argentina (después de los lectores de futuros, letras y A3), al editar el archivo y a mano.
+on:
+  push:
+    paths:
+      - "carry.py"
+      - ".github/workflows/carry.yml"
+  schedule:
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: carry
+  cancel-in-progress: false
+
+jobs:
+  carry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: America/Argentina/Buenos_Aires
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Calcular
+        run: python carry.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/carry
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Carry minorista $(date +%F)"
+          for i in 1 2 3; do git push origin HEAD:main && break || (git pull --rebase origin main && sleep 5); done
+# FIN carry.yml
