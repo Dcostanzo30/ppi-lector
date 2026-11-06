@@ -1,0 +1,47 @@
+name: MEP con puntas
+
+# Lee de PPI las puntas de compra y venta de GD30/AL30 (pesos, MEP y CCL) y calcula cuánto cuesta cambiar dólares por el camino de bonos.
+# Solo consultas. Corre tres veces por día con el mercado abierto (11:15, 14:00 y 16:30 hora argentina), al editar el archivo y a mano.
+on:
+  push:
+    paths:
+      - "mep.py"
+      - ".github/workflows/mep.yml"
+  schedule:
+    - cron: "15 14 * * 1-5"
+    - cron: "0 17 * * 1-5"
+    - cron: "30 19 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mep
+  cancel-in-progress: false
+
+jobs:
+  mep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      PPI_API_KEY: ${{ secrets.PPI_API_KEY }}
+      PPI_API_SECRET: ${{ secrets.PPI_API_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ppi-client
+      - name: Leer puntas
+        run: python mep.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-mercado"
+          git config user.email "bot@users.noreply.github.com"
+          git add estudios/mep
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "MEP con puntas $(date +%F-%H%M)"
+          for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+# FIN mep.yml
