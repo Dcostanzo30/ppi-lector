@@ -35,7 +35,8 @@ FIN_ANIO = date(2026, 12, 31)
 # Pagos ya comprometidos que BAJAN las netas (miles de millones de US$). Los desembolsos y las devoluciones de capital
 # al FMI NO mueven las netas con la definición del FMI (cambian igual las reservas y el crédito del FMI que se resta);
 # los intereses y cargos sí.
-PAGOS_NETAS = [(date(2026, 11, 2), -0.88, "intereses y cargos al FMI")]
+PAGOS_NETAS = [(date(2026, 11, 2), -0.88, "intereses y cargos al FMI, noviembre"),
+               (date(2026, 12, 28), -0.338, "último pago al FMI de 2026, 28/12 (El Liberal, 6/11/2026)")]
 SERIES_BCRA = Path("estudios/monetarias/series.csv")     # monetarias.py: id 78 = compras de divisas del BCRA (US$ millones por día)
 
 
