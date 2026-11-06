@@ -144,6 +144,31 @@ def main():
         for n, (b, c, neto) in cau.items():
             md.append(f"| {n} días | {b:.2f}% | {c:.2f}% | {fx:.2f}% | **{neto:.2f}%** |")
         md += ["", "El neto es lo que deja, antes de que se mueva el dólar, pasar de dólares a pesos, prestar en caución y volver a dólares. Si el dólar sube más que ese neto, se pierde."]
+    # --- Alternativa sin cambio de moneda: soberanos largos en dólares (TIR de estudios/bonos/seguimiento.csv) ---
+    sg = leer("bonos/seguimiento.csv")
+    if sg:
+        ult_f = max(r["fecha"] for r in sg)
+        COM_BONO = 0.60 * 2          # compra y venta
+        md += ["", f"## Alternativa que no pasa por pesos: soberanos largos en dólares (rueda {ult_f})", "",
+               "Quien ya tiene dólares compra el bono en dólares (D) y no paga el cambio de moneda: solo 0,60% por comprar y 0,60% por vender. "
+               "La TIR es la que rinde el bono si se mantiene hasta el vencimiento y se paga todo; el precio puede caer o subir mientras tanto.", "",
+               "| Bono | TIR | Neto a 6 meses | Neto a 12 meses | Precio desde el 1.er dato | MEP implícito | MEP contra mayorista |", "|---|---|---|---|---|---|---|"]
+        for b in ("AL30", "AL35", "AE38", "AL41"):
+            rb = [r for r in sg if r["bono"] == b]
+            lr = [r for r in rb if r["fecha"] == ult_f]
+            if not lr:
+                continue
+            l, f0 = lr[0], rb[0]
+            try:
+                tir = float(l["tir_pct"]); pr = float(l["precio_d"]); p0 = float(f0["precio_d"])
+                mep = float(l["mep_implicito"]) if l.get("mep_implicito") else None
+            except Exception:
+                continue
+            dif = f"{(mep / spot - 1) * 100:.1f}%" if mep and spot else "-"
+            md.append(f"| {b} | {tir:.1f}% | {tir / 2 - COM_BONO:.1f}% | {tir - COM_BONO:.1f}% | {(pr / p0 - 1) * 100:.1f}% (desde {f0['fecha']}) | {mep or '-'} | {dif} |")
+        md += ["", "- *Neto:* TIR proporcional al plazo menos 1,2% de comisiones de compra y venta (sin la comisión de 0,70% sobre las rentas ni derechos de mercado).",
+               "- *Precio desde el 1.er dato:* variación del precio del bono. Es el riesgo que no aparece en la TIR: cuando sube el riesgo país, el bono baja, aunque la TIR calculada suba.",
+               "- Es una alternativa distinta del carry: no depende del tipo de cambio, pero sí del riesgo soberano. Se muestra como dato de comparación, no como recomendación."]
     md += ["", "## No incluido", "- Derechos de mercado de A3 y BYMA.", "- Garantía inmovilizada y ajustes diarios de los futuros (costo de oportunidad y liquidez).",
            "- Diferencia entre la base del mayorista (que cubre el futuro) y el MEP/CCL con el que se cambia (riesgo de brecha).",
            "- Impuestos y la diferencia de plazos entre el vencimiento de la letra y el del futuro."]
