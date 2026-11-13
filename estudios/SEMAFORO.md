@@ -1,10 +1,10 @@
 # Semáforo de riesgo político
 
-Al 04/11/2026: **ALERTA** — 3 de 4 condiciones encendidas (riesgo país 852, brecha CCL–MEP 5,55%).
+Al 12/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 852, brecha CCL–MEP 5,49%).
 
 | Condición | Hoy |
 |---|---|
-| Riesgo país en máximo de 60 días | encendida |
+| Riesgo país en máximo de 60 días | apagada |
 | Brecha CCL–MEP arriba del percentil 90 (250 días) | encendida |
 | Bonos largos caen ≥1 punto más que el corto (3 días) | apagada |
 | Bancos y reguladas ≥1,5 puntos peor que el resto (5 días) | encendida |
@@ -56,14 +56,14 @@ Primer día de cada racha. Riesgo país y panel líder (mediana, en pesos) 20 y 
 | 22/09/2026 | 5 | 555 | 21,4% | —% | -7,7% | —% | — |
 | 01/10/2026 | 2 | 636 | 23,7% | —% | -7,9% | —% | — |
 | 14/10/2026 | 1 | 611 | —% | —% | —% | —% | — |
-| 30/10/2026 | 4 | 787 | —% | —% | —% | —% | — |
+| 30/10/2026 | 6 | 787 | —% | —% | —% | —% | — |
 
 ## ¿Sirve? (días en alerta contra el resto)
 
 | | Días | RP +20d (media) | Prob. RP +10% en 20d | Panel +20d (media) | Panel +60d (media) |
 |---|---|---|---|---|---|
-| En alerta | 58 | -0,5% | 16% | 3,5% | 17,9% |
-| Sin alerta | 1837 | 2,0% | 22% | 2,9% | 8,6% |
+| En alerta | 58 | -0,5% | 16% | 3,5% | 16,2% |
+| Sin alerta | 1841 | 2,1% | 22% | 2,8% | 8,5% |
 
 Para cada elección: ¿estaba encendido el semáforo en los 20 días hábiles previos?
 
