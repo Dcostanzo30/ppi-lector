@@ -44,3 +44,5 @@ jobs:
           git commit -m "Cauciones y opciones $(date +%F)"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
 # FIN cauciones.yml
+
+# horarios recargados 2026-11-13 tras la suspensión

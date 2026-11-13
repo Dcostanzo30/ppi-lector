@@ -45,3 +45,5 @@ jobs:
           git commit -m "MEP con puntas $(date +%F-%H%M)"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
 # FIN mep.yml
+
+# horarios recargados 2026-11-13 tras la suspensión

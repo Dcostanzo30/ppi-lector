@@ -30,3 +30,5 @@ jobs:
           git add estudios/historico/dolares_diarios.csv estudios/historico/riesgo_pais.csv estudios/historico/semaforo_precios.csv estudios/historico/semaforo.csv estudios/SEMAFORO.md
           git commit -m "Dólares diarios y riesgo país" || exit 0
           for i in 1 2 3; do git pull --rebase -X theirs && git push && break; sleep 5; done
+
+# horarios recargados 2026-11-13 tras la suspensión
