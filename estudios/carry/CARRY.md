@@ -1,4 +1,4 @@
-# Carry del inversor de a pie — 06/11/2026
+# Carry del inversor de a pie — 13/11/2026
 
 Dólar mayorista de referencia: 1545.3974. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.26% de puntas medidas (5 lecturas) (= 2.66%).
 
@@ -22,16 +22,16 @@ Dólar mayorista de referencia: 1545.3974. Costo de ida y vuelta del cambio de d
 
 El neto es lo que deja, antes de que se mueva el dólar, pasar de dólares a pesos, prestar en caución y volver a dólares. Si el dólar sube más que ese neto, se pierde.
 
-## Alternativa que no pasa por pesos: soberanos largos en dólares (rueda 2026-11-05)
+## Alternativa que no pasa por pesos: soberanos largos en dólares (rueda 2026-11-06)
 
 Quien ya tiene dólares compra el bono en dólares (D) y no paga el cambio de moneda: solo 0,60% por comprar y 0,60% por vender. La TIR es la que rinde el bono si se mantiene hasta el vencimiento y se paga todo; el precio puede caer o subir mientras tanto.
 
 | Bono | TIR | Neto a 6 meses | Neto a 12 meses | Precio desde el 1.er dato | MEP implícito | MEP contra mayorista |
 |---|---|---|---|---|---|---|
-| AL30 | 14.5% | 6.0% | 13.3% | -8.0% (desde 2026-07-08) | 1575.68 | 2.0% |
-| AL35 | 14.7% | 6.1% | 13.5% | -20.9% (desde 2026-07-08) | 1583.94 | 2.5% |
-| AE38 | 15.1% | 6.4% | 13.9% | -18.5% (desde 2026-07-08) | 1568.35 | 1.5% |
-| AL41 | 14.3% | 6.0% | 13.1% | -22.8% (desde 2026-07-08) | 1588.0 | 2.8% |
+| AL30 | 14.8% | 6.2% | 13.6% | -8.3% (desde 2026-07-08) | 1583.82 | 2.5% |
+| AL35 | 14.7% | 6.2% | 13.5% | -21.0% (desde 2026-07-08) | 1579.84 | 2.2% |
+| AE38 | 15.6% | 6.6% | 14.4% | -19.9% (desde 2026-07-08) | 1579.46 | 2.2% |
+| AL41 | 14.3% | 6.0% | 13.1% | -22.8% (desde 2026-07-08) | 1573.57 | 1.8% |
 
 - *Neto:* TIR proporcional al plazo menos 1,2% de comisiones de compra y venta (sin la comisión de 0,70% sobre las rentas ni derechos de mercado).
 - *Precio desde el 1.er dato:* variación del precio del bono. Es el riesgo que no aparece en la TIR: cuando sube el riesgo país, el bono baja, aunque la TIR calculada suba.
