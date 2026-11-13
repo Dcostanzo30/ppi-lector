@@ -1,0 +1,4 @@
+# Archivos que Jekyll (GitHub Pages) no debe procesar.
+# PROBE.md tiene URLs con {%22...} que Liquid toma como etiquetas y rompe el build.
+exclude:
+  - estudios/mae/PROBE.md
