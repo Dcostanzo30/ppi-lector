@@ -1,6 +1,6 @@
 # Seguimiento de soberanos largos en dólares
 
-Última rueda: **2026-11-06**. Riesgo país: **—**. Brent: **US$ 97,76**.
+Última rueda: **2026-11-06**. Riesgo país: **939**. Brent: **US$ 98,32**.
 
 Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Paridad = precio / (residual + corrido).
 
@@ -15,7 +15,7 @@ Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Parida
 
 | Fecha | Riesgo país | Brent | TIR AE38 | TIR AL41 | TIR GD38 | Precio AE38D | Precio AL41D | Precio GD38D | Ley local AE38−GD38 | Ley local AL41−GD41 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 2026-11-06 | — | 97,76 | 15,63% | 14,34% | —% | 66,20 | 59,33 | — | — | — |
+| 2026-11-06 | 939 | 98,32 | 15,63% | 14,34% | —% | 66,20 | 59,33 | — | — | — |
 | 2026-11-05 | 925 | 98,29 | 15,13% | 14,32% | 13,11% | 67,30 | 59,32 | 72,46 | 2,02 | — |
 | 2026-11-04 | 852 | 94,62 | 14,57% | 13,77% | 12,38% | 68,65 | 60,80 | 74,45 | 2,19 | — |
 | 2026-11-03 | 831 | 103,60 | 14,62% | 13,83% | 12,41% | 68,50 | 60,62 | 74,35 | 2,21 | — |
