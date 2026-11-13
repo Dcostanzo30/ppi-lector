@@ -91,7 +91,19 @@ jobs:
             # Posta: a las 13:30 el turno mañana larga el turno tarde, que se superpone 15 minutos.
             ESPERA=$(( $(date -d 13:30 +%s) - $(date +%s) ))
             [ $ESPERA -lt 0 ] && ESPERA=0
-            nohup bash -c "sleep $ESPERA; gh workflow run lector.yml -R $GITHUB_REPOSITORY -f turno=tarde && echo posta enviada" > posta.log 2>&1 &
+            # 13/11: la posta tenía un solo intento; si fallaba, la tarde quedaba sin grabar hasta que alguien la largara.
+            # Ahora reintenta hasta que aparezca una corrida posterior a esta (así nunca larga dos turnos tarde).
+            export ESPERA
+            nohup bash -c '
+              sleep $ESPERA
+              for i in 1 2 3 4 5 6 7 8; do
+                CORTE=$(date -u -d 13:29 +%Y-%m-%dT%H:%M:%SZ)
+                NUEVAS=$(gh run list -R $GITHUB_REPOSITORY -w lector.yml -L 10 --json databaseId,createdAt -q ".[]|select(.createdAt >= \"$CORTE\")|.databaseId" | awk -v yo=$GITHUB_RUN_ID "\$1 > yo" | wc -l)
+                if [ "$NUEVAS" -gt 0 ]; then echo "$(date +%H:%M:%S) posta confirmada"; exit 0; fi
+                gh workflow run lector.yml -R $GITHUB_REPOSITORY -f turno=tarde && echo "$(date +%H:%M:%S) posta enviada (intento $i)"
+                sleep 45
+              done
+              echo "posta: no se pudo confirmar"' > posta.log 2>&1 &
             echo "Posta al turno tarde programada en $ESPERA segundos"
           fi
           ARCHIVO="parte_$(date +%H%M).txt.gz"
@@ -189,7 +201,7 @@ jobs:
           print(f"\n**Finnhub**: cierres anteriores leídos {prev}; operaciones por símbolo: {dict(f) or 'ninguna (mercado cerrado)'}")
           PY
       - name: Enviar al repositorio privado
-        if: env.SEGUIR == 'si' && env.TURNO != 'prueba'
+        if: "!cancelled() && env.SEGUIR == 'si' && env.TURNO != 'prueba'"
         env:
           DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
         run: |
@@ -207,6 +219,18 @@ jobs:
           git add tiempo_real tiempo_real_afuera 2>/dev/null || git add tiempo_real
           git commit -m "Tiempo real $(date +%F) $ARCHIVO"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+      - name: Relanzar si se cortó antes de hora
+        # Si el trabajo termina antes de su hora de fin (falla del runner, del paso de escucha o del envío),
+        # larga enseguida otro lector del mismo turno: el hueco queda en uno o dos minutos y la parte nueva
+        # se suma a la cinta del día. Con turno explícito no se frena por el que se está cerrando.
+        if: "!cancelled() && env.SEGUIR == 'si' && (env.TURNO == 'manana' || env.TURNO == 'tarde')"
+        run: |
+          case "$TURNO" in manana) FIN="13:29" ;; tarde) FIN="17:05" ;; esac
+          if [ "$(date +%H:%M)" \< "$FIN" ]; then
+            gh workflow run lector.yml -R "$GITHUB_REPOSITORY" -f turno="$TURNO" && echo "Relanzado el turno $TURNO a las $(date +%H:%M)"
+          else
+            echo "Terminó en horario."
+          fi
 # FIN lector.yml
 
 # horarios recargados 2026-11-13 tras la suspensión
