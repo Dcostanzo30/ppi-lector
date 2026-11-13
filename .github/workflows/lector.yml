@@ -97,7 +97,7 @@ jobs:
             nohup bash -c '
               sleep $ESPERA
               for i in 1 2 3 4 5 6 7 8; do
-                CORTE=$(date -u -d 13:29 +%Y-%m-%dT%H:%M:%SZ)
+                CORTE=$(date -u -d "@$(date -d 13:29 +%s)" +%Y-%m-%dT%H:%M:%SZ)
                 NUEVAS=$(gh run list -R $GITHUB_REPOSITORY -w lector.yml -L 10 --json databaseId,createdAt -q ".[]|select(.createdAt >= \"$CORTE\")|.databaseId" | awk -v yo=$GITHUB_RUN_ID "\$1 > yo" | wc -l)
                 if [ "$NUEVAS" -gt 0 ]; then echo "$(date +%H:%M:%S) posta confirmada"; exit 0; fi
                 gh workflow run lector.yml -R $GITHUB_REPOSITORY -f turno=tarde && echo "$(date +%H:%M:%S) posta enviada (intento $i)"
