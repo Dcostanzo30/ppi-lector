@@ -14,8 +14,8 @@ on:
   workflow_dispatch:
     inputs:
       turno:
-        description: "prueba o tarde"
-        default: "prueba"
+        description: "auto (según la hora), manana, tarde o prueba"
+        default: "auto"
       minutos:
         description: "Minutos de prueba"
         default: "5"
@@ -40,8 +40,11 @@ jobs:
     steps:
       - name: Decidir turno
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.turno }}" != "auto" ]; then
             TURNO="${{ github.event.inputs.turno }}"
+          elif [ "$(date +%H%M)" \> "1709" ] || [ "$(date +%H%M)" \< "0800" ]; then
+            # Lanzado a mano o por el reloj externo fuera del horario de rueda: no hay nada que grabar.
+            TURNO="fuera"
           elif [ "$(date +%H%M)" \< "1330" ]; then
             # Si GitHub lo largó tarde pero todavía antes de la posta de las 13:30, sigue siendo el turno mañana:
             # graba lo que queda de la mañana y a las 13:30 larga el turno tarde como siempre.
@@ -50,7 +53,10 @@ jobs:
             TURNO="tarde"
           fi
           SEGUIR=si
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "$TURNO" = "fuera" ]; then echo "Fuera del horario de rueda: no se graba."; SEGUIR=no; fi
+          # 13/11: lanzarlo a mano sin turno grababa una prueba de 5 minutos y se perdió la mañana. Ahora "auto" decide por la
+          # hora, y tanto los horarios de GitHub como el reloj externo (tareas programadas de Claude) pasan por este control.
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.turno }}" = "auto" ]; then
             # Solo cuentan los lectores que arrancaron antes que este (número de corrida menor):
             # si dos respaldos salen juntos, sigue el más viejo y no se cortan los dos.
             OTROS=$(gh run list -R "$GITHUB_REPOSITORY" -w lector.yml -s in_progress --json databaseId -q ".[].databaseId" | awk -v yo="$GITHUB_RUN_ID" '$1 < yo' | wc -l)
