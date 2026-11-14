@@ -42,7 +42,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.turno }}" != "auto" ]; then
             TURNO="${{ github.event.inputs.turno }}"
-          elif [ "$(date +%H%M)" \> "1709" ] || [ "$(date +%H%M)" \< "0800" ]; then
+          elif [ "$(date +%H%M)" \> "1804" ] || [ "$(date +%H%M)" \< "0800" ]; then
             # Lanzado a mano o por el reloj externo fuera del horario de rueda: no hay nada que grabar.
             TURNO="fuera"
           elif [ "$(date +%H%M)" \< "1330" ]; then
@@ -84,7 +84,7 @@ jobs:
         run: |
           case "$TURNO" in
             manana) HASTA="13:45" ;;
-            tarde)  HASTA="17:10" ;;
+            tarde)  HASTA="18:05" ;;   # desde el 2/11/2026 BYMA opera acciones y CEDEARs a 24 hs hasta las 18:00 (antes 17:10)
             *)      HASTA=$(date -d "+${{ github.event.inputs.minutos || '5' }} minutes" +%H:%M) ;;
           esac
           if [ "$TURNO" = "manana" ]; then

@@ -77,7 +77,8 @@ def byma_foto():
             if not pl or not x.get("symbol"): continue
             out.append(dict(ticker=str(x["symbol"]).strip().upper(), tipo=tipo, plazo=pl, moneda=MONEDA_BYMA.get(x.get("denominationCcy"), x.get("denominationCcy")),
                             price=x.get("closingPrice") or x.get("trade") or 0, volume=x.get("volumeAmount") or 0, openingPrice=x.get("openingPrice") or 0,
-                            max=x.get("tradingHighPrice") or 0, min=x.get("tradingLowPrice") or 0, operaciones=x.get("numberOfOrders") or 0))
+                            max=x.get("tradingHighPrice") or 0, min=x.get("tradingLowPrice") or 0, operaciones=x.get("numberOfOrders") or 0,
+                            nominales=x.get("volume") or 0, hora_ultima=x.get("tradeHour") or ""))   # mismo dato que ya baja: nominales y hora de la última operación
         print(f"BYMADATA {ep}: {len(lista or [])} filas", flush=True)
     return out
 
