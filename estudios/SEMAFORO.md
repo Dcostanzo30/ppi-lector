@@ -1,6 +1,6 @@
 # Semáforo de riesgo político
 
-Al 13/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 829, brecha CCL–MEP 6,01%).
+Al 13/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 830, brecha CCL–MEP 6,01%).
 
 | Condición | Hoy |
 |---|---|
@@ -55,7 +55,7 @@ Primer día de cada racha. Riesgo país y panel líder (mediana, en pesos) 20 y 
 | 15/09/2026 | 1 | 506 | 20,8% | —% | -8,4% | —% | — |
 | 22/09/2026 | 5 | 555 | 21,4% | —% | -7,7% | —% | — |
 | 01/10/2026 | 2 | 636 | 23,7% | —% | -7,9% | —% | — |
-| 14/10/2026 | 1 | 611 | 35,7% | —% | -14,9% | —% | — |
+| 14/10/2026 | 1 | 611 | 35,8% | —% | -14,9% | —% | — |
 | 30/10/2026 | 6 | 787 | —% | —% | —% | —% | — |
 
 ## ¿Sirve? (días en alerta contra el resto)
