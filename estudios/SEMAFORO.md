@@ -1,6 +1,6 @@
 # Semáforo de riesgo político
 
-Al 12/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 852, brecha CCL–MEP 5,49%).
+Al 13/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 829, brecha CCL–MEP 6,01%).
 
 | Condición | Hoy |
 |---|---|
@@ -55,14 +55,14 @@ Primer día de cada racha. Riesgo país y panel líder (mediana, en pesos) 20 y 
 | 15/09/2026 | 1 | 506 | 20,8% | —% | -8,4% | —% | — |
 | 22/09/2026 | 5 | 555 | 21,4% | —% | -7,7% | —% | — |
 | 01/10/2026 | 2 | 636 | 23,7% | —% | -7,9% | —% | — |
-| 14/10/2026 | 1 | 611 | —% | —% | —% | —% | — |
+| 14/10/2026 | 1 | 611 | 35,7% | —% | -14,9% | —% | — |
 | 30/10/2026 | 6 | 787 | —% | —% | —% | —% | — |
 
 ## ¿Sirve? (días en alerta contra el resto)
 
 | | Días | RP +20d (media) | Prob. RP +10% en 20d | Panel +20d (media) | Panel +60d (media) |
 |---|---|---|---|---|---|
-| En alerta | 58 | -0,5% | 16% | 3,5% | 16,2% |
+| En alerta | 59 | 0,1% | 17% | 3,2% | 16,2% |
 | Sin alerta | 1841 | 2,1% | 22% | 2,8% | 8,5% |
 
 Para cada elección: ¿estaba encendido el semáforo en los 20 días hábiles previos?
