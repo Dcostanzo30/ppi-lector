@@ -1,4 +1,4 @@
-# Diagnóstico Lecap — 2026-11-13 17:16
+# Diagnóstico Lecap — 2026-11-13 22:05
 
 Letras encontradas (S/T, pesos): 3 -> ['S26F7', 'S29E7', 'S30N6']
 
