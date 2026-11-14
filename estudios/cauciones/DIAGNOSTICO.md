@@ -1,4 +1,4 @@
-# Diagnóstico cauciones — 2026-11-13 17:16
+# Diagnóstico cauciones — 2026-11-13 22:06
 
 - CAUCIONES mercado='': 18 nuevos
 - CAUCIONES mercado='BYMA': 0 nuevos
