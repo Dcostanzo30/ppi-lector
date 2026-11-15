@@ -2,6 +2,10 @@ name: Probar Supabase
 
 on:
   workflow_dispatch:
+    inputs:
+      probar:
+        description: "si = además guardar, leer y borrar una operación de prueba"
+        default: "no"
 
 jobs:
   probar:
@@ -12,7 +16,35 @@ jobs:
       SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
     steps:
       - run: pip install requests
+      - name: Medir la tabla ops (solo lectura)
+        shell: python
+        run: |
+          import os, requests
+          from datetime import date, timedelta
+          url = os.environ["SUPABASE_URL"].strip().rstrip("/"); k = os.environ["SUPABASE_SECRET"].strip()
+          h = {"apikey": k}
+          if k.startswith("eyJ"): h["Authorization"] = "Bearer " + k
+          def cuenta(filtro=""):
+              r = requests.get(f"{url}/rest/v1/ops?select=clave{filtro}", headers=dict(h, Prefer="count=exact", Range="0-0"), timeout=60)
+              return int(r.headers.get("Content-Range", "*/0").split("/")[-1] or 0)
+          def extremo(orden):
+              r = requests.get(f"{url}/rest/v1/ops?select=fecha&order=fecha.{orden}&limit=1", headers=h, timeout=60)
+              return r.json()[0]["fecha"] if r.ok and r.json() else None
+          total = cuenta(); d0, d1 = extremo("asc"), extremo("desc")
+          print(f"Filas totales: {total:,} · primera fecha {d0} · última fecha {d1}")
+          if d0 and d1:
+              d = date.fromisoformat(d0)
+              while d <= date.fromisoformat(d1):
+                  if d.weekday() < 5:
+                      n = cuenta(f"&fecha=eq.{d}")
+                      if n: print(f"  {d}: {n:,} filas")
+                  d += timedelta(days=1)
+              hace7 = date.today() - timedelta(days=7)
+              print(f"Filas de más de una semana (fecha < {hace7}): {cuenta(f'&fecha=lt.{hace7}'):,}")
+          print("Plan gratuito de Supabase: 500 MB de base. A unos 200 a 300 bytes por fila con índices, estimado:",
+                f"{total * 250 / 2**20:,.0f} MB")
       - name: Probar
+        if: ${{ github.event.inputs.probar == 'si' }}
         shell: python
         run: |
           import os, json, requests
