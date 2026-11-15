@@ -3,7 +3,7 @@ name: Canal de salida y semaforo (diario)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "40 22 * * 1-5"
+    - cron: "10 3 * * 2-6"     # 00:10 de Buenos Aires: después de la capa de fuentes de las 23:50
 
 permissions:
   contents: write
@@ -21,6 +21,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install pandas ppi-client
+      - name: Capa de fuentes de ppi--datos (solo lectura)
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos \
+            && git -C datos sparse-checkout set fuentes || echo "::warning::sin capa de fuentes: se usa el respaldo"
       - run: python canal_salida_datos.py
       - run: python semaforo_datos.py
       - run: python semaforo.py

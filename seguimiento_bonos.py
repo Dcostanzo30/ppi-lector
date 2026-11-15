@@ -53,6 +53,9 @@ def calcular(fl, precio, fecha):
 
 
 def riesgo_pais():
+    import fuentes_datos
+    rp = fuentes_datos.serie("riesgo_pais")                         # capa de fuentes de ppi--datos (15/11/2026)
+    if rp: return rp
     try:
         req = urllib.request.Request("https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais", headers={"User-Agent": "Mozilla/5.0"})
         datos = json.load(urllib.request.urlopen(req, timeout=30))
@@ -63,7 +66,10 @@ def riesgo_pais():
 
 
 def brent():
-    """Cierre diario del Brent (futuro BZ=F, Yahoo Finance). Si falla, queda vacío."""
+    """Cierre diario del Brent: de la capa de fuentes de ppi--datos; si no está, futuro BZ=F de Yahoo Finance. Si falla, vacío."""
+    import fuentes_datos
+    b = fuentes_datos.serie("brent")
+    if b: return {d: round(v, 2) for d, v in b.items() if d >= "2026-07-01"}
     try:
         import yfinance as yf
         h = yf.download("BZ=F", start="2026-07-01", progress=False, auto_adjust=False)["Close"]

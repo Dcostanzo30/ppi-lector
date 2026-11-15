@@ -33,6 +33,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install yfinance
+      - name: Capa de fuentes de ppi--datos (solo lectura)
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos \
+            && git -C datos sparse-checkout set fuentes || echo "::warning::sin capa de fuentes: se usa el respaldo"
       - name: Calcular
         run: |
           python seguimiento_bonos.py
