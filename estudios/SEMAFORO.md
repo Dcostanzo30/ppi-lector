@@ -1,6 +1,6 @@
 # Semáforo de riesgo político
 
-Al 13/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 830, brecha CCL–MEP 6,01%).
+Al 13/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 830, brecha CCL–MEP 6,16%).
 
 | Condición | Hoy |
 |---|---|
