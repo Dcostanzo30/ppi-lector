@@ -80,6 +80,43 @@ def brent():
         return {}
 
 
+BONOS_VR = ["AL29D", "GD29D", "AL30D", "GD30D", "AL35D", "GD35D", "AE38D", "GD38D", "AL41D", "GD41D", "GD46D"]
+
+
+def paridad_vr():
+    """Soberanos en dólar MEP (16/11): precio / valor residual, sin intereses en el denominador. Valor residual = residualValue
+    del primer flujo posterior a la liquidación (calculadora de PPI guardada), por 100. Historia en estudios/bonos/paridad_vr.csv."""
+    vr = {}
+    with open(FLUJOS_DE, encoding="utf-8") as fh:
+        for r in csv.DictReader(fh):
+            if r["ticker"] in BONOS_VR and r["calculadora"]:
+                vr[r["ticker"]] = [(date.fromisoformat(f["cuttingDate"][:10]), float(f["residualValue"]) * 100) for f in json.loads(r["calculadora"])["flows"]]
+    filas, ant = [], {}
+    for f in sorted(glob.glob("mercado_total/????-??-??.csv")):
+        d = Path(f).stem; p = precios_foto(f)
+        for b in BONOS_VR:
+            pr = p.get(b, (0, 0))[0]
+            if not pr or b not in vr: continue
+            s = liquidacion(date.fromisoformat(d))
+            fut = [x for x in vr[b] if x[0] > s]
+            res = fut[0][1] if fut else None
+            var = round((pr / ant[b] - 1) * 100, 2) if ant.get(b) else ""
+            filas.append({"fecha": d, "bono": b, "precio": pr, "var_pct": var, "valor_residual": round(res, 4) if res else "",
+                          "precio_sobre_vr_pct": round(pr / res * 100, 2) if res else ""})
+            ant[b] = pr
+    with open(SAL / "paridad_vr.csv", "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, ["fecha", "bono", "precio", "var_pct", "valor_residual", "precio_sobre_vr_pct"]); w.writeheader(); w.writerows(filas)
+    if not filas: return []
+    u = max(x["fecha"] for x in filas)
+    l = ["## Soberanos en dólar MEP: precio / valor residual", "", f"Rueda **{u}** (cierre A-24HS). Valor residual cada 100 de nominal, según los flujos de la calculadora de PPI. "
+         "El precio de BYMA incluye el interés corrido desde el último cupón: el cociente queda apenas por encima de la paridad limpia.", "",
+         "| Bono | Precio | Var. | Valor residual | Precio / valor residual |", "|---|---|---|---|---|"]
+    for b in BONOS_VR:
+        r = next((x for x in filas if x["fecha"] == u and x["bono"] == b), None)
+        if r: l.append(f"| {b} | {ar(r['precio'])} | {ar(r['var_pct'])}% | {ar(r['valor_residual'], 2)} | {ar(r['precio_sobre_vr_pct'], 1)}% |")
+    return l + [""]
+
+
 def precios_foto(f):
     p = {}
     with open(f, encoding="utf-8") as fh:
@@ -123,7 +160,7 @@ def main():
     with open(hist_f, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, CAMPOS); w.writeheader()
         for k in sorted(filas): w.writerow({c: filas[k].get(c, "") for c in CAMPOS})
-    escribir_md(filas)
+    escribir_md(filas, paridad_vr())
     print(f"Seguimiento: {len(filas)} filas, última fecha {max(k[0] for k in filas) if filas else '-'}", flush=True)
 
 
@@ -137,11 +174,12 @@ def brecha(filas, d, a, b):
     except (KeyError, TypeError, ValueError): return "—"
 
 
-def escribir_md(filas):
+def escribir_md(filas, vr_lineas=()):
     fechas = sorted({k[0] for k in filas})
     if not fechas: return
     u = fechas[-1]
     l = [f"# Seguimiento de soberanos largos en dólares", "", f"Última rueda: **{u}**. Riesgo país: **{ar(filas.get((u, BONOS[0]), {}).get('riesgo_pais'), 0)}**. Brent: **US$ {ar(filas.get((u, BONOS[0]), {}).get('brent'))}**.", "",
+         *vr_lineas, "## Largos en foco", "",
          "Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Paridad = precio / (residual + corrido).", "",
          "| Bono | Precio D | Var. día | TIR | Paridad | MEP implícito | Monto D (US$) |", "|---|---|---|---|---|---|---|"]
     for b in BONOS:
