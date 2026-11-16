@@ -1,0 +1,44 @@
+name: Copia de la cinta a Hugging Face
+
+# Copia a mano la cinta cruda de una fecha (ppi--datos/tiempo_real/FECHA/) al depósito domingo27/cinta-byma,
+# con la misma ruta que deposito.py. Sirve para probar el secreto HF_TOKEN y para completar días que no se copiaron.
+on:
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "AAAA-MM-DD (vacío = hoy)"
+        default: ""
+
+jobs:
+  copiar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+    steps:
+      - name: Copiar
+        run: |
+          F="${{ github.event.inputs.fecha }}"; [ -n "$F" ] || F=$(date +%F)
+          [ -n "$HF_TOKEN" ] || { echo "::error::falta el secreto HF_TOKEN en ppi-lector"; exit 1; }
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          cd datos && git sparse-checkout set "tiempo_real/$F" && cd ..
+          ls -la "datos/tiempo_real/$F"
+          pip install -q huggingface_hub
+          python - "$F" <<'PY'
+          import os, sys
+          from pathlib import Path
+          from huggingface_hub import HfApi
+          f = sys.argv[1]; api, repo = HfApi(token=os.environ["HF_TOKEN"]), "domingo27/cinta-byma"
+          d = Path("datos/tiempo_real") / f
+          api.upload_folder(repo_id=repo, repo_type="dataset", folder_path=str(d), path_in_repo=f"tiempo_real/{f}",
+                            commit_message=f"Cinta {f} (copia desde ppi-lector)")
+          rem = {i.path: i.size for i in api.list_repo_tree(repo, path_in_repo=f"tiempo_real/{f}", repo_type="dataset")}
+          mal = 0
+          for a in sorted(d.iterdir()):
+              ok = rem.get(f"tiempo_real/{f}/{a.name}") == a.stat().st_size; mal += not ok
+              print(("OK " if ok else "MAL"), a.name, a.stat().st_size, rem.get(f"tiempo_real/{f}/{a.name}"))
+          raise SystemExit(1 if mal else 0)
+          PY
+# FIN copia_cinta_hf.yml

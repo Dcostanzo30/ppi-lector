@@ -219,6 +219,29 @@ jobs:
           git add tiempo_real tiempo_real_afuera 2>/dev/null || git add tiempo_real
           git commit -m "Tiempo real $(date +%F) $ARCHIVO"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
+      - name: Copia en Hugging Face
+        # 16/11: la cinta cruda también va al depósito domingo27/cinta-byma (misma ruta que deposito.py de ppi--datos),
+        # así queda respaldada aunque ppi--datos no tenga minutos. Si falla, solo avisa: el guardado de arriba no cambia.
+        if: "!cancelled() && env.SEGUIR == 'si' && env.TURNO != 'prueba'"
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          [ -f "$ARCHIVO" ] || { echo "Sin datos"; exit 0; }
+          [ -n "$HF_TOKEN" ] || { echo "::warning::falta el secreto HF_TOKEN en ppi-lector: la cinta no se copió a Hugging Face"; exit 0; }
+          pip install -q huggingface_hub || { echo "::warning::no se pudo instalar huggingface_hub"; exit 0; }
+          python - <<'PY' || echo "::warning::la copia a Hugging Face falló; la cinta está igual en ppi--datos"
+          import os
+          from datetime import date
+          from huggingface_hub import HfApi
+          api, repo = HfApi(token=os.environ["HF_TOKEN"]), "domingo27/cinta-byma"
+          arch = os.environ["ARCHIVO"]; destino = f"tiempo_real/{date.today()}/{arch}"
+          api.upload_file(path_or_fileobj=arch, path_in_repo=destino, repo_id=repo, repo_type="dataset",
+                          commit_message=f"Cinta {destino} (desde el lector)")
+          info = api.get_paths_info(repo, [destino], repo_type="dataset")
+          tam = info[0].size if info else None
+          print(f"copiada {destino}: local {os.path.getsize(arch)} · Hugging Face {tam}")
+          if tam != os.path.getsize(arch): raise SystemExit("tamaño distinto")
+          PY
       - name: Relanzar si se cortó antes de hora
         # Si el trabajo termina antes de su hora de fin (falla del runner, del paso de escucha o del envío),
         # larga enseguida otro lector del mismo turno: el hueco queda en uno o dos minutos y la parte nueva
