@@ -2,6 +2,26 @@
 
 Última rueda: **2026-11-13**. Riesgo país: **830**. Brent: **US$ 95,84**.
 
+## Soberanos en dólar MEP: precio / valor residual
+
+Rueda **2026-11-13** (cierre A-24HS). Valor residual cada 100 de nominal, según los flujos de la calculadora de PPI. El precio de BYMA incluye el interés corrido desde el último cupón: el cociente queda apenas por encima de la paridad limpia.
+
+| Bono | Precio | Var. | Valor residual | Precio / valor residual |
+|---|---|---|---|---|
+| AL29D | 52,34 | 1,36% | 60,00 | 87,2% |
+| GD29D | 53,85 | -2,97% | 60,00 | 89,8% |
+| AL30D | 51,55 | 0,49% | 64,00 | 80,5% |
+| GD30D | 53,06 | -0,02% | 64,00 | 82,9% |
+| AL35D | 65,30 | 3,34% | 100,00 | 65,3% |
+| GD35D | 70,61 | -2,08% | 100,00 | 70,6% |
+| AE38D | 69,13 | 4,43% | 100,00 | 69,1% |
+| GD38D | 75,10 | 3,64% | 100,00 | 75,1% |
+| AL41D | 61,10 | 2,98% | 100,00 | 61,1% |
+| GD41D | 66,51 | -1,17% | 100,00 | 66,5% |
+| GD46D | 61,31 | 4,86% | 90,91 | 67,4% |
+
+## Largos en foco
+
 Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Paridad = precio / (residual + corrido).
 
 | Bono | Precio D | Var. día | TIR | Paridad | MEP implícito | Monto D (US$) |
