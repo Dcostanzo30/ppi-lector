@@ -1,0 +1,39 @@
+name: Fichas BYMA
+
+# Ficha técnica de especies en BYMADATA (datos abiertos): emisor, tipo, moneda, vencimiento, tasa, amortización.
+# Primer paso del trabajo de bonos (valuación, cláusulas de emisión y seguimiento). Solo lectura; no toca PPI.
+# Corre acá (repositorio público, sin consumo de minutos) desde el 16/11.
+on:
+  workflow_dispatch:
+    inputs:
+      solo:
+        description: "Tickers separados por coma"
+        default: "AL30,M30A7,NZC7D,CU62A,IT1AH,BUF27,MA7X,SF7X"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: byma-fichas
+  cancel-in-progress: false
+
+jobs:
+  fichas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q requests
+      - run: python -m byma_fichas.explorar --solo "${{ github.event.inputs.solo }}"
+      - name: Guardar
+        run: |
+          git config user.name "bot-fichas"
+          git config user.email "bot@users.noreply.github.com"
+          git add byma_fichas
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Fichas BYMA (exploración) $(date '+%F %H:%M') [skip ci]"
+          for i in 1 2 3 4 5; do git push && exit 0; git pull --rebase -q; sleep 5; done; exit 1
+# FIN byma_fichas.yml
