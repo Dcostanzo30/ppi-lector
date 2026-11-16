@@ -1,0 +1,37 @@
+name: IPC (BCRA) para ppi--datos
+
+# Baja la inflación mensual (serie 27 del BCRA, INDEC) y la deja en ppi--datos/fuentes/ipc.csv. Solo toca ese archivo.
+# Corre acá (repositorio público, sin consumo de minutos). Lo usa piso_techo.py para los precios en pesos de hoy.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 14 18 * *"     # día 18 de cada mes, 11:17 de Buenos Aires (el INDEC publica a mediados de mes)
+
+jobs:
+  ipc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: ipc_bcra.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q requests
+      - name: Bajar y guardar en ppi--datos
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          cd datos && git sparse-checkout set fuentes --no-cone 2>/dev/null || git sparse-checkout set fuentes; cd ..
+          python ipc_bcra.py datos/fuentes/ipc.csv 2022-12-01
+          cd datos
+          git config user.name "bot-ipc"; git config user.email "bot@users.noreply.github.com"
+          git add fuentes/ipc.csv
+          git diff --cached --quiet && { echo "Sin cambios"; exit 0; }
+          git commit -m "IPC (BCRA serie 27) $(date '+%F %H:%M') [skip ci]"
+          for i in 1 2 3; do git push && exit 0; git pull --rebase -q; sleep 5; done; exit 1
+# FIN ipc.yml
