@@ -166,8 +166,8 @@ canvas{display:block;width:100%}
 (() => {
 'use strict';
 const PANEL = ["ALUA","BBAR","BMA","BYMA","CEPU","COME","CRES","ECOG","EDN","GGAL","IRSA","LOMA","METR","PAMP","SUPV","TECO2","TGNO4","TGSU2","TRAN","TXAR","VALO","YPFD"];
-const BONOS_D = ['AE38D', 'AL41D', 'GD38D'];
-const EXTRA = ["AE38D", "AL41D", "GD38D", "VIST"];      // bonos en D y CEDEAR de seguimiento (llegan por el relevo)
+const BONOS_D = ['AE38D', 'AL41D', 'GD38D', 'BBARD', 'AL29D', 'GD29D', 'AL35D', 'GD35D', 'GD41D', 'GD46D'];   // cotizan en dólares
+const EXTRA = ["AE38D", "AL41D", "GD38D", "VIST", "BBARD", "AL29D", "GD29D", "AL35D", "GD35D", "GD41D", "GD46D"];      // bonos en D y CEDEAR de seguimiento (llegan por el relevo)
 // Órdenes límite de papel vigentes (papel/operaciones.csv): aviso cuando el precio se acerca o toca
 const OBJETIVOS = [{ tk: 'VIST', entrada: 38600, corte: 36000, objetivo: 47000, hasta: '2026-11-06' }];
 const dc = p => p < 100 ? 2 : p < 1000 ? 1 : 0;           // decimales según el nivel de precio (bonos en D con 2)
@@ -534,7 +534,7 @@ function llenar(d, tk, pn) {
   const lb = d.querySelector('.libro');
   if (e.libro && (e.libro.bids?.length || e.libro.offers?.length)) {
     lb.hidden = false;
-    let hh = '<span class="t" style="text-align:right">Compran</span><span class="t">Venden</span>';
+    let hh = '<span class="t" style="text-align:right">Vendés a</span><span class="t">Comprás a</span>';   // como PPI: a la izquierda los que compran, a la derecha los que venden
     for (let k = 0; k < 5; k++) {
       const b = e.libro.bids?.[k], o = e.libro.offers?.[k];
       hh += `<span class="c">${b ? ar(b[1]) + ' × ' + ar(b[0], dc(b[0])) : ''}</span><span class="vv">${o ? ar(o[0], dc(o[0])) + ' × ' + ar(o[1]) : ''}</span>`;
