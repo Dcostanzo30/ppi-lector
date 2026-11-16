@@ -31,6 +31,10 @@ jobs:
           from pathlib import Path
           from huggingface_hub import HfApi
           f = sys.argv[1]; api, repo = HfApi(token=os.environ["HF_TOKEN"]), "domingo27/cinta-byma"
+          try:
+              w = api.whoami(); print("clave de la cuenta:", w.get("name"), "· permiso:", (w.get("auth") or {}).get("accessToken", {}).get("role"))
+          except Exception as e:
+              print("la clave no es válida para Hugging Face:", str(e)[:120]); raise SystemExit(1)
           d = Path("datos/tiempo_real") / f
           api.upload_folder(repo_id=repo, repo_type="dataset", folder_path=str(d), path_in_repo=f"tiempo_real/{f}",
                             commit_message=f"Cinta {f} (copia desde ppi-lector)")
