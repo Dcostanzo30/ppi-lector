@@ -227,7 +227,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           [ -f "$ARCHIVO" ] || { echo "Sin datos"; exit 0; }
-          [ -n "$HF_TOKEN" ] || { echo "::warning::falta el secreto HF_TOKEN en ppi-lector: la cinta no se copió a Hugging Face"; exit 0; }
+          case "$HF_TOKEN" in hf_*) ;; *) echo "Sin clave de Hugging Face válida (HF_TOKEN tiene que empezar con hf_): no se copia"; exit 0;; esac
           pip install -q huggingface_hub || { echo "::warning::no se pudo instalar huggingface_hub"; exit 0; }
           python - <<'PY' || echo "::warning::la copia a Hugging Face falló; la cinta está igual en ppi--datos"
           import os

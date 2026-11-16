@@ -21,7 +21,7 @@ jobs:
       - name: Copiar
         run: |
           F="${{ github.event.inputs.fecha }}"; [ -n "$F" ] || F=$(date +%F)
-          [ -n "$HF_TOKEN" ] || { echo "::error::falta el secreto HF_TOKEN en ppi-lector"; exit 1; }
+          case "$HF_TOKEN" in hf_*) ;; *) echo "::error::HF_TOKEN no es una clave de Hugging Face (tiene que empezar con hf_); no se usa"; exit 1;; esac
           git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
           cd datos && git sparse-checkout set "tiempo_real/$F" && cd ..
           ls -la "datos/tiempo_real/$F"
