@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       fecha:
-        description: "AAAA-MM-DD (vacío = hoy)"
+        description: "AAAA-MM-DD (vacío = hoy; faltantes = todas las fechas de ppi--datos que no estén completas en Hugging Face)"
         default: ""
 
 jobs:
@@ -22,27 +22,40 @@ jobs:
         run: |
           F="${{ github.event.inputs.fecha }}"; [ -n "$F" ] || F=$(date +%F)
           case "$HF_TOKEN" in hf_*) ;; *) echo "::error::HF_TOKEN no es una clave de Hugging Face (tiene que empezar con hf_); no se usa"; exit 1;; esac
-          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
-          cd datos && git sparse-checkout set "tiempo_real/$F" && cd ..
-          ls -la "datos/tiempo_real/$F"
+          git clone -q --depth 1 --filter=blob:none --no-checkout "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
           pip install -q huggingface_hub
           python - "$F" <<'PY'
-          import os, sys
+          import os, sys, subprocess
           from pathlib import Path
           from huggingface_hub import HfApi
-          f = sys.argv[1]; api, repo = HfApi(token=os.environ["HF_TOKEN"]), "domingo27/cinta-byma"
-          try:
-              w = api.whoami(); print("clave de la cuenta:", w.get("name"), "· permiso:", (w.get("auth") or {}).get("accessToken", {}).get("role"))
-          except Exception as e:
-              print("la clave no es válida para Hugging Face:", str(e)[:120]); raise SystemExit(1)
-          d = Path("datos/tiempo_real") / f
-          api.upload_folder(repo_id=repo, repo_type="dataset", folder_path=str(d), path_in_repo=f"tiempo_real/{f}",
-                            commit_message=f"Cinta {f} (copia desde ppi-lector)")
-          rem = {i.path: i.size for i in api.list_repo_tree(repo, path_in_repo=f"tiempo_real/{f}", repo_type="dataset")}
+          pedido = sys.argv[1]; api, repo = HfApi(token=os.environ["HF_TOKEN"]), "domingo27/cinta-byma"
+          w = api.whoami(); print("clave de la cuenta:", w.get("name"))
+          sh = lambda c: subprocess.run(c, shell=True, cwd="datos", capture_output=True, text=True).stdout
+          # tamaños en ppi--datos sin bajar nada: git ls-tree con -l
+          gh = {}
+          for l in sh("git ls-tree -r -l HEAD tiempo_real").splitlines():
+              meta, ruta = l.split("\t"); gh[ruta] = int(meta.split()[3])
+          hf = {i.path: i.size for i in api.list_repo_tree(repo, path_in_repo="tiempo_real", repo_type="dataset", recursive=True) if hasattr(i, "size") and i.size is not None}
+          fechas = sorted({r.split("/")[1] for r in gh})
+          if pedido != "faltantes": fechas = [pedido]
+          print(f"{'Fecha':12} {'archivos':>8} {'en HF':>6}  estado")
+          faltan = []
+          for f in fechas:
+              arch = {r: t for r, t in gh.items() if r.split("/")[1] == f}
+              ok = sum(hf.get(r) == t for r, t in arch.items())
+              print(f"{f:12} {len(arch):>8} {ok:>6}  {'completa' if ok == len(arch) else 'FALTA'}")
+              if ok < len(arch): faltan.append(f)
           mal = 0
-          for a in sorted(d.iterdir()):
-              ok = rem.get(f"tiempo_real/{f}/{a.name}") == a.stat().st_size; mal += not ok
-              print(("OK " if ok else "MAL"), a.name, a.stat().st_size, rem.get(f"tiempo_real/{f}/{a.name}"))
+          for f in faltan:
+              sh(f"git sparse-checkout set --no-cone tiempo_real/{f} && git checkout -q")
+              d = Path("datos/tiempo_real") / f
+              api.upload_folder(repo_id=repo, repo_type="dataset", folder_path=str(d), path_in_repo=f"tiempo_real/{f}",
+                                commit_message=f"Cinta {f} (copia desde ppi-lector)")
+              rem = {i.path: i.size for i in api.list_repo_tree(repo, path_in_repo=f"tiempo_real/{f}", repo_type="dataset")}
+              for a in sorted(d.iterdir()):
+                  ok = rem.get(f"tiempo_real/{f}/{a.name}") == a.stat().st_size; mal += not ok
+                  print(("OK " if ok else "MAL"), f, a.name, a.stat().st_size, rem.get(f"tiempo_real/{f}/{a.name}"))
+          print(f"Copiadas {len(faltan)} fechas; con problemas: {mal}")
           raise SystemExit(1 if mal else 0)
           PY
 # FIN copia_cinta_hf.yml
