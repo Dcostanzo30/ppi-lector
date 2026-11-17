@@ -1,5 +1,5 @@
 """Base monetaria y sus factores de explicación (API pública del BCRA, estadísticas v3). Solo consultas.
-Escribe estudios/monetarias/variables.csv (catálogo) y estudios/monetarias/series.csv (desde DESDE)."""
+Escribe estudios/monetarias/variables.csv (catálogo) y estudios/monetarias/series.csv (desde DESDE, incremental)."""
 import os, json
 from pathlib import Path
 import pandas as pd
@@ -41,17 +41,35 @@ elegidas = cat[cat[desc].str.lower().str.contains("|".join(claves), na=False)]
 # agregados monetarios (M1, M2, M3 y sus componentes) y tipo de cambio / BADLAR, por id
 IDS_FIJOS = {4, 5, 7, 17, 21, 22, 23, 24, 25, 109, 197}
 elegidas = pd.concat([elegidas, cat[pd.to_numeric(cat[idc], errors="coerce").isin(IDS_FIJOS)]]).drop_duplicates(subset=[idc])
-filas = []
+# Incremental (Domingo, 17/11/2026): lo que ya está guardado no se vuelve a pedir. Por variable se pide desde su último dato
+# menos REPASO días (el BCRA corrige los últimos días de los factores), y solo esos días se reemplazan.
+REPASO = 10
+previo = pd.read_csv(SAL / "series.csv", dtype={"fecha": str}) if (SAL / "series.csv").exists() else pd.DataFrame(columns=["id", "descripcion", "fecha", "valor"])
+ultimo = previo.groupby("id")["fecha"].max().to_dict() if len(previo) else {}
+filas, pedidos = [], {}
 for _, v in elegidas.iterrows():
+    vid = int(v[idc])
+    desde = DESDE
+    if vid in ultimo and isinstance(ultimo[vid], str):
+        desde = max(DESDE, (pd.Timestamp(ultimo[vid]) - pd.Timedelta(days=REPASO)).date().isoformat())
     try:
-        q = pedir(f"{URL}/{v[idc]}", params={"desde": DESDE, "hasta": date.today().isoformat(), "limit": 3000})
+        q = pedir(f"{URL}/{vid}", params={"desde": desde, "hasta": date.today().isoformat(), "limit": 3000})
+        nuevas = []
         for x in q.json().get("results", []):
             if isinstance(x, dict) and "detalle" in x:
-                for y in x["detalle"]: filas.append(dict(id=v[idc], descripcion=v[desc], fecha=y.get("fecha"), valor=y.get("valor")))
+                for y in x["detalle"]: nuevas.append(dict(id=vid, descripcion=v[desc], fecha=y.get("fecha"), valor=y.get("valor")))
             elif isinstance(x, dict):
-                filas.append(dict(id=v[idc], descripcion=v[desc], fecha=x.get("fecha"), valor=x.get("valor")))
+                nuevas.append(dict(id=vid, descripcion=v[desc], fecha=x.get("fecha"), valor=x.get("valor")))
+        if nuevas:
+            filas += nuevas; pedidos[vid] = desde
     except Exception as e:
-        print(v[idc], "falló", e, flush=True)
-pd.DataFrame(filas).to_csv(SAL / "series.csv", index=False)
-print(len(filas), "datos de", len(elegidas), "variables", flush=True)
+        print(vid, "falló (se conserva lo guardado)", e, flush=True)
+nuevo = pd.DataFrame(filas, columns=["id", "descripcion", "fecha", "valor"])
+# se conserva lo previo, salvo los días repasados de las variables que respondieron; y nada anterior a DESDE
+quedan = previo[[not (int(i) in pedidos and f >= pedidos[int(i)]) for i, f in zip(previo["id"], previo["fecha"].astype(str))]] if len(previo) else previo
+total = pd.concat([quedan, nuevo], ignore_index=True)
+total = total[total["fecha"].astype(str) >= DESDE].drop_duplicates(subset=["id", "fecha"], keep="last")
+total = total.sort_values(["id", "fecha"], ascending=[True, False])
+total.to_csv(SAL / "series.csv", index=False)
+print(f"{len(nuevo)} datos pedidos ({len(pedidos)} variables); {len(total)} guardados en total", flush=True)
 # FIN monetarias.py
