@@ -258,6 +258,97 @@ def recorrer(origen, sentido, cursor, indice, fin_tiempo, hasta):
           f"{' (listo)' if listo else ' (sigue en la próxima corrida)'}", flush=True)
 
 
+# ----------------------------------------------------------------------------------------------- normas originarias
+# Instrumentos emitidos antes de la ventana: las resoluciones de la ventana los citan ("emitido originalmente mediante
+# el artículo 3° de la resolución conjunta 63 del 11 de diciembre de 2025 (RESFC-2025-63-APN-SH#MEC)"). Se busca solo
+# esa norma: se estima su número en argentina.gob.ar/normativa a partir de las ya encontradas (los números crecen con
+# la fecha de publicación), se corrige mirando la fecha de la norma que cae ahí, y se recorre de cerca hasta dar con
+# el título "Resolución Conjunta N/AAAA". Así no hace falta recorrer todo el período.
+CITA = re.compile(r"EMITID[OA]S? ORIGINALMENTE MEDIANTE (?:EL|LOS) ARTICULOS? [^,;]{0,60}?DE LA RESOLUCION CONJUNTA (\d+) "
+                  r"DEL? (\d{1,2} DE [A-Z]+ DE \d{4})[^()]{0,200}\(RESFC-(\d{4})-(\d+)-APN-SH#MEC\)")
+TIT_RC = re.compile(r"RESOLUCION CONJUNTA (\d+)\s*/\s*(\d{4})")
+
+
+def citadas(indice):
+    """Resoluciones conjuntas originarias citadas en los documentos guardados: {(numero, anio): fecha_sancion}."""
+    out = {}
+    for f in indice:
+        if not Path(f["archivo"]).exists():
+            continue
+        with gzip.open(f["archivo"], "rt", encoding="utf-8") as g:
+            txt = normal(re.sub(r"<[^>]+>", " ", g.read()))
+        for m in CITA.finditer(txt):
+            out[(int(m.group(4)), int(m.group(3)))] = fecha_texto(m.group(2))
+    return out
+
+
+def fecha_norma(n):
+    html = bajar_completo(URL["norma"].format(n))
+    if not html:
+        return None, ""
+    return fecha_de(html)[0] or None, titulo(html)
+
+
+def buscar_originarias(indice, cursor, fin_tiempo, maximo=25):
+    tengo = set()
+    anclas = []   # (fecha, numero de norma) de las resoluciones ya encontradas
+    for f in indice:
+        m = TIT_RC.search(normal(f["titulo"]))
+        if f["origen"] == "norma" and m:
+            tengo.add((int(m.group(1)), int(m.group(2))))
+            if f["fecha"]:
+                anclas.append((pd_fecha(f["fecha"]), int(f["numero"])))
+    if len(anclas) < 2:
+        print("originarias: faltan anclas todavía", flush=True); return
+    anclas.sort()
+    fallidas = cursor.setdefault("originarias_fallidas", {})
+    pendientes = [(k, v) for k, v in sorted(citadas(indice).items(), key=lambda x: x[1], reverse=True)
+                  if k not in tengo and fallidas.get(f"{k[0]}/{k[1]}", 0) < 3]
+    print(f"originarias: {len(pendientes)} resoluciones citadas que faltan", flush=True)
+    vistos = {(r["origen"], r["numero"]) for r in indice}
+    for (num, anio), fecha in pendientes[:maximo]:
+        if time.time() > fin_tiempo:
+            break
+        objetivo = f"RESOLUCION CONJUNTA {num}/{anio}"
+        # estimación lineal con las dos anclas más lejanas (pendiente: normas por día)
+        (f0, n0), (f1, n1) = anclas[0], anclas[-1]
+        pend = (n1 - n0) / max(1, (f1 - f0))
+        t = pd_fecha(fecha) + 3            # se publica unos días después de firmada
+        est = int(n0 + pend * (t - f0))
+        encontrado = None
+        for _ in range(8):                  # corrección por fechas (método de la secante)
+            fe, tit = fecha_norma(est)
+            if tit and objetivo in normal(tit).replace(" / ", "/"):
+                encontrado = est; break
+            if not fe:
+                est += 7; continue
+            dif = t - pd_fecha(fe)
+            if abs(dif) <= 2:
+                break
+            est += int(pend * dif)
+        if encontrado is None:              # barrido cercano, de a encabezados
+            for d in range(0, 400):
+                for k in (est + d, est - d) if d else (est,):
+                    st, cab = encabezado(URL["norma"].format(k))
+                    if st == 200 and objetivo in normal(titulo(cab)).replace(" / ", "/"):
+                        encontrado = k; break
+                if encontrado or time.time() > fin_tiempo:
+                    break
+        if encontrado is None:
+            fallidas[f"{num}/{anio}"] = fallidas.get(f"{num}/{anio}", 0) + 1
+            print(f"  originaria {num}/{anio}: no encontrada cerca de {est}", flush=True); continue
+        res = revisar("norma", encontrado)
+        if res and ("norma", str(encontrado)) not in vistos:
+            indice.append(res); vistos.add(("norma", str(encontrado)))
+            anclas.append((pd_fecha(res["fecha"]), encontrado)) if res["fecha"] else None; anclas.sort()
+            print(f"  + originaria {num}/{anio} = norma {encontrado} ({res['fecha']})", flush=True)
+
+
+def pd_fecha(f):
+    """'2025-12-11' -> número de día (para interpolar)."""
+    return date.fromisoformat(f[:10]).toordinal()
+
+
 # ----------------------------------------------------------------------------------------------- lectura de tablas
 def numero(txt):
     """'$ 1.624.039' -> 1624039.0 ; 'USD 988,33' -> 988.33 ; '2,10%' -> 2.10 ; vacío o texto -> None"""
@@ -562,6 +653,9 @@ def main():
             fin = max(t0 + total * hasta_fraccion, time.time() + 3 * 60 if origen == "norma" else 0)
             recorrer(origen, sentido, cursor, indice, fin, a.hasta)
             guardar_indice(indice); CURSOR.write_text(json.dumps(cursor, indent=1))
+        # normas de emisión originaria de instrumentos anteriores a la ventana (búsqueda dirigida)
+        buscar_originarias(indice, cursor, time.time() + 6 * 60)
+        guardar_indice(indice); CURSOR.write_text(json.dumps(cursor, indent=1))
     procesar(indice)
 
 
