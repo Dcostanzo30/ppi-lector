@@ -1,4 +1,4 @@
-# Diagnóstico futuros — 2026-11-16 21:49
+# Diagnóstico futuros — 2026-11-17 00:12
 
 Ingreso a PPI correcto.
 
@@ -19,7 +19,7 @@ Ingreso a PPI correcto.
   - AL35/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - BTC/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - BTC/NOV26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - DLR/ENE27A: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - DLR/ENE27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - DLR/FEB27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - DLR/MAR27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - DLR/SPOT: Exception en A-24HS: {'error': 'Instrument Type not found: MERCADOS'}
