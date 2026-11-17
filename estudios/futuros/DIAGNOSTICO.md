@@ -1,4 +1,4 @@
-# Diagnóstico futuros — 2026-11-13 22:04
+# Diagnóstico futuros — 2026-11-16 21:49
 
 Ingreso a PPI correcto.
 
@@ -19,9 +19,9 @@ Ingreso a PPI correcto.
   - AL35/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - BTC/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - BTC/NOV26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - DLR/ENE27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
+  - DLR/ENE27A: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
   - DLR/FEB27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - DLR/MAR27A: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - DLR/MAR27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - DLR/SPOT: Exception en A-24HS: {'error': 'Instrument Type not found: MERCADOS'}
   - GD30/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - GD30/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
@@ -34,4 +34,4 @@ Ingreso a PPI correcto.
   - SOJ.ROS/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - SOJ.ROS/ENE27/JUL27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
 - Vencimientos tomados de PPI: 140 contratos
-- Filas de historia diaria (DLR simples): 1056
+- Filas de historia diaria (DLR simples): 1082
