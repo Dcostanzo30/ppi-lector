@@ -44,7 +44,7 @@ elegidas = pd.concat([elegidas, cat[pd.to_numeric(cat[idc], errors="coerce").isi
 filas = []
 for _, v in elegidas.iterrows():
     try:
-        q = pedir(f"{URL}/{v[idc]}", params={"desde": DESDE, "hasta": "2026-12-31", "limit": 3000})
+        q = pedir(f"{URL}/{v[idc]}", params={"desde": DESDE, "hasta": date.today().isoformat(), "limit": 3000})
         for x in q.json().get("results", []):
             if isinstance(x, dict) and "detalle" in x:
                 for y in x["detalle"]: filas.append(dict(id=v[idc], descripcion=v[desc], fecha=y.get("fecha"), valor=y.get("valor")))
