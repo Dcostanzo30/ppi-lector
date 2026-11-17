@@ -2,32 +2,31 @@
 
 Rehecho el 17/11/2026. Montos en billones de pesos. Fuente: factores de explicación de la base monetaria del BCRA (API de estadísticas), que se publican con algunos días de atraso.
 
-**Base monetaria al 11/11/2026: $ 51,60 billones.**
+**Base monetaria al 12/11/2026: $ 50,36 billones.**
 
 | Período | Variación | % |
 |---|---|---|
-| Desde fin de mes (30/10/2026) | 4,28 | 9,0% |
-| Últimos 30 días (desde 09/10/2026) | 5,07 | 10,9% |
-| Desde el primer dato (17/06/2026) | 7,87 | 18,0% |
+| Desde fin de mes (30/10/2026) | 3,03 | 6,4% |
+| Últimos 30 días (desde 13/10/2026) | 2,81 | 5,9% |
+| Desde el primer dato (22/06/2026) | 6,98 | 16,1% |
 
-## Factores por mes (último dato de factores: 05/11/2026)
+## Factores por mes (último dato de factores: 11/11/2026)
 
 Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 
 | Mes | Compra de divisas | Tesoro | Pases y letras del BCRA | Otros | Total |
 |---|---|---|---|---|---|
-| 06/2026 | -0,18 | 5,39 | 0,00 | -3,15 | 2,06 |
+| 06/2026 | 0,46 | 4,52 | 0,00 | -2,41 | 2,57 |
 | 07/2026 | 1,84 | -1,05 | 0,00 | -0,30 | 0,48 |
 | 08/2026 | 1,16 | 0,47 | 0,00 | -0,37 | 1,26 |
 | 09/2026 | 0,72 | -0,27 | 0,00 | -0,99 | -0,54 |
 | 10/2026 | 2,12 | -1,04 | 0,00 | -0,67 | 0,41 |
-| 11/2026 | -0,12 | 1,98 | 0,00 | 0,48 | 2,34 |
+| 11/2026 | -0,08 | 4,01 | 0,00 | 0,34 | 4,28 |
 
 ## Últimos 10 días con factores
 
 | Fecha | Compra de divisas | Tesoro | Pases y letras del BCRA | Otros | Total |
 |---|---|---|---|---|---|
-| 23/10/2026 | 0,06 | -0,00 | 0,00 | -0,33 | -0,27 |
 | 26/10/2026 | 0,00 | -0,14 | 0,00 | 0,14 | -0,01 |
 | 27/10/2026 | 0,00 | 0,07 | 0,00 | -1,30 | -1,23 |
 | 28/10/2026 | 0,00 | -0,00 | 0,00 | 0,11 | 0,11 |
@@ -37,6 +36,7 @@ Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 | 03/11/2026 | 0,00 | -0,00 | 0,00 | -0,24 | -0,24 |
 | 04/11/2026 | 0,01 | -0,00 | 0,00 | -0,17 | -0,15 |
 | 05/11/2026 | 0,06 | 1,77 | 0,00 | 0,98 | 2,82 |
+| 11/11/2026 | 0,05 | 2,03 | 0,00 | -0,13 | 1,94 |
 
 ## Licitaciones del Tesoro y la base el día de la liquidación
 
