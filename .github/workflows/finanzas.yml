@@ -1,0 +1,61 @@
+name: Finanzas (licitaciones y canjes del Tesoro) para ppi--datos
+
+# Comunicados de la Secretaría de Finanzas y Resoluciones Conjuntas SF/SH (finanzas_tesoro.py). Escribe en
+# ppi--datos/fuentes/finanzas, como tasas.yml: corre acá (repositorio público, sin consumo de minutos).
+# Arranca en junio de 2026, avanza hasta lo último publicado y retrocede hasta "hasta" (por defecto 01/11/2025,
+# un año antes de la licitación de noviembre de 2026). Cada tramo de 10 minutos se guarda; la corrida siguiente sigue.
+# Clasificación monetaria: ppi--datos/docs/FACTORES_TESORO.md.
+# Horarios de Buenos Aires: 18:50 y 21:50 de lunes a viernes; 03:20 todos los días mientras falte historia.
+on:
+  schedule:
+    - cron: "50 21 * * 1-5"
+    - cron: "50 0 * * 2-6"
+    - cron: "20 6 * * *"
+  push:
+    paths:
+      - "finanzas_tesoro.py"
+      - ".github/workflows/finanzas.yml"
+  workflow_dispatch:
+    inputs:
+      hasta:
+        description: "Retroceder hasta (AAAA-MM-DD)"
+        default: "2025-11-01"
+
+concurrency:
+  group: finanzas
+  cancel-in-progress: false
+
+jobs:
+  finanzas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+      HASTA: ${{ github.event.inputs.hasta || '2025-11-01' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: finanzas_tesoro.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q requests lxml
+      - name: Recorrer, procesar y guardar en ppi--datos (tramos de 10 minutos)
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          cd datos && git sparse-checkout set fuentes/finanzas --no-cone 2>/dev/null || git sparse-checkout set fuentes/finanzas
+          git config user.name "bot-finanzas"; git config user.email "bot@users.noreply.github.com"
+          guardar() {
+            git add fuentes/finanzas
+            git diff --cached --quiet && { echo "Nada nuevo"; return 0; }
+            git commit -q -m "Finanzas $(date '+%F %H:%M') [skip ci]"
+            for i in 1 2 3 4 5; do git push -q && return 0; git pull --rebase -q; sleep 5; done; return 1
+          }
+          for tramo in 1 2 3 4 5; do
+            python ../finanzas_tesoro.py --minutos 10 --hasta "$HASTA" | tee ../salida.txt
+            guardar
+            grep -Eq "nodo_atras: .*listo" ../salida.txt && grep -Eq "norma_atras: .*listo" ../salida.txt && break
+          done
+# FIN finanzas.yml

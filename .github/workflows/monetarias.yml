@@ -31,6 +31,8 @@ jobs:
       - run: pip install pandas requests
       - name: Bajar
         run: python monetarias.py
+        env:
+          DESDE: "2025-11-01"   # un año hacia atrás desde la licitación de noviembre de 2026, para conciliar con finanzas_tesoro.py
       - name: Guardar
         run: |
           git config user.name "bot-mercado"
