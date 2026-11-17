@@ -1,4 +1,4 @@
-# Diagnóstico cauciones — 2026-11-16 21:49
+# Diagnóstico cauciones — 2026-11-17 00:15
 
 - CAUCIONES mercado='': 18 nuevos
 - CAUCIONES mercado='BYMA': 0 nuevos
@@ -15,11 +15,11 @@ Muestra de registros crudos (para ajustar la lectura):
 - DOLAR7: {"ticker": "DOLAR7", "description": "DOLAR 7", "currency": "Dolares billete | MEP", "type": "CAUCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
 - DOLAR8: {"ticker": "DOLAR8", "description": "DOLAR 8", "currency": "Dolares billete | MEP", "type": "CAUCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
 - Subyacentes de los instrumentos encontrados: {'?': 18}
-- Con precio actual: 18; sin precio: 0 []
-- Filas de historia diaria: 1360
+- Con precio actual: 16; sin precio: 2 ['DOLAR6(JSONDecodeError Expecting value: line 1 column 1 (char 0))', 'DOLAR8(JSONDecodeError Expecting value: line 1 column 1 (char 0))']
+- Filas de historia diaria: 1187
 Muestra de precios actuales crudos:
-- DOLAR1: {"date": "2026-11-16T17:00:00.553-03:00", "price": 0.5, "volume": 1223493539.41, "openingPrice": 1.5, "max": 2.79, "min": 0.3, "previousClose": 3, "marketChange": -2.5, "marketChangePercent": "-83.36%"}
-- DOLAR2: {"date": "2026-11-16T17:00:00.553-03:00", "price": 2, "volume": 1106181.2, "openingPrice": 1, "max": 2.5, "min": 1, "previousClose": 1.5, "marketChange": 0.5, "marketChangePercent": "33.33%"}
-- DOLAR3: {"date": "2026-11-16T17:00:00.553-03:00", "price": 1.2, "volume": 401949.41, "openingPrice": 2, "max": 3, "min": 1, "previousClose": 1.01, "marketChange": 0.19, "marketChangePercent": "18.81%"}
-- DOLAR4: {"date": "2026-11-16T17:00:00.553-03:00", "price": 1, "volume": 278172.02, "openingPrice": 2.5, "max": 2.5, "min": 1, "previousClose": 3, "marketChange": -2, "marketChangePercent": "-66.66%"}
+- DOLAR1: {"date": "2026-11-16T17:00:00.553-03:00", "price": 0.5, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 3, "marketChange": -2.5, "marketChangePercent": "0%"}
+- DOLAR2: {"date": "2026-11-16T17:00:00.553-03:00", "price": 2, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 1.5, "marketChange": 0.5, "marketChangePercent": "0%"}
+- DOLAR3: {"date": "2026-11-16T17:00:00.553-03:00", "price": 1.2, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 1.01, "marketChange": 0.19, "marketChangePercent": "0%"}
+- DOLAR4: {"date": "2026-11-16T17:00:00.553-03:00", "price": 1, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 3, "marketChange": -2, "marketChangePercent": "0%"}
 - DOLAR5: {"date": "2026-11-13T17:00:00.533-03:00", "price": 1.5, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 1, "marketChange": 0.5, "marketChangePercent": "0%"}
