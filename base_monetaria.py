@@ -90,6 +90,8 @@ def main(datos):
 
         ins = lic[lic.ticker != "TOTAL"].sort_values("licitacion").groupby("ticker").last().reset_index().sort_values("vencimiento")
         ins = ins[ins.vencimiento >= pd.Timestamp(date.today()) - pd.Timedelta(days=30)]   # futuros y los del último mes
+        tipos = lic[~lic.tipo.isin(["total", "conversion"])].groupby("ticker").tipo.first()   # el tipo del instrumento, no "conversion"
+        ins["tipo"] = ins.ticker.map(tipos).fillna(ins.tipo)
         pago = {}
         if Path("estudios/letras/instrumentos.csv").exists():
             pago = dict(pd.read_csv("estudios/letras/instrumentos.csv")[["ticker", "pago_final"]].values)

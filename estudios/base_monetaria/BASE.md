@@ -44,6 +44,7 @@ Factores del BCRA el día de la liquidación. Todavía no está probado en cuál
 
 | Licitación | Liquidación | Adjudicado (VE) | Tesoro | Otros | Total del día |
 |---|---|---|---|---|---|
+| 10/06/2026 | 12/06/2026 | 6,12 | s/d | s/d | s/d |
 | 26/06/2026 | 30/06/2026 | 13,22 | 3,05 | -2,36 | 0,76 |
 | 11/11/2026 | 13/11/2026 | 8,87 | s/d | s/d | s/d |
 
@@ -67,9 +68,11 @@ VNO en circulación según el último comunicado oficial de cada instrumento. El
 | 31/03/2028 | TZXM8 | BONCER | $ 16,85 billones | — | comunicado del 26/06/2026 |
 | 30/06/2028 | TZX28 | BONCER | $ 5,42 billones | — | comunicado del 11/11/2026 |
 | 31/10/2028 | AO28 | BONAR_USD | USD 1,90 mil millones | — | comunicado del 26/06/2026 |
+| 15/12/2028 | TXMD8 | DUAL_CER_TAMAR | $ 2,86 billones | — | comunicado del 10/06/2026 |
 | 15/12/2028 | TZVD8 | DOLAR_LINKED | USD 0,52 mil millones | — | comunicado del 26/06/2026 |
 | 15/12/2028 | TZXD8 | BONCER | $ 1,80 billones | — | comunicado del 26/06/2026 |
 | 14/12/2029 | TXMD9 | DUAL_CER_TAMAR | $ 6,83 billones | — | comunicado del 26/06/2026 |
+| 28/06/2030 | TXMJ0 | DUAL_CER_TAMAR | $ 3,86 billones | — | comunicado del 10/06/2026 |
 
 ## Próximas licitaciones (cronograma oficial)
 
