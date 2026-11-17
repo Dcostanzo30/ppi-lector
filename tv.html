@@ -27,6 +27,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-txt);font-size:15p
 button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
 button:hover{border-color:var(--accent)} button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button.on{background:var(--accent);color:#0d1014;border-color:var(--accent)}
+a.boton{color:inherit;text-decoration:none;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 12px}
+a.boton:hover{border-color:var(--accent)}
 select,input{font:inherit;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
 
 /* franja */
@@ -129,6 +131,8 @@ canvas{display:block;width:100%}
     <button id="btnPre" type="button">Preapertura</button>
     <button id="btnCierre" type="button">Cierre</button>
     <button id="btnTodas" type="button">Ver las 22</button>
+    <button id="btnCarteras" type="button">Carteras</button>
+    <a class="boton" href="piso_techo.html" target="_blank" rel="noopener">Piso y techo</a>
     <button id="btnElegir" type="button">Elegir especies</button>
     <button id="btnConfig" type="button">Conexión</button>
   </div>
@@ -151,6 +155,7 @@ canvas{display:block;width:100%}
   <div id="cfgEstado" class="nota"></div>
 </section>
 
+<section id="carteras" class="todas cierre" hidden></section>
 <section id="pre" class="todas cierre" hidden></section>
 <section id="cierre" class="todas cierre" hidden></section>
 
@@ -166,8 +171,8 @@ canvas{display:block;width:100%}
 (() => {
 'use strict';
 const PANEL = ["ALUA","BBAR","BMA","BYMA","CEPU","COME","CRES","ECOG","EDN","GGAL","IRSA","LOMA","METR","PAMP","SUPV","TECO2","TGNO4","TGSU2","TRAN","TXAR","VALO","YPFD"];
-const BONOS_D = ['AE38D', 'AL41D', 'GD38D', 'BBARD', 'AL29D', 'GD29D', 'AL35D', 'GD35D', 'GD41D', 'GD46D'];   // cotizan en dólares
-const EXTRA = ["AE38D", "AL41D", "GD38D", "VIST", "BBARD", "AL29D", "GD29D", "AL35D", "GD35D", "GD41D", "GD46D"];      // bonos en D y CEDEAR de seguimiento (llegan por el relevo)
+const BONOS_D = ['AE38D', 'AE38C', 'AL41D', 'AL41C', 'GD38D', 'GD38C', 'BBARD', 'AL29D', 'AL29C', 'GD29D', 'GD29C', 'AL35D', 'AL35C', 'GD35D', 'GD35C', 'GD41D', 'GD41C', 'GD46D', 'GD46C', 'VISTD', 'VISTC'];   // cotizan en dólares (D = MEP, C = cable)
+const EXTRA = ["AE38D", "AE38C", "AL41D", "AL41C", "GD38D", "GD38C", "VIST", "VISTD", "VISTC", "BBARD", "AL29D", "AL29C", "GD29D", "GD29C", "AL35D", "AL35C", "GD35D", "GD35C", "GD41D", "GD41C", "GD46D", "GD46C"];      // bonos en D y C y CEDEAR de seguimiento (llegan por el relevo); el cable al lado del MEP (17/11)
 // Órdenes límite de papel vigentes (papel/operaciones.csv): aviso cuando el precio se acerca o toca
 const OBJETIVOS = [{ tk: 'VIST', entrada: 38600, corte: 36000, objetivo: 47000, hasta: '2026-11-06' }];
 const dc = p => p < 100 ? 2 : p < 1000 ? 1 : 0;           // decimales según el nivel de precio (bonos en D con 2)
@@ -606,6 +611,42 @@ function pintarTodas(pn) {
   t.appendChild(tb); box.replaceChildren(t);
 }
 
+// ---------- CARTERAS DE PRÁCTICA (paper trading): posiciones en carteras.json, valuadas con el último precio de la cinta ----------
+let CARTERAS = null;
+fetch('carteras.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { CARTERAS = j; pintar(); }).catch(() => {});
+function valuar(c) {
+  let total = c.efectivo, ant = c.efectivo, falta = false;
+  const filas = c.posiciones.map(x => {
+    const e = S[x.tk], u = e && e.ops.length ? e.ops[e.ops.length - 1].p : null;
+    if (u == null) { falta = true; return { ...x, u: null, valor: null }; }
+    const ca = cierreAnterior(e), valor = x.cant * u / x.cada;
+    total += valor; ant += x.cant * (ca ?? u) / x.cada;
+    return { ...x, u, valor, varp: e.varp };
+  });
+  if (falta) return { filas, total: null };
+  const neto = total - c.inicial - c.costos;
+  return { filas, total, neto, netoP: neto / c.inicial * 100, dia: (total / ant - 1) * 100 };
+}
+function pintarCarteras() {
+  const box = $('carteras'); if (box.hidden) return;
+  if (!CARTERAS) { box.innerHTML = '<p class="nota">No se pudo leer carteras.json.</p>'; return; }
+  const usd = (v, d = 2) => v == null ? 's/d' : 'US$ ' + ar(v, d);
+  const V = {};
+  let h = `<h2>Carteras de práctica</h2><p class="nota">${CARTERAS.nota}</p>`;
+  for (const c of CARTERAS.carteras) {
+    const r = V[c.id] = valuar(c);
+    h += `<h3>${c.id} · ${c.nombre} <small>(armada el ${c.fecha})</small></h3><table><thead><tr><th>Especie</th><th>Cantidad</th><th>Compra</th><th>Último</th><th>Var. día</th><th>Valor</th></tr></thead><tbody>`;
+    for (const f of r.filas) h += `<tr><td>${f.tk}</td><td>${ar(f.cant)}</td><td>${ar(f.precio, 3)}</td><td>${f.u == null ? 's/d' : ar(f.u, dc(f.u))}</td><td class="${claseVar(f.varp)}">${f.u == null ? 's/d' : sg(f.varp, 2)}</td><td>${usd(f.valor)}</td></tr>`;
+    h += `<tr><td>Efectivo</td><td></td><td></td><td></td><td></td><td>${usd(c.efectivo)}</td></tr></tbody></table>`;
+    h += `<div class="res"><span>Total <b>${usd(r.total)}</b></span><span>Resultado neto con costos <b class="${claseVar(r.neto)}">${r.total == null ? 's/d' : (r.neto < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(r.neto), 2) + ' (' + sg(r.netoP, 2) + ')'}</b></span><span>Día <b class="${claseVar(r.dia)}">${r.total == null ? 's/d' : sg(r.dia, 2)}</b></span><span>Costos de entrada ${usd(c.costos)}</span></div>`;
+  }
+  if (V.A && V.B) {
+    const d = V.A.total != null && V.B.total != null ? V.A.total - V.B.total - (CARTERAS.carteras.find(c => c.id === 'A').costos - CARTERAS.carteras.find(c => c.id === 'B').costos) : null;
+    h += `<h3>Diferencia A − B (BBARD contra AE38D; las dos tienen AL41D)</h3><div class="res"><span>Resultado neto A − B <b class="${claseVar(d)}">${d == null ? 's/d' : (d < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(d), 2)}</b></span></div>`;
+  }
+  box.innerHTML = h;
+}
+
 // ---------- pantalla de PREAPERTURA (cada especie hasta su primera operación real; se abre sola antes de las 10:40) ----------
 let PRE = {}, CIERRE_ANT = {}, preAuto = false;
 function datosPre(tk) {
@@ -746,11 +787,12 @@ function pintar() {
     if (!cierreAuto && ahora >= 17 * 3600 && modo === 'vivo') { cierreAuto = true; $('cierre').hidden = false; $('btnCierre').classList.add('on'); }
     pintarCierre(pn);
     if (!preAuto && modo === 'vivo' && ahora && ahora < 10 * 3600 + 40 * 60) { preAuto = true; $('pre').hidden = false; $('btnPre').classList.add('on'); }
-    pintarPre();
+    pintarPre(); pintarCarteras();
   });
 }
 window.addEventListener('resize', pintar);
 $('btnTodas').onclick = () => { const b = $('todas'); b.hidden = !b.hidden; $('btnTodas').classList.toggle('on', !b.hidden); $('btnTodas').textContent = b.hidden ? 'Ver las 22' : 'Ocultar las 22'; pintar(); };
+$('btnCarteras').onclick = () => { const b = $('carteras'); b.hidden = !b.hidden; $('btnCarteras').classList.toggle('on', !b.hidden); pintar(); };
 $('btnElegir').onclick = () => { const b = $('elegir'); b.hidden = !b.hidden; $('btnElegir').classList.toggle('on', !b.hidden); };
 $('btnConfig').onclick = () => { const b = $('config'); b.hidden = !b.hidden; $('btnConfig').classList.toggle('on', !b.hidden); };
 try { navigator.wakeLock?.request('screen').catch(() => {}); } catch (e) {}

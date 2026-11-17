@@ -15,7 +15,7 @@ _n = {"enviadas": 0, "errores": 0}
 PANEL = {t.strip() for t in os.environ.get("TICKERS", "").split(",") if t.strip()}
 # Especies extra para la mesa (bonos en D y CEDEARs de seguimiento): van con todas sus operaciones y su libro, igual que el panel.
 # 16/11: se suman BBARD y los soberanos en MEP de la tabla precio / valor residual (carteras de práctica).
-MESA_EXTRA = {t.strip() for t in os.environ.get("MESA_EXTRA", "AE38D,AL41D,GD38D,VIST,BBARD,AL29D,GD29D,AL35D,GD35D,GD41D,GD46D").split(",") if t.strip()}
+MESA_EXTRA = {t.strip() for t in os.environ.get("MESA_EXTRA", "AE38D,AE38C,AL41D,AL41C,GD38D,GD38C,VIST,VISTD,VISTC,BBARD,AL29D,AL29C,GD29D,GD29C,AL35D,AL35C,GD35D,GD35C,GD41D,GD41C,GD46D,GD46C").split(",") if t.strip()}
 # Franja del dólar: no se mandan las operaciones de AL30/GD30 (son decenas de miles), solo cada 30 s el valor implícito
 # calculado con los medios del libro. Claves (ticker, tipo) para no confundir GGAL local con el ADR (ACCIONES-USA).
 DOLAR = {("AL30", "BONOS"), ("AL30D", "BONOS"), ("AL30C", "BONOS"), ("GD30", "BONOS"), ("GD30D", "BONOS"), ("GD30C", "BONOS"),

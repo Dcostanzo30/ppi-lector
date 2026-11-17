@@ -1,0 +1,11 @@
+{
+  "nota": "Paper trading: carteras de ejercicio de US$ 10.000, sin dinero real. Precios en dólar MEP (24 hs); bonos cada 100 VN. Resultado neto = total − 10.000 − costos de entrada (tarifa PPI). Detalle en ppi--datos/carteras/.",
+  "carteras": [
+    {"id": "A", "nombre": "BBARD + AL41D", "fecha": "16/11/2026", "inicial": 10000, "efectivo": 0.94, "costos": 65.03,
+     "posiciones": [{"tk": "BBARD", "cant": 1133, "precio": 3.53, "cada": 1}, {"tk": "AL41D", "cant": 9802, "precio": 61.21, "cada": 100}]},
+    {"id": "B", "nombre": "AE38D + AL41D", "fecha": "17/11/2026", "inicial": 10000, "efectivo": 0.85, "costos": 60.00,
+     "posiciones": [{"tk": "AE38D", "cant": 5867, "precio": 68.172, "cada": 100}, {"tk": "AL41D", "cant": 9836, "precio": 60.995, "cada": 100}]},
+    {"id": "C", "nombre": "VISTD + GD41D", "fecha": "17/11/2026", "inicial": 10000, "efectivo": 5.61, "costos": 66.26,
+     "posiciones": [{"tk": "VISTD", "cant": 260, "precio": 19.21, "cada": 1}, {"tk": "GD41D", "cant": 7595, "precio": 65.83, "cada": 100}]}
+  ]
+}
