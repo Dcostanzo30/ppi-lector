@@ -44,11 +44,18 @@ jobs:
       - name: Calcular
         run: |
           python reservas.py
+      - name: Base monetaria (factores del BCRA con las licitaciones del Tesoro)
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" ../datos \
+            && (cd ../datos && git sparse-checkout set fuentes) || echo "::warning::sin ppi--datos: la base sale sin licitaciones"
+          python base_monetaria.py --datos ../datos || echo "::warning::base_monetaria falló"
       - name: Guardar
         run: |
           git config user.name "bot-mercado"
           git config user.email "bot@users.noreply.github.com"
-          git add estudios/reservas/reservas.csv estudios/reservas/RESERVAS.md estudios/monetarias
+          git add estudios/reservas/reservas.csv estudios/reservas/RESERVAS.md estudios/monetarias estudios/base_monetaria/BASE.md
           git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
           git commit -m "Reservas BCRA $(date +%F)"
           for i in 1 2 3; do git push && break || (git pull --rebase && sleep 5); done
