@@ -44,7 +44,7 @@ URL = {"nodo": "https://www.argentina.gob.ar/node/{}",
        "norma": "https://www.argentina.gob.ar/normativa/nacional/norma-{}"}
 TEXTO_NORMA = "https://www.argentina.gob.ar/normativa/nacional/norma-{}/texto"
 FRONTERA = 250        # números seguidos sin página = se llegó al último publicado
-HILOS = 6
+HILOS = 10
 PRESUPUESTO_SEG = 50 * 60   # tiempo máximo de recorrido por corrida; la historia se completa en varias corridas
 
 S = requests.Session()
@@ -102,11 +102,12 @@ PALABRAS_NODO = ["LICITACION", "CONVERSION", "CANJE", "SEGUNDA VUELTA", "LECAP",
 
 def es_finanzas_nodo(tit, desc):
     t, d = normal(tit), normal(desc)
-    if not any(p in t for p in PALABRAS_NODO):
+    tiene = lambda p: re.search(r"\b" + p + r"\b", t)   # palabra entera: "DUAL" no debe pescar "INDIVIDUALES"
+    if not any(tiene(p) for p in PALABRAS_NODO):
         return False
     # Descarta licitaciones de obra pública / compras: las de Finanzas hablan de instrumentos o de la Secretaría
     return ("SECRETARIA DE FINANZAS" in d or "MINISTERIO DE ECONOMIA INFORMA" in d or "TESORO NACIONAL" in d
-            or any(p in t for p in PALABRAS_NODO[4:]) or "TITULOS" in t or "INSTRUMENTOS" in t
+            or any(tiene(p) for p in PALABRAS_NODO[4:]) or tiene("TITULOS") or tiene("INSTRUMENTOS")
             or ("LICITACION" in t and ("RESULTADO" in t or "LLAMADO" in t) and "OBRA" not in t))
 
 
