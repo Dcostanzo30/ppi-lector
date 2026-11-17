@@ -17,6 +17,8 @@
 #   fuentes/finanzas/tablas.csv.gz                         todas las tablas de todos los documentos, en largo (se regenera)
 #   fuentes/finanzas/operaciones.csv                       una fila por documento con totales, rollover y clase (se regenera)
 #   fuentes/finanzas/instrumentos.csv                      una fila por instrumento por operación (se regenera)
+#   fuentes/finanzas/clausulas.csv                         cláusulas de emisión de cada instrumento llamado (se regenera):
+#                                                          emisión, vencimiento, moneda, ajuste, amortización, intereses
 #
 # Corre en ppi-lector (repositorio público, sin consumo de minutos de Actions) y escribe en ppi--datos/fuentes/finanzas,
 # como tasas_bcra.py. Se ejecuta parado en la copia de ppi--datos (las rutas son relativas a ese repositorio).
@@ -290,6 +292,16 @@ def tablas_de(html):
         return []
     out = []
     for t in raiz.iter("table"):
+        antes = ""
+        nodo = t
+        for _ in range(4):   # el título del instrumento suele estar en el párrafo o encabezado anterior a la tabla
+            for hermano in nodo.itersiblings(preceding=True):
+                txt = re.sub(r"\s+", " ", hermano.text_content()).strip()
+                if len(txt) > 15:
+                    antes = txt[-300:]; break
+            if antes or nodo.getparent() is None:
+                break
+            nodo = nodo.getparent()
         filas = []
         for tr in t.iter("tr"):
             celdas = []
@@ -301,7 +313,7 @@ def tablas_de(html):
             if any(celdas):
                 filas.append(celdas)
         if filas:
-            out.append(filas)
+            out.append((antes, filas))
     return out
 
 
@@ -321,7 +333,8 @@ def describir_instrumento(texto):
     if not vto:
         m = re.search(r"\b(\d{2})/(\d{2})/(20\d\d)\b", t)
         vto = f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else ""
-    if "DUAL" in t and "TAMAR" in t: clase = "dual_cer_tamar"
+    if "DUAL" in t and "TAMAR" in t and ("DOLAR LINKED" in t or "VINCULAD" in t): clase = "dual_tamar_dolar_linked"
+    elif "DUAL" in t and "TAMAR" in t: clase = "dual_cer_tamar"
     elif "DUAL" in t: clase = "dual"
     elif "VINCULAD" in t and "DOLAR" in t: clase = "dolar_linked"
     elif "CER" in t: clase = "cer"
@@ -374,9 +387,9 @@ def leer_documento(fila):
     plano = h.unescape(plano)
     P = normal(plano)
     clave = f"{fila['origen']}{fila['numero']}"
-    largo, instrumentos = [], []
+    largo, instrumentos, clausulas = [], [], []
     tot = {}
-    for ti, tabla in enumerate(tablas_de(html)):
+    for ti, (antes, tabla) in enumerate(tablas_de(html)):
         cols, filas = tabla[0], tabla[1:]
         # si la primera fila no es encabezado (no nombra ninguna magnitud), la tabla es de etiqueta / valor
         if not any(rol_de(c) for c in cols) and not any(k in normal(" ".join(cols)) for k in ("RESULTADO", "TOTAL")):
@@ -384,6 +397,20 @@ def leer_documento(fila):
         for fi, fl in enumerate(filas):
             for ci, v in enumerate(fl):
                 largo.append([clave, ti, fi, ci, cols[ci] if ci < len(cols) else "", v])
+        # cláusulas de emisión: tabla de dos columnas "campo | valor" con fecha de vencimiento y amortización o intereses
+        campos = {normal(fl[0]): fl[1] for fl in tabla if len(fl) >= 2}
+        if any(k.startswith("FECHA DE VENCIMIENTO") for k in campos) and any(k.startswith(("AMORTIZACION", "INTERES")) for k in campos):
+            ticker, vto, clase = describir_instrumento(antes)
+            c = {"doc": clave, "fecha_doc": fila["fecha"], "tipo_doc": fila["tipo"], "ticker": ticker, "clase": clase,
+                 "instrumento": antes[:200]}
+            for k, v in campos.items():
+                for nombre, campo in CLAUSULAS:
+                    if k.startswith(nombre) and campo not in c:
+                        c[campo] = v[:300]
+            for campo in ("fecha_emision", "fecha_reapertura", "vencimiento"):
+                if c.get(campo):
+                    c[campo] = fecha_texto(c[campo])
+            clausulas.append(c)
         roles = [rol_de(c) for c in cols]
         # tabla de totales: etiqueta en la primera columna ("Total VE Ofertado (*)") y valores a la derecha
         for fl in filas:
@@ -440,7 +467,30 @@ def leer_documento(fila):
                                      r"(CONVERSION|CANJE|RECOMPRA|CARTERA|TENENCIA)[^.]{0,120}(BANCO CENTRAL|BCRA)", P)) \
         and fila["tipo"] in ("resolucion_conjunta", "recompra")
     op["clase_monetaria"], op["sentido"] = clasificar(fila["tipo"], op, instrumentos)
-    return largo, op, instrumentos
+    return largo, op, instrumentos, clausulas
+
+
+CLAUSULAS = [("FECHA DE EMISION ORIGINAL", "fecha_emision"), ("FECHA DE EMISION", "fecha_emision"),
+             ("FECHA DE REAPERTURA", "fecha_reapertura"), ("FECHA DE VENCIMIENTO", "vencimiento"),
+             ("PLAZO", "plazo"), ("MONEDA DE EMISION", "moneda_emision"), ("SUSCRIPCION", "suscripcion"),
+             ("MONEDA DE PAGO", "moneda_pago"), ("TIPO DE CAMBIO APLICABLE", "tipo_cambio_aplicable"),
+             ("AJUSTE DE CAPITAL", "ajuste_capital"), ("AMORTIZACION", "amortizacion"), ("INTERESES", "intereses"),
+             ("INTERES", "intereses"), ("TASA", "tasa"), ("CAPITALIZACION", "capitalizacion"),
+             ("PAGO AL VENCIMIENTO", "pago_vencimiento"), ("PRECIO DE COLOCACION", "precio_colocacion"),
+             ("DENOMINACION MINIMA", "denominacion_minima")]
+CAMPOS_CL = ["doc", "fecha_doc", "tipo_doc", "ticker", "clase", "fecha_emision", "fecha_reapertura", "vencimiento", "plazo",
+             "moneda_emision", "suscripcion", "moneda_pago", "tipo_cambio_aplicable", "ajuste_capital", "amortizacion",
+             "intereses", "tasa", "capitalizacion", "pago_vencimiento", "precio_colocacion", "denominacion_minima", "instrumento"]
+
+
+def fecha_texto(t):
+    """'12 de junio de 2026' o '12/06/2026' -> '2026-06-12'; si no, el texto tal cual."""
+    n = normal(t)
+    m = re.search(r"(\d{1,2}) DE ([A-Z]+) DE (20\d\d)", n)
+    if m and m.group(2) in MESES:
+        return f"{m.group(3)}-{MESES[m.group(2)]:02d}-{int(m.group(1)):02d}"
+    m = re.search(r"(\d{2})/(\d{2})/(20\d\d)", n)
+    return f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else t
 
 
 def clasificar(tipo, op, instrumentos):
@@ -475,18 +525,19 @@ CAMPOS_IN = ["doc", "fecha", "tipo_doc", "tramo", "tabla", "ticker", "clase", "v
 
 
 def procesar(indice):
-    largo, ops, ins = [], [], []
+    largo, ops, ins, cls = [], [], [], []
     for fila in sorted(indice, key=lambda r: (r["fecha"], r["origen"], int(r["numero"]))):
         if not Path(fila["archivo"]).exists():
             continue
         try:
-            l, o, i = leer_documento(fila)
+            l, o, i, c = leer_documento(fila)
         except Exception as e:
             print(f"  no se pudo leer {fila['archivo']}: {e}", flush=True); continue
-        largo += l; ops.append(o); ins += i
+        largo += l; ops.append(o); ins += i; cls += c
     with gzip.open(BASE / "tablas.csv.gz", "wt", newline="", encoding="utf-8") as f:
         w = csv.writer(f); w.writerow(["doc", "tabla", "fila", "columna", "encabezado", "valor"]); w.writerows(largo)
-    for nombre, campos, datos in (("operaciones.csv", CAMPOS_OP, ops), ("instrumentos.csv", CAMPOS_IN, ins)):
+    for nombre, campos, datos in (("operaciones.csv", CAMPOS_OP, ops), ("instrumentos.csv", CAMPOS_IN, ins),
+                                  ("clausulas.csv", CAMPOS_CL, cls)):
         with open(BASE / nombre, "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, campos, extrasaction="ignore"); w.writeheader(); w.writerows(datos)
     print(f"procesado: {len(ops)} documentos, {len(ins)} filas de instrumentos, {len(largo)} celdas", flush=True)
