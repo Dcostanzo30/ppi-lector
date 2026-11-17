@@ -1,0 +1,42 @@
+name: Tasas BCRA para ppi--datos
+
+# Baja las tasas en pesos del BCRA (pases a 1 día, call, TAMAR, BADLAR, TM20, plazo fijo 30 días) y las deja en
+# ppi--datos/fuentes/tasa_*.csv. Solo toca esos archivos. Corre acá (repositorio público, sin consumo de minutos), como el IPC.
+# Fila propia: no compite con el lector ni con los demás procesos.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 22 * * 1-5"     # 19:30 de Buenos Aires, después del cierre (el BCRA publica con uno o dos días de atraso)
+
+concurrency:
+  group: tasas-bcra
+  cancel-in-progress: false
+
+jobs:
+  tasas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tasas_bcra.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q requests
+      - name: Bajar y guardar en ppi--datos
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          cd datos && git sparse-checkout set fuentes --no-cone 2>/dev/null || git sparse-checkout set fuentes; cd ..
+          python tasas_bcra.py datos/fuentes
+          cd datos
+          git config user.name "bot-tasas"; git config user.email "bot@users.noreply.github.com"
+          git add fuentes/tasa_*.csv
+          git diff --cached --quiet && { echo "Sin cambios"; exit 0; }
+          git commit -m "Tasas BCRA $(date '+%F %H:%M') [skip ci]"
+          for i in 1 2 3; do git push && exit 0; git pull --rebase -q; sleep 5; done; exit 1
+# FIN tasas.yml
