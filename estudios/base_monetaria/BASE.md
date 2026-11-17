@@ -44,6 +44,7 @@ Factores del BCRA el día de la liquidación. Todavía no está probado en cuál
 
 | Licitación | Liquidación | Adjudicado (VE) | Tesoro | Otros | Total del día |
 |---|---|---|---|---|---|
+| 26/06/2026 | 30/06/2026 | 13,22 | 3,05 | -2,36 | 0,76 |
 | 11/11/2026 | 13/11/2026 | 8,87 | s/d | s/d | s/d |
 
 s/d: el BCRA todavía no publicó los factores de ese día.
@@ -54,13 +55,21 @@ VNO en circulación según el último comunicado oficial de cada instrumento. El
 
 | Vence | Instrumento | Tipo | VNO en circulación | Pago estimado | Dato |
 |---|---|---|---|---|---|
+| 13/11/2026 (vencido) | S13N6 | LECAP | $ 4,18 billones | — | comunicado del 26/06/2026 |
 | 30/11/2026 | S30N6 | LECAP | s/d | 129,89 por cada 100 VNO | falta el VNO: no hay comunicado cargado |
 | 15/01/2027 | D15E7 | LELINK | USD 4,39 mil millones | — | comunicado del 11/11/2026 |
 | 29/01/2027 | S29E7 | LECAP | $ 7,01 billones | $ 7,81 billones | comunicado del 11/11/2026 |
 | 26/02/2027 | S26F7 | LECAP | s/d | 108,37 por cada 100 VNO | falta el VNO: no hay comunicado cargado |
 | 30/04/2027 | M30A7 | LETAMAR | $ 3,51 billones | — | comunicado del 11/11/2026 |
 | 30/06/2027 | T30J7 | BONCAP | $ 10,21 billones | — | comunicado del 11/11/2026 |
+| 30/07/2027 | TAMAR-2027-07-30 | BONTAMAR | $ 2,43 billones | — | comunicado del 26/06/2026 |
+| 29/10/2027 | TZXO7 | BONCER | $ 0,51 billones | — | comunicado del 26/06/2026 |
+| 31/03/2028 | TZXM8 | BONCER | $ 16,85 billones | — | comunicado del 26/06/2026 |
 | 30/06/2028 | TZX28 | BONCER | $ 5,42 billones | — | comunicado del 11/11/2026 |
+| 31/10/2028 | AO28 | BONAR_USD | USD 1,90 mil millones | — | comunicado del 26/06/2026 |
+| 15/12/2028 | TZVD8 | DOLAR_LINKED | USD 0,52 mil millones | — | comunicado del 26/06/2026 |
+| 15/12/2028 | TZXD8 | BONCER | $ 1,80 billones | — | comunicado del 26/06/2026 |
+| 14/12/2029 | TXMD9 | DUAL_CER_TAMAR | $ 6,83 billones | — | comunicado del 26/06/2026 |
 
 ## Próximas licitaciones (cronograma oficial)
 

@@ -89,6 +89,7 @@ def main(datos):
         L += ["", "s/d: el BCRA todavía no publicó los factores de ese día.", ""]
 
         ins = lic[lic.ticker != "TOTAL"].sort_values("licitacion").groupby("ticker").last().reset_index().sort_values("vencimiento")
+        ins = ins[ins.vencimiento >= pd.Timestamp(date.today()) - pd.Timedelta(days=30)]   # futuros y los del último mes
         pago = {}
         if Path("estudios/letras/instrumentos.csv").exists():
             pago = dict(pd.read_csv("estudios/letras/instrumentos.csv")[["ticker", "pago_final"]].values)
@@ -99,15 +100,15 @@ def main(datos):
         for r in ins.itertuples():
             pg = r.vno_circulacion * pago[r.ticker] / 100 if r.ticker in pago else None
             mon = "USD" if r.moneda_vn == "USD" else "$"
-            filas.append([fd(r.vencimiento), r.ticker, r.tipo.upper(), f"{mon} {n(r.vno_circulacion / BIL if mon == '$' else r.vno_circulacion / 1e3)}"
+            filas.append([fd(r.vencimiento) + (" (vencido)" if r.vencimiento < pd.Timestamp(date.today()) else ""), r.ticker, r.tipo.upper(), f"{mon} {n(r.vno_circulacion / BIL if mon == '$' else r.vno_circulacion / 1e3)}"
                           + (" billones" if mon == "$" else " mil millones"), f"$ {n(pg / BIL)} billones" if pg else "—",
                           f"comunicado del {fd(r.licitacion)}"])
         if pago:   # LECAP con pago conocido que no figuran en ningún comunicado cargado: vencimiento sin VNO
             ins_l = pd.read_csv("estudios/letras/instrumentos.csv", parse_dates=["vencimiento"])
             for r in ins_l[(~ins_l.ticker.isin(ins.ticker)) & (ins_l.vencimiento >= pd.Timestamp(date.today()))].itertuples():
-                filas.append([fd(r.vencimiento), r.ticker, "LECAP", "s/d", f"{n(r.pago_final)} por cada 100 VNO",
+                filas.append([fd(r.vencimiento) + (" (vencido)" if r.vencimiento < pd.Timestamp(date.today()) else ""), r.ticker, "LECAP", "s/d", f"{n(r.pago_final)} por cada 100 VNO",
                               "falta el VNO: no hay comunicado cargado"])
-            filas.sort(key=lambda f: pd.Timestamp(f[0].split("/")[2] + "-" + f[0].split("/")[1] + "-" + f[0].split("/")[0]))
+            filas.sort(key=lambda f: pd.Timestamp(f[0][6:10] + "-" + f[0][3:5] + "-" + f[0][0:2]))
         L += tabla(["Vence", "Instrumento", "Tipo", "VNO en circulación", "Pago estimado", "Dato"], filas) + [""]
 
     if dat and (dat / "calendario_licitaciones.csv").exists():
