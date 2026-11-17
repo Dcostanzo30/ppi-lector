@@ -1,13 +1,13 @@
-# Carry del inversor de a pie — 13/11/2026
+# Carry del inversor de a pie — 16/11/2026
 
-Dólar mayorista de referencia: 1547.0336. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.27% de puntas medidas (7 lecturas) (= 2.67%).
+Dólar mayorista de referencia: 1547.0336. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.26% de puntas medidas (9 lecturas) (= 2.66%).
 
 ## Lecap, sin cobertura y cubierta con dólar futuro
 
 | Letra | Vence | Días | TEA Lecap | Suba máx. del dólar sin perder (sin cobertura) | Futuro usado | Devaluación implícita | Cubierta bruta | Costos | **Cubierta neta** | Días para cubrir costos |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S26F7 | 2027-02-26 | 105 | 26.6% | 3.68% | DLR/FEB27 | 6.91% | 0.11% | 4.34% | **-4.23%** | 4201 |
-| S29E7 | 2027-01-29 | 77 | 24.2% | 1.4% | DLR/ENE27 | 4.98% | -0.29% | 4.34% | **-4.63%** | nunca |
+| S26F7 | 2027-02-26 | 105 | 26.6% | 3.69% | DLR/FEB27 | 6.91% | 0.11% | 4.33% | **-4.22%** | 4190 |
+| S29E7 | 2027-01-29 | 77 | 24.2% | 1.41% | DLR/ENE27 | 4.98% | -0.29% | 4.33% | **-4.61%** | nunca |
 
 - *Suba máxima del dólar sin perder:* cuánto puede subir el dólar en el período (hasta el vencimiento) para que la Lecap sin cobertura, ya descontados los costos, no rinda menos que haber quedado en dólares.
 - *Cubierta bruta / neta:* resultado en dólares, en el período, de comprar la Lecap y fijar el precio de vuelta con el futuro del vencimiento igual o inmediato posterior. La neta resta los costos.
@@ -16,9 +16,9 @@ Dólar mayorista de referencia: 1547.0336. Costo de ida y vuelta del cambio de d
 
 | Plazo | Rinde en pesos | Comisión PPI | Costo de cambio | **Neto en pesos de ida y vuelta** |
 |---|---|---|---|---|
-| 7 días | 0.43% | 0.05% | 2.67% | **-2.29%** |
-| 30 días | 1.84% | 0.20% | 2.67% | **-1.03%** |
-| 90 días | 5.52% | 0.60% | 2.67% | **2.26%** |
+| 7 días | 0.43% | 0.05% | 2.66% | **-2.28%** |
+| 30 días | 1.84% | 0.20% | 2.66% | **-1.02%** |
+| 90 días | 5.52% | 0.60% | 2.66% | **2.27%** |
 
 El neto es lo que deja, antes de que se mueva el dólar, pasar de dólares a pesos, prestar en caución y volver a dólares. Si el dólar sube más que ese neto, se pierde.
 
