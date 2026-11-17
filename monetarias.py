@@ -8,7 +8,9 @@ import requests
 SAL = Path("estudios/monetarias"); SAL.mkdir(parents=True, exist_ok=True)
 URLS = ["https://api.bcra.gob.ar/estadisticas/v4.0/monetarias", "https://api.bcra.gob.ar/estadisticas/v3.0/monetarias"]
 from datetime import date, timedelta
-DESDE = os.environ.get("DESDE") or (date.today() - timedelta(days=150)).isoformat()
+# Desde el 01/11/2025: un año antes de la licitación de noviembre de 2026, para conciliar con finanzas_tesoro.py (Domingo, 17/11/2026).
+# Antes eran los últimos 150 días; con eso cada corrida borraba el principio del año.
+DESDE = os.environ.get("DESDE") or "2025-11-01"
 s = requests.Session(); s.headers["User-Agent"] = "Mozilla/5.0"
 def pedir(url, **kw):
     try:

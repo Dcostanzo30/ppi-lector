@@ -3,6 +3,8 @@ name: Monetarias BCRA
 # Base monetaria y factores de explicación (API del BCRA).
 # Solo consultas. No corre en horario de rueda.
 on:
+  schedule:
+    - cron: "40 22 * * 1-5"   # 19:40 de Buenos Aires: factores nuevos del BCRA (los publica con días de atraso)
   push:
     paths:
       - ".github/workflows/monetarias.yml"
@@ -31,8 +33,6 @@ jobs:
       - run: pip install pandas requests
       - name: Bajar
         run: python monetarias.py
-        env:
-          DESDE: "2025-11-01"   # un año hacia atrás desde la licitación de noviembre de 2026, para conciliar con finanzas_tesoro.py
       - name: Guardar
         run: |
           git config user.name "bot-mercado"
