@@ -615,17 +615,17 @@ function pintarTodas(pn) {
 let CARTERAS = null;
 fetch('carteras.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => { CARTERAS = j; pintar(); }).catch(() => {});
 function valuar(c) {
-  let total = c.efectivo, ant = c.efectivo, falta = false;
+  let total = c.efectivo, ant = c.efectivo, falta = false, salida = 0;
   const filas = c.posiciones.map(x => {
     const e = S[x.tk], u = e && e.ops.length ? e.ops[e.ops.length - 1].p : null;
     if (u == null) { falta = true; return { ...x, u: null, valor: null }; }
     const ca = cierreAnterior(e), valor = x.cant * u / x.cada;
-    total += valor; ant += x.cant * (ca ?? u) / x.cada;
+    total += valor; ant += x.cant * (ca ?? u) / x.cada; salida += valor * (x.salida_pct ?? 0) / 100;
     return { ...x, u, valor, varp: e.varp };
   });
   if (falta) return { filas, total: null };
-  const neto = total - c.inicial - c.costos;
-  return { filas, total, neto, netoP: neto / c.inicial * 100, dia: (total / ant - 1) * 100 };
+  const neto = total - c.inicial - c.costos, vende = neto - salida;
+  return { filas, total, neto, netoP: neto / c.inicial * 100, dia: (total / ant - 1) * 100, salida, vende, vendeP: vende / c.inicial * 100 };
 }
 function pintarCarteras() {
   const box = $('carteras'); if (box.hidden) return;
@@ -639,10 +639,13 @@ function pintarCarteras() {
     for (const f of r.filas) h += `<tr><td>${f.tk}</td><td>${ar(f.cant)}</td><td>${ar(f.precio, 3)}</td><td>${f.u == null ? 's/d' : ar(f.u, dc(f.u))}</td><td class="${claseVar(f.varp)}">${f.u == null ? 's/d' : sg(f.varp, 2)}</td><td>${usd(f.valor)}</td></tr>`;
     h += `<tr><td>Efectivo</td><td></td><td></td><td></td><td></td><td>${usd(c.efectivo)}</td></tr></tbody></table>`;
     h += `<div class="res"><span>Total <b>${usd(r.total)}</b></span><span>Resultado neto con costos <b class="${claseVar(r.neto)}">${r.total == null ? 's/d' : (r.neto < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(r.neto), 2) + ' (' + sg(r.netoP, 2) + ')'}</b></span><span>Día <b class="${claseVar(r.dia)}">${r.total == null ? 's/d' : sg(r.dia, 2)}</b></span><span>Costos de entrada ${usd(c.costos)}</span></div>`;
+    h += `<div class="res"><span>Costo de salida ${usd(r.total == null ? null : r.salida)}</span><span>Resultado si vendés hoy (entrada y salida) <b class="${claseVar(r.vende)}">${r.total == null ? 's/d' : (r.vende < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(r.vende), 2) + ' (' + sg(r.vendeP, 2) + ')'}</b></span></div>`;
   }
   if (V.A && V.B) {
     const d = V.A.total != null && V.B.total != null ? V.A.total - V.B.total - (CARTERAS.carteras.find(c => c.id === 'A').costos - CARTERAS.carteras.find(c => c.id === 'B').costos) : null;
-    h += `<h3>Diferencia A − B (BBARD contra AE38D; las dos tienen AL41D)</h3><div class="res"><span>Resultado neto A − B <b class="${claseVar(d)}">${d == null ? 's/d' : (d < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(d), 2)}</b></span></div>`;
+    const dv = d == null ? null : V.A.vende - V.B.vende;
+    const fmt = v => v == null ? 's/d' : (v < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(v), 2);
+    h += `<h3>Diferencia A − B (BBARD contra AE38D; las dos tienen AL41D)</h3><div class="res"><span>Resultado neto A − B <b class="${claseVar(d)}">${fmt(d)}</b></span><span>Si vendés hoy, A − B <b class="${claseVar(dv)}">${fmt(dv)}</b></span></div>`;
   }
   box.innerHTML = h;
 }
@@ -858,6 +861,18 @@ async function vivo(url, key) {
     $('modo').innerHTML = esHoy ? '<b>EN VIVO</b> cinta de PPI vía Supabase' : `<b>RUEDA DEL ${fechaVista.split('-').reverse().join('/')}</b> (cerrada)`;
     if (!esHoy) { cierreAuto = true; $('cierre').hidden = false; $('btnCierre').classList.add('on'); }
     pintar();
+    // abierta antes de la apertura (18/11): cada minuto mira si ya hay operaciones de hoy y, si hay, pasa sola al día nuevo
+    if (!esHoy && !new URLSearchParams(location.search).get('fecha')) {
+      const espera = setInterval(async () => {
+        const real = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
+        const { data } = await cliente.from('ops').select('fecha').eq('fecha', real).limit(1);
+        if (!data?.length) return;
+        clearInterval(espera);
+        try { await cliente.removeChannel(canal); } catch (e) {}
+        cierreAuto = false; $('cierre').hidden = true; $('btnCierre').classList.remove('on');
+        vivo(url, key);
+      }, 60000);
+    }
   } catch (e) {
     $('modo').innerHTML = '<b style="color:var(--bad)">SIN CONEXIÓN</b>';
     $('cfgEstado').textContent = 'No se pudo leer Supabase: ' + (e.message || e);
