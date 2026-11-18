@@ -1,0 +1,60 @@
+name: Radar de la noche y tablero previo (para ppi--datos)
+
+# Copia transitoria del radar de ppi--datos (radar_noche.yml), pedida por Domingo el 18/11/2026: ppi--datos se quedó sin
+# minutos de Actions el 16/11 y su radar está pausado hasta el 1/12. Acá corre sin consumo (repositorio público).
+# Usa los programas de ppi--datos tal cual (radar_noche.py y tablero_previo.py, sin claves: solo páginas públicas) y guarda
+# en ppi--datos/radar y ppi--datos/tablero, como siempre. El 1/12 se decide si vuelve a ppi--datos o queda acá;
+# no deben correr las dos copias a la vez.
+on:
+  schedule:
+    - cron: "37 10 * * 1-5"   # 07:37 hora argentina: radar + tablero previo
+    - cron: "27 13 * * 1-5"   # 10:27 hora argentina: actualiza el tablero con la apertura de Nueva York
+  workflow_dispatch:
+
+concurrency:
+  group: radar
+  cancel-in-progress: false
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Bajar de ppi--datos solo lo necesario
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATOS_TOKEN}@github.com/Dcostanzo30/ppi--datos.git" datos
+          cd datos
+          hoy=$(date +%F)
+          # la cinta de la última rueda anterior a hoy (el tablero resume cómo cerró)
+          ayer=$(git ls-tree --name-only HEAD tiempo_real/ | sed 's#tiempo_real/##' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | awk -v h="$hoy" '$0 < h' | sort | tail -1)
+          echo "Última rueda grabada: $ayer"
+          git sparse-checkout set --no-cone /radar_noche.py /tablero_previo.py /radar/ /tablero/ ${ayer:+/tiempo_real/$ayer/}
+          ls
+      - name: Medir
+        working-directory: datos
+        run: |
+          # en la corrida de las 10:27 el radar ya está hecho: solo se actualiza el tablero
+          if [ "${{ github.event_name }}" = "schedule" ] && [ -f "radar/$(date +%F)/radar.json" ]; then
+            echo "Radar de hoy ya hecho"
+          else
+            python radar_noche.py
+          fi
+      - name: Tablero previo
+        working-directory: datos
+        run: python tablero_previo.py || echo "El tablero falló; el radar quedó guardado igual"
+      - name: Guardar en ppi--datos
+        working-directory: datos
+        run: |
+          git config user.name "bot-radar"
+          git config user.email "bot@users.noreply.github.com"
+          git add radar tablero 2>/dev/null || git add radar
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -q -m "Radar y tablero $(date +%F\ %H:%M) (desde ppi-lector) [skip ci]"
+          for i in 1 2 3 4 5; do git push -q && exit 0; git pull --rebase -q; sleep 5; done; exit 1
+# FIN radar.yml
