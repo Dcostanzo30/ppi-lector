@@ -1,4 +1,4 @@
-# Diagnóstico MEP — 2026-11-18 18:55
+# Diagnóstico MEP — 2026-11-18 20:13
 
 - GD30 INMEDIATA: compradora None vendedora None  (libro vacío ({"date": "2026-11-18T18:45:03.77-03:00", "offers": [{"position": 1, "price": 0, "quantity": 0}], "bids": [{"position": 1))
 - GD30D INMEDIATA: compradora None vendedora 53.5
