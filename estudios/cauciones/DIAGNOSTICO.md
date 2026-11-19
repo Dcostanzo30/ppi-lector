@@ -1,4 +1,4 @@
-# Diagnóstico cauciones — 2026-11-17 23:38
+# Diagnóstico cauciones — 2026-11-18 21:49
 
 - CAUCIONES mercado='': 18 nuevos
 - CAUCIONES mercado='BYMA': 0 nuevos
@@ -16,10 +16,10 @@ Muestra de registros crudos (para ajustar la lectura):
 - DOLAR8: {"ticker": "DOLAR8", "description": "DOLAR 8", "currency": "Dolares billete | MEP", "type": "CAUCIONES", "market": "BYMA", "isin": null, "cajaValoresCode": 0, "nominalInPrice": 1}
 - Subyacentes de los instrumentos encontrados: {'?': 18}
 - Con precio actual: 18; sin precio: 0 []
-- Filas de historia diaria: 1372
+- Filas de historia diaria: 1384
 Muestra de precios actuales crudos:
-- DOLAR1: {"date": "2026-11-17T17:00:00.556-03:00", "price": 0.7, "volume": 1202168738.59, "openingPrice": 1.4, "max": 1.99, "min": 0.1, "previousClose": 2, "marketChange": -1.3, "marketChangePercent": "-65%"}
-- DOLAR2: {"date": "2026-11-17T17:00:00.557-03:00", "price": 1.5, "volume": 115212.6, "openingPrice": 2, "max": 2, "min": 1, "previousClose": 1.2, "marketChange": 0.3, "marketChangePercent": "25%"}
-- DOLAR3: {"date": "2026-11-17T17:00:00.557-03:00", "price": 1.25, "volume": 145938.99, "openingPrice": 1.8, "max": 1.8, "min": 1.1, "previousClose": 1, "marketChange": 0.25, "marketChangePercent": "25%"}
+- DOLAR1: {"date": "2026-11-18T17:00:00.516-03:00", "price": 0.18, "volume": 1217023386.93, "openingPrice": 2.0, "max": 2.0, "min": 0.1, "previousClose": 1.5, "marketChange": -1.32, "marketChangePercent": "-88.33%"}
+- DOLAR2: {"date": "2026-11-18T17:00:00.516-03:00", "price": 1.2, "volume": 1077159.89, "openingPrice": 1.25, "max": 2, "min": 0.79, "previousClose": 1.25, "marketChange": -0.05, "marketChangePercent": "-4%"}
+- DOLAR3: {"date": "2026-11-17T17:00:00.557-03:00", "price": 1.25, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 1, "marketChange": 0.25, "marketChangePercent": "0%"}
 - DOLAR4: {"date": "2026-11-16T17:00:00.553-03:00", "price": 1, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 3, "marketChange": -2, "marketChangePercent": "0%"}
 - DOLAR5: {"date": "2026-11-13T17:00:00.533-03:00", "price": 1.5, "volume": 0, "openingPrice": 0, "max": 0, "min": 0, "previousClose": 1, "marketChange": 0.5, "marketChangePercent": "0%"}

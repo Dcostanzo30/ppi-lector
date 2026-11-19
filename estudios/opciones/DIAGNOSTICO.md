@@ -1,4 +1,4 @@
-# Diagnóstico opciones — 2026-11-17 23:41
+# Diagnóstico opciones — 2026-11-18 21:52
 
 - OPCIONES mercado='': 1220 nuevos
 - OPCIONES mercado='BYMA': 0 nuevos
