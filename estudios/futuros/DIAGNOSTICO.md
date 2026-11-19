@@ -1,4 +1,4 @@
-# Diagnóstico futuros — 2026-11-18 21:49
+# Diagnóstico futuros — 2026-11-18 23:00
 
 Ingreso a PPI correcto.
 
@@ -25,7 +25,7 @@ Ingreso a PPI correcto.
   - DLR/SPOT: Exception en A-24HS: {'error': 'Instrument Type not found: MERCADOS'}
   - GD30/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - GD30/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - GD35/DIC26: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - GD35/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - GD35/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - MAI.ROS/DIC26M: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - MAI.ROS/JUN27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
@@ -34,4 +34,4 @@ Ingreso a PPI correcto.
   - SOJ.ROS/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - SOJ.ROS/ENE27/JUL27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
 - Vencimientos tomados de PPI: 140 contratos
-- Filas de historia diaria (DLR simples): 1108
+- Filas de historia diaria (DLR simples): 1096
