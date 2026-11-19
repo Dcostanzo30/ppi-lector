@@ -72,6 +72,31 @@
      "salida_pct": 0.6
     }
    ]
+  },
+  {
+   "id": "D",
+   "nombre": "TXARD + BMA.D",
+   "fecha": "19/11/2026",
+   "inicial": 10000,
+   "efectivo": 4.5,
+   "costos": 72.05,
+   "costos_incluidos": true,
+   "posiciones": [
+    {
+     "tk": "TXARD",
+     "cant": 11208,
+     "precio": 0.442866,
+     "cada": 1,
+     "salida_pct": 0.726
+    },
+    {
+     "tk": "BMA.D",
+     "cant": 870,
+     "precio": 5.70092,
+     "cada": 1,
+     "salida_pct": 0.726
+    }
+   ]
   }
  ]
 }

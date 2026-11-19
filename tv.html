@@ -29,6 +29,7 @@ button:hover{border-color:var(--accent)} button:focus-visible,input:focus-visibl
 button.on{background:var(--accent);color:#0d1014;border-color:var(--accent)}
 a.boton{color:inherit;text-decoration:none;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 12px}
 a.boton:hover{border-color:var(--accent)}
+.tabla{overflow-x:auto}
 select,input{font:inherit;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
 
 /* franja */
@@ -163,6 +164,7 @@ canvas{display:block;width:100%}
   <div id="grilla" class="grilla"><div class="vacia">Cargando la cinta…</div></div>
   <aside id="alertas" class="alertas" aria-label="Alertas"></aside>
 </main>
+<section id="titulos" class="todas"></section>
 <section id="todas" class="todas" hidden></section>
 <div id="tip" class="tip" hidden></div>
 
@@ -171,11 +173,11 @@ canvas{display:block;width:100%}
 (() => {
 'use strict';
 const PANEL = ["ALUA","BBAR","BMA","BYMA","CEPU","COME","CRES","ECOG","EDN","GGAL","IRSA","LOMA","METR","PAMP","SUPV","TECO2","TGNO4","TGSU2","TRAN","TXAR","VALO","YPFD"];
-const BONOS_D = ['AE38D', 'AE38C', 'AL41D', 'AL41C', 'GD38D', 'GD38C', 'BBARD', 'AL29D', 'AL29C', 'GD29D', 'GD29C', 'AL35D', 'AL35C', 'GD35D', 'GD35C', 'GD41D', 'GD41C', 'GD46D', 'GD46C', 'VISTD', 'VISTC'];   // cotizan en dólares (D = MEP, C = cable)
-const EXTRA = ["AE38D", "AE38C", "AL41D", "AL41C", "GD38D", "GD38C", "VIST", "VISTD", "VISTC", "BBARD", "AL29D", "AL29C", "GD29D", "GD29C", "AL35D", "AL35C", "GD35D", "GD35C", "GD41D", "GD41C", "GD46D", "GD46C"];      // bonos en D y C y CEDEAR de seguimiento (llegan por el relevo); el cable al lado del MEP (17/11)
+const BONOS_D = ['AE38D', 'AE38C', 'AL41D', 'AL41C', 'GD38D', 'GD38C', 'BBARD', 'AL29D', 'AL29C', 'GD29D', 'GD29C', 'AL35D', 'AL35C', 'GD35D', 'GD35C', 'GD41D', 'GD41C', 'GD46D', 'GD46C', 'VISTD', 'VISTC', 'TXARD', 'BMA.D'];   // cotizan en dólares (D = MEP, C = cable)
+const EXTRA = ["AE38D", "AE38C", "AL41D", "AL41C", "GD38D", "GD38C", "VIST", "VISTD", "VISTC", "BBARD", "AL29D", "AL29C", "GD29D", "GD29C", "AL35D", "AL35C", "GD35D", "GD35C", "GD41D", "GD41C", "GD46D", "GD46C", "TXARD", "BMA.D"];      // bonos en D y C y CEDEAR de seguimiento (llegan por el relevo); el cable al lado del MEP (17/11)
 // Órdenes límite de papel vigentes (papel/operaciones.csv): aviso cuando el precio se acerca o toca
 const OBJETIVOS = [{ tk: 'VIST', entrada: 38600, corte: 36000, objetivo: 47000, hasta: '2026-11-06' }];
-const dc = p => p < 100 ? 2 : p < 1000 ? 1 : 0;           // decimales según el nivel de precio (bonos en D con 2)
+const dc = p => p < 1 ? 3 : p < 100 ? 2 : p < 1000 ? 1 : 0;           // decimales según el nivel de precio (bonos en D con 2)
 const VENTANA = 400;                    // operaciones visibles en el gráfico de cada especie
 const $ = id => document.getElementById(id);
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -624,7 +626,7 @@ function valuar(c) {
     return { ...x, u, valor, varp: e.varp };
   });
   if (falta) return { filas, total: null };
-  const neto = total - c.inicial - c.costos, vende = neto - salida;
+  const neto = total - c.inicial - (c.costos_incluidos ? 0 : c.costos), vende = neto - salida;
   return { filas, total, neto, netoP: neto / c.inicial * 100, dia: (total / ant - 1) * 100, salida, vende, vendeP: vende / c.inicial * 100 };
 }
 function pintarCarteras() {
@@ -638,7 +640,7 @@ function pintarCarteras() {
     h += `<h3>${c.id} · ${c.nombre} <small>(armada el ${c.fecha})</small></h3><table><thead><tr><th>Especie</th><th>Cantidad</th><th>Compra</th><th>Último</th><th>Var. día</th><th>Valor</th></tr></thead><tbody>`;
     for (const f of r.filas) h += `<tr><td>${f.tk}</td><td>${ar(f.cant)}</td><td>${ar(f.precio, 3)}</td><td>${f.u == null ? 's/d' : ar(f.u, dc(f.u))}</td><td class="${claseVar(f.varp)}">${f.u == null ? 's/d' : sg(f.varp, 2)}</td><td>${usd(f.valor)}</td></tr>`;
     h += `<tr><td>Efectivo</td><td></td><td></td><td></td><td></td><td>${usd(c.efectivo)}</td></tr></tbody></table>`;
-    h += `<div class="res"><span>Total <b>${usd(r.total)}</b></span><span>Resultado neto con costos <b class="${claseVar(r.neto)}">${r.total == null ? 's/d' : (r.neto < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(r.neto), 2) + ' (' + sg(r.netoP, 2) + ')'}</b></span><span>Día <b class="${claseVar(r.dia)}">${r.total == null ? 's/d' : sg(r.dia, 2)}</b></span><span>Costos de entrada ${usd(c.costos)}</span></div>`;
+    h += `<div class="res"><span>Total <b>${usd(r.total)}</b></span><span>Resultado neto con costos <b class="${claseVar(r.neto)}">${r.total == null ? 's/d' : (r.neto < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(r.neto), 2) + ' (' + sg(r.netoP, 2) + ')'}</b></span><span>Día <b class="${claseVar(r.dia)}">${r.total == null ? 's/d' : sg(r.dia, 2)}</b></span><span>${c.costos_incluidos ? 'Costos de entrada ya pagados' : 'Costos de entrada'} ${usd(c.costos)}</span></div>`;
     h += `<div class="res"><span>Costo de salida ${usd(r.total == null ? null : r.salida)}</span><span>Resultado si vendés hoy (entrada y salida) <b class="${claseVar(r.vende)}">${r.total == null ? 's/d' : (r.vende < 0 ? '−' : '+') + 'US$ ' + ar(Math.abs(r.vende), 2) + ' (' + sg(r.vendeP, 2) + ')'}</b></span></div>`;
   }
   if (V.A && V.B) {
@@ -648,6 +650,21 @@ function pintarCarteras() {
     h += `<h3>Diferencia A − B (BBARD contra AE38D; las dos tienen AL41D)</h3><div class="res"><span>Resultado neto A − B <b class="${claseVar(d)}">${fmt(d)}</b></span><span>Si vendés hoy, A − B <b class="${claseVar(dv)}">${fmt(dv)}</b></span></div>`;
   }
   box.innerHTML = h;
+}
+
+// ---------- PANEL DE TÍTULOS PÚBLICOS (19/11): soberanos en pesos, MEP y cable, con el dólar implícito de cada bono ----------
+const SOBERANOS = ['AL29', 'GD29', 'AL30', 'GD30', 'AL35', 'GD35', 'AE38', 'GD38', 'AL41', 'GD41', 'GD46'];
+function pintarTitulos() {
+  const box = $('titulos'); if (box.hidden) return;
+  const ult = tk => { const e = S[tk]; return e && e.ops.length ? { p: e.ops[e.ops.length - 1].p, v: e.varp } : null; };
+  const celda = (u, us) => u ? `<td>${us ? 'US$ ' : '$ '}${ar(u.p, dc(u.p))}</td><td class="${claseVar(u.v)}">${u.v == null ? '' : sg(u.v, 2)}</td>` : '<td>s/d</td><td></td>';
+  const imp = (a, b) => a && b ? '$ ' + ar(a.p / b.p, 2) : 's/d';
+  let h = `<h2>Títulos públicos <small>· pesos, dólar MEP (D) y cable (C), cada 100 VN · último operado</small></h2><div class="tabla"><table><thead><tr><th>Bono</th><th>Pesos</th><th>Var.</th><th>MEP</th><th>Var.</th><th>Cable</th><th>Var.</th><th>MEP implícito</th><th>CCL implícito</th></tr></thead><tbody>`;
+  for (const b of SOBERANOS) {
+    const pe = ult(b), d = ult(b + 'D'), c = ult(b + 'C');
+    h += `<tr><td>${b}</td>${celda(pe)}${celda(d, true)}${celda(c, true)}<td>${imp(pe, d)}</td><td>${imp(pe, c)}</td></tr>`;
+  }
+  box.innerHTML = h + '</tbody></table></div><p class="nota">AL30 y GD30 llegan resumidos cada 10 s (último precio y variación). s/d: la línea no operó en el día. Implícito = precio en pesos ÷ precio en dólares del mismo bono.</p>';
 }
 
 // ---------- pantalla de PREAPERTURA (cada especie hasta su primera operación real; se abre sola antes de las 10:40) ----------
@@ -790,7 +807,7 @@ function pintar() {
     if (!cierreAuto && ahora >= 17 * 3600 && modo === 'vivo') { cierreAuto = true; $('cierre').hidden = false; $('btnCierre').classList.add('on'); }
     pintarCierre(pn);
     if (!preAuto && modo === 'vivo' && ahora && ahora < 10 * 3600 + 40 * 60) { preAuto = true; $('pre').hidden = false; $('btnPre').classList.add('on'); }
-    pintarPre(); pintarCarteras();
+    pintarPre(); pintarCarteras(); pintarTitulos();
   });
 }
 window.addEventListener('resize', pintar);

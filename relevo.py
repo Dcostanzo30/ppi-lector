@@ -15,12 +15,17 @@ _n = {"enviadas": 0, "errores": 0}
 PANEL = {t.strip() for t in os.environ.get("TICKERS", "").split(",") if t.strip()}
 # Especies extra para la mesa (bonos en D y CEDEARs de seguimiento): van con todas sus operaciones y su libro, igual que el panel.
 # 16/11: se suman BBARD y los soberanos en MEP de la tabla precio / valor residual (carteras de práctica).
-MESA_EXTRA = {t.strip() for t in os.environ.get("MESA_EXTRA", "AE38D,AE38C,AL41D,AL41C,GD38D,GD38C,VIST,VISTD,VISTC,BBARD,AL29D,AL29C,GD29D,GD29C,AL35D,AL35C,GD35D,GD35C,GD41D,GD41C,GD46D,GD46C").split(",") if t.strip()}
+MESA_EXTRA = {t.strip() for t in os.environ.get("MESA_EXTRA", "AE38D,AE38C,AL41D,AL41C,GD38D,GD38C,VIST,VISTD,VISTC,BBARD,AL29D,AL29C,GD29D,GD29C,AL35D,AL35C,GD35D,GD35C,GD41D,GD41C,GD46D,GD46C,AL29,GD29,AL35,GD35,AE38,GD38,AL41,GD41,GD46,TXARD,BMA.D").split(",") if t.strip()}
 # Franja del dólar: no se mandan las operaciones de AL30/GD30 (son decenas de miles), solo cada 30 s el valor implícito
 # calculado con los medios del libro. Claves (ticker, tipo) para no confundir GGAL local con el ADR (ACCIONES-USA).
 DOLAR = {("AL30", "BONOS"), ("AL30D", "BONOS"), ("AL30C", "BONOS"), ("GD30", "BONOS"), ("GD30D", "BONOS"), ("GD30C", "BONOS"),
          ("GGAL", "ACCIONES-USA"), ("GGAL", "ACCIONES")}
 _medios = {}   # (ticker, tipo) -> (medio del libro, hora)
+# Panel de títulos públicos (19/11): de AL30 y GD30 en sus tres monedas no van las operaciones sino un resumen cada 10 s
+# (último precio, variación, máximo y mínimo del día, volumen acumulado) como una fila del mismo ticker con nominales 0,
+# y su libro de 5 puntas como el resto.
+RESUMEN = {"AL30", "AL30D", "AL30C", "GD30", "GD30D", "GD30C"}
+_ult, _ult_cambio = {}, set()
 # Preapertura: hasta la primera operación de cada especie de la mesa, cada 20 s se guarda su libro (si cambió) como una
 # fila del ticker sintético "PRE:TICKER" en la tabla ops. Campos: precio = apertura teórica si el libro está cruzado
 # (si no, el medio); nom = cantidad que se ejecutaría a ese precio; acum / var = profundidad de 5 niveles compra / venta;
@@ -64,6 +69,17 @@ def recibir(crudo):
             bc, bv = mejor(m.get("Bids")), mejor(m.get("Offers"))
             if bc and bv and bc < bv:
                 _medios[(tk, tipo)] = ((bc + bv) / 2, time.time())
+        if tipo == "BONOS" and tk in RESUMEN:
+            if m.get("Trade") in (True, "true", "True"):
+                p = num(m.get("Price"))
+                if p:
+                    _ult[tk] = {"p": p, "var": num(m.get("VarDay")), "maxd": num(m.get("MaxDay")), "mind": num(m.get("MinDay")),
+                                "acum": num(m.get("VolumeTotalAmount")), "fecha": str(m.get("Date", ""))}
+                    _ult_cambio.add(tk)
+            else:
+                _libro[tk] = {"bids": [[num(n.get("Price")), num(n.get("Quantity"))] for n in (m.get("Bids") or [])[:5] if isinstance(n, dict)],
+                              "offers": [[num(n.get("Price")), num(n.get("Quantity"))] for n in (m.get("Offers") or [])[:5] if isinstance(n, dict)]}
+            return
         if tipo == "ACCIONES":
             if PANEL and tk not in PANEL and tk not in MESA_EXTRA:
                 return
@@ -119,6 +135,21 @@ def _dolar():
                    "tk": tk, "precio": v, "nom": 0.0, "monto": 0.0, "acum": None, "lado": "M", "var": None, "maxd": None, "mind": None})
 
 
+def _resumen():
+    """Cada 10 s: una fila por especie de RESUMEN que operó desde la vuelta anterior."""
+    ahora = datetime.now()
+    for tk in list(_ult_cambio):
+        _ult_cambio.discard(tk)
+        u = _ult[tk]
+        try:
+            ts = datetime.fromisoformat(u["fecha"]).replace(tzinfo=None)
+        except ValueError:
+            ts = ahora
+        _cola.put({"clave": f"{tk}|R|{ts.isoformat(timespec='seconds')}|{u['p']}", "fecha": ts.strftime("%Y-%m-%d"),
+                   "ts": ts.isoformat(timespec="milliseconds"), "tk": tk, "precio": u["p"], "nom": 0.0, "monto": 0.0,
+                   "acum": u["acum"], "lado": "M", "var": u["var"], "maxd": u["maxd"], "mind": u["mind"]})
+
+
 def _preapertura():
     """Libros de preapertura que cambiaron, de especies que todavía no operaron (hasta las 11:30 como máximo)."""
     ahora = datetime.now()
@@ -138,13 +169,19 @@ def _preapertura():
 
 def _enviar():
     s = requests.Session()
-    ultimo_dolar = ultimo_pre = 0.0
+    ultimo_dolar = ultimo_pre = ultimo_res = 0.0
     while True:
         time.sleep(1.5)
         if time.time() - ultimo_dolar >= 30:
             ultimo_dolar = time.time()
             try:
                 _dolar()
+            except Exception:
+                pass
+        if time.time() - ultimo_res >= 10:
+            ultimo_res = time.time()
+            try:
+                _resumen()
             except Exception:
                 pass
         if time.time() - ultimo_pre >= 20:
