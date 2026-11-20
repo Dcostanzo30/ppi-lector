@@ -1,6 +1,6 @@
-# Carry del inversor de a pie — 18/11/2026
+# Carry del inversor de a pie — 19/11/2026
 
-Dólar mayorista de referencia: 1552.2627. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.10% de puntas medidas (21 lecturas) (= 2.50%).
+Dólar mayorista de referencia: 1552.2627. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.10% de puntas medidas (27 lecturas) (= 2.50%).
 
 ## Lecap, sin cobertura y cubierta con dólar futuro
 
