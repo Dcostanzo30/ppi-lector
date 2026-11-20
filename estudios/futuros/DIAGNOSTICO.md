@@ -1,4 +1,4 @@
-# Diagnóstico futuros — 2026-11-18 23:00
+# Diagnóstico futuros — 2026-11-19 21:50
 
 Ingreso a PPI correcto.
 
@@ -32,6 +32,6 @@ Ingreso a PPI correcto.
   - MAI.ROS/MAR27/JUL27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - MAI.ROS/MAY27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - SOJ.ROS/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - SOJ.ROS/ENE27/JUL27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:00:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
+  - SOJ.ROS/ENE27/JUL27: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
 - Vencimientos tomados de PPI: 140 contratos
-- Filas de historia diaria (DLR simples): 1096
+- Filas de historia diaria (DLR simples): 1121
