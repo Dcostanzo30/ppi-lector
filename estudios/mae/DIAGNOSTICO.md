@@ -1,4 +1,4 @@
-# Diagnóstico A3 market data — 2026-11-19 21:50
+# Diagnóstico A3 market data — 2026-11-19 23:16
 
   - titulo/historicocauciones: HTTP 400
 - Cauciones 2026-06-01 a 2026-07-01: 0 filas
