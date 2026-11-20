@@ -1,0 +1,62 @@
+name: Auditoria aislada de cinta PPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha de la carpeta (YYYY-MM-DD)"
+        required: true
+        default: "2026-11-20"
+      ticker:
+        description: "Especie a inspeccionar"
+        required: true
+        default: "GGAL"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar lector
+        uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi-lector
+          ref: analisis-cinta-2026-11-20
+          path: lector
+
+      - name: Descargar cintas originales (solo lectura)
+        uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi--datos
+          ref: main
+          token: \${{ secrets.DATOS_TOKEN }}
+          path: datos
+          sparse-checkout: |
+            tiempo_real/\${{ inputs.fecha }}
+
+      - name: Validar gzip y contar eventos
+        working-directory: lector
+        env:
+          FECHA: \${{ inputs.fecha }}
+          TICKER: \${{ inputs.ticker }}
+        run: |
+          set -euo pipefail
+          DIR="../datos/tiempo_real/$FECHA"
+          test -f "$DIR/parte_0836.txt.gz"
+          test -f "$DIR/parte_1330.txt.gz"
+          python auditoria_cinta.py \
+            --date "$FECHA" \
+            --ticker "$TICKER" \
+            --morning "$DIR/parte_0836.txt.gz" \
+            --afternoon "$DIR/parte_1330.txt.gz" \
+            --out "informe-$FECHA-$TICKER.json"
+
+      - name: Publicar informe como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: auditoria-\${{ inputs.fecha }}-\${{ inputs.ticker }}
+          path: lector/informe-\${{ inputs.fecha }}-\${{ inputs.ticker }}.json
+          if-no-files-found: error
+          retention-days: 14
