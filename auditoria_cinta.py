@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Read-only integrity and GGAL tape audit. Never rewrites source tapes."""
+"""Read-only PPI tape audit and bounded raw-schema sampling."""
 import argparse
 import collections
-import datetime as dt
 import gzip
 import json
 import pathlib
@@ -32,14 +31,15 @@ def parse_line(line):
             pass
     return received, obj
 
-def walk(obj):
+def walk(obj, path="$", parents=None):
+    parents = parents or []
     if isinstance(obj, dict):
-        yield obj
-        for v in obj.values():
-            yield from walk(v)
+        yield obj, path, parents
+        for k, v in obj.items():
+            yield from walk(v, f"{path}.{k}", parents + [k])
     elif isinstance(obj, list):
-        for v in obj:
-            yield from walk(v)
+        for i, v in enumerate(obj):
+            yield from walk(v, f"{path}[{i}]", parents)
 
 def first(d, *keys):
     low = {str(k).lower(): v for k, v in d.items()}
@@ -56,11 +56,11 @@ def inspect(path, target):
     tickers = collections.Counter()
     target_trades = []
     target_books = 0
-    first_event = last_event = None
     first_recv = last_recv = None
     parse_fail = 0
     first_target = last_target = None
-    # gzip.open validates stream trailer/CRC on complete iteration.
+    samples = []
+    overlap_samples = []
     with gzip.open(path, "rb") as f:
         for n, line in enumerate(f, 1):
             stats["lines"] += 1
@@ -72,7 +72,8 @@ def inspect(path, target):
                 parse_fail += 1
                 continue
             stats["json_lines"] += 1
-            for d in walk(obj):
+            matches = []
+            for d, pth, parents in walk(obj):
                 ticker = first(d, "Ticker", "Symbol", "Instrument")
                 if ticker is None:
                     continue
@@ -80,14 +81,13 @@ def inspect(path, target):
                 tickers[ticker] += 1
                 if ticker != target:
                     continue
+                matches.append((d, pth, parents))
                 stats["target_objects"] += 1
                 event = first(d, "Date", "Timestamp", "Time")
                 if event is not None:
                     event = str(event)
                     first_target = first_target or event
                     last_target = event
-                    first_event = first_event or event
-                    last_event = event
                 if truth(first(d, "Trade")):
                     stats["target_trades"] += 1
                     target_trades.append({
@@ -100,7 +100,20 @@ def inspect(path, target):
                     })
                 elif first(d, "Bids") is not None or first(d, "Offers") is not None:
                     target_books += 1
-    stats["parse_fail"] = parse_fail
+            if matches:
+                sample = {
+                    "line": n,
+                    "received_time": recv,
+                    "target_paths": [m[1] for m in matches[:8]],
+                    "target_objects": [m[0] for m in matches[:8]],
+                    "root_message": obj,
+                }
+                if len(samples) < 8:
+                    samples.append(sample)
+                if recv and "T13:" in recv and len(overlap_samples) < 12:
+                    hhmm = recv[11:16]
+                    if "13:25" <= hhmm <= "13:50":
+                        overlap_samples.append(sample)
     return {
         "file": str(path),
         "bytes": path.stat().st_size,
@@ -119,6 +132,8 @@ def inspect(path, target):
         "target_event_last": last_target,
         "target_trade_sample_first": target_trades[:3],
         "target_trade_sample_last": target_trades[-3:],
+        "schema_samples_first": samples,
+        "schema_samples_overlap": overlap_samples,
     }
 
 def main():
@@ -142,13 +157,13 @@ def main():
         "files": reports, "errors": errors,
         "notes": [
             "gzip_integrity=OK means the entire gzip stream was read and its trailer/CRC validated.",
-            "Message/object counts are not trade counts; inspect the raw schema before interpreting nested-object counts.",
+            "Recursive object counts remain provisional; schema_samples expose the enclosing raw message for validation.",
             "The two files are reported separately; no records are deleted or deduplicated.",
-            "Event-time field selection is heuristic and requires schema confirmation."
+            "schema_samples_overlap contains received-time samples from 13:25-13:50 when present."
         ]
     }
     pathlib.Path(a.out).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json.dumps({"date":a.date,"ticker":a.ticker,"audit_status":result["audit_status"],"errors":errors}, ensure_ascii=False, indent=2))
     if errors:
         sys.exit(2)
 
