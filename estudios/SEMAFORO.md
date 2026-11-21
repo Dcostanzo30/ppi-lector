@@ -1,12 +1,12 @@
 # Semáforo de riesgo político
 
-Al 19/11/2026: **sin alerta** — 2 de 4 condiciones encendidas (riesgo país 830, brecha CCL–MEP 6,16%).
+Al 20/11/2026: **ALERTA** — 3 de 4 condiciones encendidas (riesgo país 830, brecha CCL–MEP 6,16%).
 
 | Condición | Hoy |
 |---|---|
 | Riesgo país en máximo de 60 días | apagada |
 | Brecha CCL–MEP arriba del percentil 90 (250 días) | encendida |
-| Bonos largos caen ≥1 punto más que el corto (3 días) | apagada |
+| Bonos largos caen ≥1 punto más que el corto (3 días) | encendida |
 | Bancos y reguladas ≥1,5 puntos peor que el resto (5 días) | encendida |
 | Volumen en líneas C muy por encima de lo normal | se mide desde el 4/11/2026 |
 
@@ -18,15 +18,14 @@ Primer día de cada racha. Riesgo país y panel líder (mediana, en pesos) 20 y 
 |---|---|---|---|---|---|---|---|
 | 29/08/2019 | 1 | 2.272 | -1,8% | 0,7% | 18,6% | 27,9% | Generales 2019 |
 | 02/09/2019 | 1 | 2.532 | -15,4% | -10,6% | 13,5% | 20,1% | Generales 2019 |
-| 06/10/2020 | 3 | 1.373 | 4,2% | 0,8% | 6,4% | 8,2% | — |
-| 14/10/2020 | 2 | 1.404 | -3,7% | 3,3% | 7,2% | -0,1% | — |
-| 19/11/2021 | 2 | 1.750 | -0,4% | 0,5% | -2,8% | 1,4% | — |
-| 26/11/2021 | 1 | 1.872 | -8,2% | -7,1% | -1,0% | 9,6% | — |
-| 22/12/2021 | 1 | 1.754 | 9,2% | 1,9% | -1,8% | 5,2% | — |
-| 07/03/2022 | 1 | 1.971 | -13,2% | -3,2% | 1,4% | -4,8% | — |
-| 09/03/2022 | 1 | 1.971 | -13,6% | -0,1% | 2,3% | -4,2% | — |
-| 13/07/2022 | 1 | 2.729 | -9,3% | 1,4% | 18,2% | 31,4% | — |
-| 15/11/2022 | 2 | 2.385 | -8,8% | -17,7% | 10,9% | 56,6% | — |
+| 06/10/2020 | 3 | 1.373 | 4,2% | 0,8% | 6,4% | 7,7% | — |
+| 14/10/2020 | 2 | 1.404 | -3,7% | 3,3% | 7,2% | -0,5% | — |
+| 19/11/2021 | 3 | 1.750 | -0,4% | 0,5% | -3,3% | -0,4% | — |
+| 26/11/2021 | 1 | 1.872 | -8,2% | -7,1% | -1,0% | 7,5% | — |
+| 30/11/2021 | 1 | 1.914 | -11,0% | -6,2% | 1,2% | 3,1% | — |
+| 22/12/2021 | 1 | 1.754 | 9,2% | 1,9% | -2,7% | 2,5% | — |
+| 07/03/2022 | 1 | 1.971 | -13,2% | -3,2% | 1,1% | -4,9% | — |
+| 15/11/2022 | 2 | 2.385 | -8,8% | -17,7% | 10,9% | 54,7% | — |
 | 17/01/2023 | 1 | 1.881 | 4,6% | 31,5% | -2,0% | 1,7% | — |
 | 19/01/2023 | 1 | 1.938 | 6,1% | 37,3% | 9,8% | 12,9% | — |
 | 31/07/2023 | 1 | 1.980 | 3,6% | 27,8% | 45,6% | 30,7% | PASO 2023, Generales 2023 |
@@ -59,13 +58,14 @@ Primer día de cada racha. Riesgo país y panel líder (mediana, en pesos) 20 y 
 | 14/10/2026 | 1 | 611 | 35,8% | —% | -14,9% | —% | — |
 | 30/10/2026 | 6 | 787 | —% | —% | —% | —% | — |
 | 18/11/2026 | 1 | 830 | —% | —% | —% | —% | — |
+| 20/11/2026 | 1 | 830 | —% | —% | —% | —% | — |
 
 ## ¿Sirve? (días en alerta contra el resto)
 
 | | Días | RP +20d (media) | Prob. RP +10% en 20d | Panel +20d (media) | Panel +60d (media) |
 |---|---|---|---|---|---|
-| En alerta | 59 | -0,1% | 17% | 3,6% | 15,3% |
-| Sin alerta | 1845 | 2,1% | 22% | 2,8% | 8,7% |
+| En alerta | 59 | 0,1% | 17% | 3,2% | 14,6% |
+| Sin alerta | 1846 | 2,1% | 22% | 2,7% | 8,5% |
 
 Para cada elección: ¿estaba encendido el semáforo en los 20 días hábiles previos?
 
