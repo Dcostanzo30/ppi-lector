@@ -1,4 +1,4 @@
-# Carry del inversor de a pie — 19/11/2026
+# Carry del inversor de a pie — 20/11/2026
 
 Dólar mayorista de referencia: 1562.9893. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.10% de puntas medidas (27 lecturas) (= 2.50%).
 
@@ -6,8 +6,8 @@ Dólar mayorista de referencia: 1562.9893. Costo de ida y vuelta del cambio de d
 
 | Letra | Vence | Días | TEA Lecap | Suba máx. del dólar sin perder (sin cobertura) | Futuro usado | Devaluación implícita | Cubierta bruta | Costos | **Cubierta neta** | Días para cubrir costos |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S26F7 | 2027-02-26 | 99 | 28.0% | 3.75% | DLR/FEB27 | 6.88% | 0.04% | 4.17% | **-4.14%** | 10845 |
-| S29E7 | 2027-01-29 | 71 | 24.9% | 1.32% | DLR/ENE27 | 4.93% | -0.48% | 4.17% | **-4.66%** | nunca |
+| S26F7 | 2027-02-26 | 98 | 28.3% | 3.74% | DLR/FEB27 | 8.0% | -1.0% | 4.17% | **-5.18%** | nunca |
+| S29E7 | 2027-01-29 | 70 | 24.8% | 1.25% | DLR/ENE27 | 5.98% | -1.55% | 4.17% | **-5.72%** | nunca |
 
 - *Suba máxima del dólar sin perder:* cuánto puede subir el dólar en el período (hasta el vencimiento) para que la Lecap sin cobertura, ya descontados los costos, no rinda menos que haber quedado en dólares.
 - *Cubierta bruta / neta:* resultado en dólares, en el período, de comprar la Lecap y fijar el precio de vuelta con el futuro del vencimiento igual o inmediato posterior. La neta resta los costos.
