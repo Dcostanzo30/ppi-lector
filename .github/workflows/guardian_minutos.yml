@@ -1,0 +1,43 @@
+name: Guardián de minutos de ppi--datos
+
+# Pedido de Domingo (24/11/2026): que ppi--datos no vuelva a quedarse sin minutos de Actions. Corre acá (público, sin consumo).
+# 50% aviso; 70% pausa lo no esencial; 85% solo procesar y batería; el 1° de cada mes reactiva lo que pausó.
+on:
+  schedule:
+    - cron: "52 23 * * *"     # 20:52 de Buenos Aires, todos los días
+  workflow_dispatch:
+
+concurrency:
+  group: guardian
+  cancel-in-progress: false
+
+jobs:
+  guardian:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: guardian
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi--datos
+          token: ${{ secrets.DATOS_TOKEN }}
+          path: datos
+          sparse-checkout: control
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -q requests
+      - name: Medir y actuar
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: python guardian/minutos.py datos
+      - name: Guardar en ppi--datos
+        working-directory: datos
+        run: |
+          git config user.name "bot-guardian"; git config user.email "bot@users.noreply.github.com"
+          git add control/MINUTOS.md control/minutos.csv control/guardian_pausados.txt
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -q -m "Guardián de minutos $(date +%F) [skip ci]"
+          for i in 1 2 3 4 5; do git push -q && exit 0; git pull --rebase -q; sleep 5; done; exit 1
+# FIN guardian_minutos.yml
