@@ -83,14 +83,14 @@ def informe(S, ipc):
     if len(R):
         R["tributo"] = R.descripcion.map(nombre_tributo)
         P = R.pivot_table(index="fecha", columns="tributo", values="valor").sort_index()
-        tot = [c for c in P.columns if c.lower().startswith("total")]
+        tot = [c for c in P.columns if c.lower() == "total recursos tributarios"]
         ult = P.index.max()
         md.append(f"## Recaudación (ARCA), último mes: {pd.Timestamp(ult):%m/%Y}\n")
         if ipc is not None:
             md.append("Variación real: deflactada con el IPC nacional (INDEC, serie del BCRA que guarda el sistema).\n")
         md.append(f"| Concepto | {pd.Timestamp(ult):%m/%Y} | Var. i.a. nominal | Var. i.a. real |\n|---|---|---|---|")
         hace = (pd.Timestamp(ult) - pd.DateOffset(years=1)).strftime("%Y-%m-%d")
-        orden = tot + sorted([c for c in P.columns if c not in tot], key=lambda c: -P.loc[ult, c] if not pd.isna(P.loc[ult, c]) else 0)
+        orden = tot + sorted([c for c in P.columns if c not in tot and not c.lower().startswith("total con")], key=lambda c: -P.loc[ult, c] if not pd.isna(P.loc[ult, c]) else 0)
         for c in orden[:14]:
             v, a = P.loc[ult, c], P[c].get(hace)
             nom = (v / a - 1) * 100 if a and not pd.isna(a) else float("nan")
@@ -115,16 +115,18 @@ def informe(S, ipc):
         md.append("Método: el aguinaldo es medio haber/sueldo. **Control**: en cada diciembre conocido, el exceso del gasto de diciembre "
                   "sobre el promedio de octubre y noviembre, dividido el promedio, tendría que dar cerca de 0,5 (en junio pasa lo mismo).\n")
         md.append("| Año | Jubilaciones + remuneraciones, prom. oct-nov | Diciembre | Exceso | Exceso / promedio |\n|---|---|---|---|---|")
-        razones = []
+        razones = {}
         for y in sorted({f[:4] for f in G.index}):
             o, n, d = G.suma.get(f"{y}-10-01"), G.suma.get(f"{y}-11-01"), G.suma.get(f"{y}-12-01")
             if o and n and d:
-                p = (o + n) / 2; razones.append((d - p) / p)
+                p = (o + n) / 2; razones[y] = (d - p) / p
                 md.append(f"| {y} | {fmt(p)} | {fmt(d)} | {fmt(d - p)} | {fmt((d - p) / p, 2)} |")
         u = G.suma.dropna(); um = u.index.max()
         md.append("")
-        if len(razones):
-            r = sum(razones) / len(razones)
+        # diciembre de 2023 queda fuera del promedio: inflación de 25,5% en el mes (devaluación), el exceso no es solo aguinaldo
+        usar = {y: v for y, v in razones.items() if y >= "2024"}
+        if len(usar):
+            r = sum(usar.values()) / len(usar)
             # llevar el último mes conocido a diciembre del año en curso con el IPC (jubilaciones se indexan por IPC); meses sin IPC: el último disponible
             base, f = u[um], pd.Timestamp(um)
             dic = pd.Timestamp(f"{pd.Timestamp.today().year}-12-01")
@@ -141,7 +143,7 @@ def informe(S, ipc):
             md.append(f"**Estimación del aguinaldo de diciembre de {dic.year}: $ {fmt(est / 1e6, 2)} billones** "
                       f"(= último mes conocido {f:%m/%Y}: {fmt(base)} M, llevado a diciembre con el IPC ×{fmt(ajuste, 3)}"
                       f"{' (meses sin IPC todavía, con el último dato: ' + ', '.join(meses) + ')' if meses else ''}, por el exceso promedio "
-                      f"de diciembres anteriores {fmt(r, 2)}). Incluye solo jubilaciones contributivas y remuneraciones del SPN; no incluye "
+                      f"de diciembre {', '.join(sorted(usar))}: {fmt(r, 2)}; 2023 queda afuera por la inflación de ese diciembre). Incluye solo jubilaciones contributivas y remuneraciones del SPN; no incluye "
                       "otras prestaciones ni transferencias a provincias o universidades. Tipo: compromiso conocido en el monto, estimado en la fecha "
                       "(se paga en la segunda quincena de diciembre). Estado: a confirmar con el IMIG de diciembre.\n")
         else:
