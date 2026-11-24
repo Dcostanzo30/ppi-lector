@@ -1,0 +1,40 @@
+name: Fiscal (recaudación ARCA y gasto base caja)
+
+# Pedido de Domingo (24/11/2026): recaudación de ARCA y gasto del SPN (aguinaldo público) en el seguimiento de la base.
+# Fuente: API de series de datos.gob.ar. Repositorio público: no gasta minutos. Escribe estudios/fiscal/.
+on:
+  schedule:
+    - cron: "17 14 * * 1"   # lunes 11:17 de Buenos Aires (las series son mensuales; se actualizan cuando salen)
+  workflow_dispatch:
+
+concurrency:
+  group: fiscal
+  cancel-in-progress: false
+
+jobs:
+  fiscal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install pandas requests
+      - name: IPC del sistema (ppi--datos/fuentes/ipc.csv)
+        env:
+          DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+        run: |
+          curl -sf -H "Authorization: Bearer $DATOS_TOKEN" -H "Accept: application/vnd.github.raw" \
+            https://api.github.com/repos/Dcostanzo30/ppi--datos/contents/fuentes/ipc.csv -o /tmp/ipc.csv && wc -l /tmp/ipc.csv || echo "sin IPC"
+      - name: Bajar y armar
+        run: python fiscal/fiscal.py --ipc /tmp/ipc.csv
+      - name: Guardar
+        run: |
+          git config user.name "bot-fiscal"; git config user.email "bot@users.noreply.github.com"
+          git add estudios/fiscal
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -q -m "Fiscal $(date +%F)"
+          for i in 1 2 3 4 5; do git push -q && exit 0; git pull --rebase -q; sleep 5; done; exit 1
+# FIN fiscal.yml
