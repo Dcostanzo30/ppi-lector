@@ -45,6 +45,52 @@ def lectura(dp, dd, dm):
     return "estable"
 
 
+def tir(flujos, precio, liq):
+    cf = [(d, c) for d, c in flujos if d > liq]
+    if not cf or not precio: return float("nan")
+    f = lambda y: sum(c / (1 + y) ** ((d - liq).days / 365) for d, c in cf) - precio
+    lo, hi = -0.5, 3.0
+    for _ in range(80):
+        m = (lo + hi) / 2
+        lo, hi = (m, hi) if f(m) > 0 else (lo, m)
+    return m * 100
+
+
+def pendiente(mt, n):
+    """TIR de AL30D, AL41D, GD30D y GD41D al cierre de cada día (flujos del último *_rendimientos.csv) y pendiente 2030–2041."""
+    import json, datetime as dt
+    rs = sorted(Path(mt).glob("*_rendimientos.csv"))
+    if not rs: return ["## Pendiente de la curva\n\nSin flujos de los bonos: s/d."]
+    R = pd.read_csv(rs[-1]); fl = {}
+    for r in R.itertuples():
+        if r.ticker in ("AL30D", "AL41D", "GD30D", "GD41D"):
+            try:
+                fl[r.ticker] = [(dt.date.fromisoformat(x["cuttingDate"][:10]), (x.get("rent") or 0) + (x.get("amortization") or 0))
+                                for x in json.loads(r.calculadora)["flows"]]
+            except Exception:
+                pass
+    filas = []
+    for f in sorted(Path(mt).glob("20??-??-??.csv"))[-n:]:
+        try:
+            d = pd.read_csv(f); d = d[d.plazo == "A-24HS"].set_index("ticker").price
+        except Exception:
+            continue
+        liq = dt.date.fromisoformat(f.stem) + dt.timedelta(days=1)
+        t = {k: tir(fl.get(k, []), d.get(k), liq) for k in ("AL30D", "AL41D", "GD30D", "GD41D")}
+        if not all(pd.isna(v) for v in t.values()): filas.append((f.stem, t))   # feriados: la foto existe pero sin precios
+    pc = lambda x: "s/d" if pd.isna(x) else f"{x:.1f}%".replace(".", ",")
+    pb = lambda x: "s/d" if pd.isna(x) else f"{x * 100:+.0f} pb"
+    if not filas: return []
+    md = [f"## Pendiente de la curva en dólares del {pd.Timestamp(filas[0][0]):%d/%m/%Y} al {pd.Timestamp(filas[-1][0]):%d/%m/%Y}\n",
+          "| Fecha | TIR AL30 | TIR AL41 | AL41 − AL30 | TIR GD30 | TIR GD41 | GD41 − GD30 |", "|---|---|---|---|---|---|---|"]
+    for f, t in filas:
+        md.append(f"| {pd.Timestamp(f):%d/%m/%Y} | {pc(t['AL30D'])} | {pc(t['AL41D'])} | {pb(t['AL41D'] - t['AL30D'])} | "
+                  f"{pc(t['GD30D'])} | {pc(t['GD41D'])} | {pb(t['GD41D'] - t['GD30D'])} |")
+    md.append("\nPendiente negativa (el 2030 rinde más que el 2041) = el mercado pone el riesgo en los próximos años (período electoral y "
+              f"vencimientos 2027–2028); cuanto más negativa, más concentrado. TIR propia con los flujos de {rs[-1].stem[:10]} y el cierre de cada día.")
+    return md
+
+
 def main():
     mt, fuentes, sal = sys.argv[1:4]
     B = leer_bonos(mt)
@@ -78,6 +124,7 @@ def main():
     md.append("\n*Lecturas*: desfasaje = el bono en dólares cae más de 1% y bastante más que en pesos; demanda de dólares = el MEP sube con el "
               f"bono en dólares quieto o en alza; corrección = el MEP baja más de {umbral_txt}%. Fuentes: mercado_total (PPI) y fuentes/ del sistema "
               "(mayorista del BCRA, oficial y blue de argentinadatos; el valor del día puede ser provisorio).")
+    md += [""] + pendiente(mt, 10)
     Path(sal).mkdir(parents=True, exist_ok=True)
     Path(sal, "dolar_bonos.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print(f"dolar_bonos: {len(B)} ruedas, último {f1:%d/%m/%Y} MEP {u.MEP:.1f}")
