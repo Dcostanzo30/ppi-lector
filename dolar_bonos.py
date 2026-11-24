@@ -74,8 +74,9 @@ def main():
         md.append(f"Ventana de arbitraje MEP–blue: {pc(dif)}. "
                   + ("Con una diferencia tan chica no conviene arbitrar (costos y riesgo del blue): una corrección del MEP, si llega, "
                      "no tiene por qué ser inmediata." if abs(dif) < 3 else "Con 3% o más la diferencia empieza a pagar el arbitraje entre los dos mercados: la corrección puede acelerarse."))
+    umbral_txt = str(UMBRAL).replace(".", ",")
     md.append("\n*Lecturas*: desfasaje = el bono en dólares cae más de 1% y bastante más que en pesos; demanda de dólares = el MEP sube con el "
-              f"bono en dólares quieto o en alza; corrección = el MEP baja más de {str(UMBRAL).replace(".", ",")}%. Fuentes: mercado_total (PPI) y fuentes/ del sistema "
+              f"bono en dólares quieto o en alza; corrección = el MEP baja más de {umbral_txt}%. Fuentes: mercado_total (PPI) y fuentes/ del sistema "
               "(mayorista del BCRA, oficial y blue de argentinadatos; el valor del día puede ser provisorio).")
     Path(sal).mkdir(parents=True, exist_ok=True)
     Path(sal, "dolar_bonos.md").write_text("\n".join(md) + "\n", encoding="utf-8")
