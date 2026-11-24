@@ -34,7 +34,7 @@ jobs:
           # la cinta de la última rueda anterior a hoy (el tablero resume cómo cerró)
           ayer=$(git ls-tree --name-only HEAD tiempo_real/ | sed 's#tiempo_real/##' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | awk -v h="$hoy" '$0 < h' | sort | tail -1)
           echo "Última rueda grabada: $ayer"
-          git sparse-checkout set --no-cone /radar_noche.py /tablero_previo.py /radar/ /tablero/ ${ayer:+/tiempo_real/$ayer/}
+          git sparse-checkout set --no-cone /radar_noche.py /tablero_previo.py /radar/ /tablero/ /fuentes/mayorista.csv /fuentes/oficial.csv /fuentes/blue.csv ${ayer:+/tiempo_real/$ayer/}
           ls
       - name: Medir
         working-directory: datos
@@ -48,6 +48,16 @@ jobs:
       - name: Tablero previo
         working-directory: datos
         run: python tablero_previo.py || echo "El tablero falló; el radar quedó guardado igual"
+      - uses: actions/checkout@v4
+        with:
+          path: lector
+          sparse-checkout: mercado_total
+      - name: Dólar implícito en bonos (pedido de Domingo 24/11)
+        run: |
+          pip install -q pandas
+          python lector/dolar_bonos.py lector/mercado_total datos/fuentes datos/tablero && \
+          { [ -f datos/tablero/hoy.md ] && printf "\n" >> datos/tablero/hoy.md && cat datos/tablero/dolar_bonos.md >> datos/tablero/hoy.md; } \
+          || echo "dólar en bonos: falló, el tablero queda igual"
       - name: Guardar en ppi--datos
         working-directory: datos
         run: |
