@@ -1,13 +1,13 @@
-# Carry del inversor de a pie — 20/11/2026
+# Carry del inversor de a pie — 24/11/2026
 
-Dólar mayorista de referencia: 1562.9893. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.10% de puntas medidas (27 lecturas) (= 2.50%).
+Dólar mayorista de referencia: 1575.9572. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.10% de puntas medidas (27 lecturas) (= 2.50%).
 
 ## Lecap, sin cobertura y cubierta con dólar futuro
 
 | Letra | Vence | Días | TEA Lecap | Suba máx. del dólar sin perder (sin cobertura) | Futuro usado | Devaluación implícita | Cubierta bruta | Costos | **Cubierta neta** | Días para cubrir costos |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S26F7 | 2027-02-26 | 98 | 28.3% | 3.74% | DLR/FEB27 | 8.0% | -1.0% | 4.17% | **-5.18%** | nunca |
-| S29E7 | 2027-01-29 | 70 | 24.8% | 1.25% | DLR/ENE27 | 5.98% | -1.55% | 4.17% | **-5.72%** | nunca |
+| S26F7 | 2027-02-26 | 98 | 28.3% | 3.74% | DLR/FEB27 | 7.11% | -0.18% | 4.17% | **-4.36%** | nunca |
+| S29E7 | 2027-01-29 | 70 | 24.8% | 1.25% | DLR/ENE27 | 5.11% | -0.73% | 4.17% | **-4.91%** | nunca |
 
 - *Suba máxima del dólar sin perder:* cuánto puede subir el dólar en el período (hasta el vencimiento) para que la Lecap sin cobertura, ya descontados los costos, no rinda menos que haber quedado en dólares.
 - *Cubierta bruta / neta:* resultado en dólares, en el período, de comprar la Lecap y fijar el precio de vuelta con el futuro del vencimiento igual o inmediato posterior. La neta resta los costos.
@@ -22,16 +22,16 @@ Dólar mayorista de referencia: 1562.9893. Costo de ida y vuelta del cambio de d
 
 El neto es lo que deja, antes de que se mueva el dólar, pasar de dólares a pesos, prestar en caución y volver a dólares. Si el dólar sube más que ese neto, se pierde.
 
-## Alternativa que no pasa por pesos: soberanos largos en dólares (rueda 2026-11-19)
+## Alternativa que no pasa por pesos: soberanos largos en dólares (rueda 2026-11-20)
 
 Quien ya tiene dólares compra el bono en dólares (D) y no paga el cambio de moneda: solo 0,60% por comprar y 0,60% por vender. La TIR es la que rinde el bono si se mantiene hasta el vencimiento y se paga todo; el precio puede caer o subir mientras tanto.
 
 | Bono | TIR | Neto a 6 meses | Neto a 12 meses | Precio desde el 1.er dato | MEP implícito | MEP contra mayorista |
 |---|---|---|---|---|---|---|
-| AL30 | 17.1% | 7.4% | 15.9% | -11.1% (desde 2026-07-08) | 1643.76 | 5.2% |
-| AL35 | 14.9% | 6.3% | 13.7% | -21.5% (desde 2026-07-08) | 1641.72 | 5.0% |
-| AE38 | 15.8% | 6.7% | 14.6% | -20.0% (desde 2026-07-08) | 1640.54 | 5.0% |
-| AL41 | 14.5% | 6.1% | 13.3% | -23.1% (desde 2026-07-08) | 1643.26 | 5.1% |
+| AL30 | 20.6% | 9.1% | 19.4% | -15.1% (desde 2026-07-08) | 1701.05 | 7.9% |
+| AL35 | 16.0% | 6.8% | 14.8% | -25.0% (desde 2026-07-08) | 1724.17 | 9.4% |
+| AE38 | 17.3% | 7.4% | 16.1% | -23.7% (desde 2026-07-08) | 1719.84 | 9.1% |
+| AL41 | 15.8% | 6.7% | 14.6% | -27.4% (desde 2026-07-08) | 1714.57 | 8.8% |
 
 - *Neto:* TIR proporcional al plazo menos 1,2% de comisiones de compra y venta (sin la comisión de 0,70% sobre las rentas ni derechos de mercado).
 - *Precio desde el 1.er dato:* variación del precio del bono. Es el riesgo que no aparece en la TIR: cuando sube el riesgo país, el bono baja, aunque la TIR calculada suba.
