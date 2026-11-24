@@ -1,0 +1,61 @@
+# Copia de ppi--datos/.github/workflows/fuentes.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 para no volver a quedarse sin minutos en ppi--datos. El código sigue en ppi--datos (privado):
+# acá solo se clona con DATOS_TOKEN, se corre y se guarda allá, igual que antes. La copia original queda desactivada.
+name: Fuentes externas (desde ppi-lector, para ppi--datos)
+
+# Capa de fuentes (fuentes/README.md): el único proceso que consulta datos exógenos (hoy, riesgo país).
+# Corre varias veces por día para que un dato provisorio o faltante quede definitivo en cuanto se publica
+# (argentinadatos publica el riesgo país del día recién a la noche).
+# Horarios de Buenos Aires: 18:40, 21:40 y 23:50 de lunes a viernes; 09:30 de martes a sábado (repaso del día anterior).
+on:
+  schedule:
+    - cron: "40 21 * * 1-5"
+    - cron: "40 0 * * 2-6"
+    - cron: "50 2 * * 2-6"
+    - cron: "30 12 * * 2-6"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Grupo propio: no compite con la fila "escritura-repo" (escribe solo en fuentes/, el push se reintenta con rebase)
+concurrency:
+  group: datos-fuentes
+  cancel-in-progress: false
+
+jobs:
+  fuentes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: America/Argentina/Buenos_Aires
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi--datos
+          token: ${{ secrets.DATOS_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi-lector
+          path: lector
+          sparse-checkout: |
+            mercado_total
+            estudios/bonos
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pandas numpy
+      - name: Consultar fuentes
+        run: python fuentes/fuentes.py --lector lector
+      - name: Riesgo país propio
+        # capa 2: diferencial de los Globales sobre el Tesoro, con precios de la cinta (no consulta afuera)
+        run: python riesgo_pais_propio.py --lector lector || echo "::warning::riesgo país propio, falló"
+      - name: Guardar
+        run: |
+          git config user.name "bot-fuentes"
+          git config user.email "bot@users.noreply.github.com"
+          git add fuentes/*.csv riesgo_pais
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Fuentes externas $(date '+%F %H:%M')"
+          for i in 1 2 3 4 5; do git push && exit 0; git pull --rebase -X theirs -q || { git rebase --abort; git pull --no-rebase -X ours -q; }; sleep 5; done; exit 1
+# FIN fuentes.yml

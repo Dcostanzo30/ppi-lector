@@ -1,0 +1,50 @@
+# Copia de ppi--datos/.github/workflows/novedades_bcra.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 para no volver a quedarse sin minutos en ppi--datos. El código sigue en ppi--datos (privado):
+# acá solo se clona con DATOS_TOKEN, se corre y se guarda allá, igual que antes. La copia original queda desactivada.
+name: Novedades BCRA (desde ppi-lector, para ppi--datos)
+
+# Comunicaciones "A", "B" y "C" del BCRA: lee las nuevas y marca las que tienen impacto monetario o cambiario.
+on:
+  schedule:
+    - cron: "17 23 * * 1-5"   # 20:17 de Buenos Aires, días hábiles
+    - cron: "7 0 * * 6"       # viernes 21:07, antes del semanal (21:31)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: datos-novedades-bcra   # fila propia (14/11): ver docs/COLA_WORKFLOWS.md
+  cancel-in-progress: false
+
+jobs:
+  novedades:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: America/Argentina/Buenos_Aires
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi--datos
+          token: ${{ secrets.DATOS_TOKEN }}
+          sparse-checkout: |
+            novedades
+            fuentes
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests urllib3 pypdf
+      - name: Leer el BCRA
+        run: python novedades_bcra.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-novedades"
+          git config user.email "bot@users.noreply.github.com"
+          git add novedades/bcra.csv
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Novedades BCRA $(date '+%F %H:%M')"
+          for i in 1 2 3 4 5; do git push && exit 0; git pull --rebase -X theirs -q || { git rebase --abort; git pull --no-rebase -X ours -q; }; sleep 5; done; exit 1
+# FIN novedades_bcra.yml
+
+# horarios recargados 2026-11-13 tras la suspensión

@@ -1,0 +1,109 @@
+# Copia de ppi--datos/.github/workflows/balances.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 para no volver a quedarse sin minutos en ppi--datos. El código sigue en ppi--datos (privado):
+# acá solo se clona con DATOS_TOKEN, se corre y se guarda allá, igual que antes. La copia original queda desactivada.
+name: Balances CNV (desde ppi-lector, para ppi--datos)
+
+# Ficha de cada emisora en la CNV: novedades por especie, último balance propio (PDF al depósito de Hugging Face),
+# lectura a balances.csv e indicadores. Ver fuentes/cnv_balances/LEEME.md.
+on:
+  schedule:
+    - cron: "13 1 * * 2-6"     # 22:13 de Buenos Aires, lunes a viernes: lo nuevo del día del panel líder (últimos 30 días de cada ficha)
+  workflow_dispatch:
+    inputs:
+      solo:
+        description: "Tickers separados por coma (vacío = todos)"
+        default: ""
+      dias:
+        description: "Días hacia atrás en la ficha de la CNV"
+        default: "400"
+      releer:
+        description: "Volver a leer todos los balances (si = sí)"
+        default: "no"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: datos-balances   # fila propia (14/11): ver docs/COLA_WORKFLOWS.md
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    # relectura: lotes armados con el tiempo medido de cada emisora (tiempos.csv), cada uno de hasta 150 min; diaria: un solo lote
+    runs-on: ubuntu-latest
+    outputs:
+      lotes: ${{ steps.p.outputs.lotes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi--datos
+          token: ${{ secrets.DATOS_TOKEN }}
+          sparse-checkout: |
+            fuentes
+      - id: p
+        run: |
+          if [ "${{ github.event.inputs.releer }}" = "si" ]; then
+            pip install -q pandas
+            python -m fuentes.cnv_balances.lotes --solo "${{ github.event.inputs.solo }}" | tee /dev/stderr | grep '^lotes=' >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            # 16/11: la corrida diaria mira solo el panel líder (cuidar minutos); las demás se piden a mano
+            echo "lotes=[\"$(awk -F, 'NR>1 && $4=="lider"{printf "%s%s", s, $1; s=","}' fuentes/cnv_balances/emisoras.csv)\"]" >> "$GITHUB_OUTPUT"
+          else
+            echo 'lotes=["${{ github.event.inputs.solo }}"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  balances:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      max-parallel: 1        # de a un lote: cada uno arranca sobre lo que guardó el anterior
+      fail-fast: false
+      matrix:
+        lote: ${{ fromJson(needs.plan.outputs.lotes) }}
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi--datos
+          token: ${{ secrets.DATOS_TOKEN }}
+          sparse-checkout: |
+            fuentes
+      - run: git pull -q --rebase    # trae lo que guardó el lote anterior
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi-lector
+          path: lector
+          sparse-checkout: |
+            mercado_total
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: sudo apt-get install -y -qq poppler-utils tesseract-ocr tesseract-ocr-spa > /dev/null
+      - run: pip install -q pandas huggingface_hub
+      - name: Bajar novedades y balances
+        # guarda en disco tras cada emisora y sube a GitHub cada 30 min; a los 210 min se corta solo y lo leído se guarda igual
+        timeout-minutes: 210
+        continue-on-error: true
+        env:
+          GUARDAR_CADA: "30"
+        run: python -m fuentes.cnv_balances.bajar --dias "${{ github.event.inputs.dias || '30' }}" --solo "${{ matrix.lote }}" $([ "${{ github.event.inputs.releer }}" = "si" ] && echo --releer)
+      - name: Indicadores
+        if: always()
+        env:
+          LECTOR: lector
+        # si los indicadores fallan, lo bajado y leído se guarda igual (la lectura lleva horas)
+        run: |
+          python -m fuentes.cnv_balances.indicadores || echo "::warning::indicadores falló, se guardan los balances igual"
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name "bot-balances"
+          git config user.email "bot@users.noreply.github.com"
+          git add fuentes/cnv_balances
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Balances CNV $(date '+%F %H:%M')"
+          for i in 1 2 3 4 5; do git push && exit 0; git pull --rebase -X theirs -q || { git rebase --abort; git pull --no-rebase -X ours -q; }; sleep 5; done; exit 1
+# FIN balances.yml

@@ -1,0 +1,51 @@
+# Copia de ppi--datos/.github/workflows/novedades.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 para no volver a quedarse sin minutos en ppi--datos. El código sigue en ppi--datos (privado):
+# acá solo se clona con DATOS_TOKEN, se corre y se guarda allá, igual que antes. La copia original queda desactivada.
+name: Novedades CNV (desde ppi-lector, para ppi--datos)
+
+on:
+  schedule:
+    - cron: "7 13 * * 1"           # lunes 10:07 de Buenos Aires: antes de la apertura (incluye lo publicado el fin de semana)
+    - cron: "17 21 * * 4"          # jueves 18:17 de Buenos Aires: después del cierre
+    # (16/11: dos veces por semana, decisión de Domingo para cuidar los minutos de Actions; a mano cuando haga falta)
+    # (14/11: antes corría cada 30 minutos todo el día; dos pasadas alcanzan y ahorran ~100 minutos de Actions por mes)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: datos-novedades   # fila propia (14/11): ver docs/COLA_WORKFLOWS.md
+  cancel-in-progress: false
+
+jobs:
+  novedades:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: America/Argentina/Buenos_Aires
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Dcostanzo30/ppi--datos
+          token: ${{ secrets.DATOS_TOKEN }}
+          sparse-checkout: |
+            novedades
+            tablero
+            fuentes
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Leer la CNV
+        run: python novedades_cnv.py
+      - name: Guardar
+        run: |
+          git config user.name "bot-novedades"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A novedades tablero 2>/dev/null || git add -A novedades
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -m "Novedades CNV $(date '+%F %H:%M')"
+          for i in 1 2 3 4 5; do git push && exit 0; git pull --rebase -X theirs -q || { git rebase --abort; git pull --no-rebase -X ours -q; }; sleep 5; done; exit 1
+# FIN novedades.yml
+
+# horarios recargados 2026-11-13 tras la suspensión
