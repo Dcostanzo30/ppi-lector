@@ -4,29 +4,30 @@ timing de GitHub; si no responde, la duración de la corrida redondeada hacia ar
   50%: aviso.   70%: pausa lo no esencial.   85%: queda solo lo esencial.
 El 1° de cada mes reactiva lo que haya pausado este guardián (anotado en control/guardian_pausados.txt de ppi--datos).
 Escribe control/MINUTOS.md y control/minutos.csv en ppi--datos. Uso: python guardian/minutos.py <carpeta de ppi--datos>
-Variables: DATOS_TOKEN (lectura y escritura en ppi--datos y en sus workflows), CUPO (por defecto 2000).
+Usa el gh de quien lo corre (la tarea programada "Reloj nocturno"): DATOS_TOKEN no tiene permiso sobre Actions. CUPO (por defecto 2000).
 """
-import datetime as dt, json, math, os, sys
+import datetime as dt, json, math, os, subprocess, sys
 from pathlib import Path
-import requests
 
 REPO = "Dcostanzo30/ppi--datos"
 CUPO = int(os.environ.get("CUPO", "2000"))
 ESENCIALES = {"procesar.yml", "bateria.yml"}                 # lo último que se apaga (Domingo, 24/11)
 NO_ESENCIALES = ["graficos.yml", "semanal.yml", "rutas.yml", "diario.yml", "radar_noche.yml", "balances.yml",
                  "novedades.yml", "novedades_bcra.yml", "fuentes.yml"]   # en este orden se pausan al 70%
-H = {"Authorization": f"Bearer {os.environ['DATOS_TOKEN']}", "Accept": "application/vnd.github+json"}
-API = f"https://api.github.com/repos/{REPO}"
+API = f"repos/{REPO}"
 
 
 def get(url, **p):
-    r = requests.get(url, headers=H, params=p, timeout=60); r.raise_for_status(); return r.json()
+    q = "&".join(f"{k}={v}" for k, v in p.items())
+    r = subprocess.run(["gh", "api", url + ("?" + q if q else "")], capture_output=True, text=True, timeout=120)
+    if r.returncode: raise RuntimeError(r.stderr[:200])
+    return json.loads(r.stdout)
 
 
 def minutos_del_mes(desde):
     corridas, pagina = [], 1
     while True:
-        j = get(f"{API}/actions/runs", created=f">={desde}", per_page=100, page=pagina)
+        j = get(f"{API}/actions/runs", created=f">%3D{desde}", per_page=100, page=pagina)
         corridas += j.get("workflow_runs", [])
         if len(j.get("workflow_runs", [])) < 100: break
         pagina += 1
@@ -55,8 +56,7 @@ def estado(arch):
 
 
 def cambiar(arch, accion):
-    r = requests.put(f"{API}/actions/workflows/{arch}/{accion}", headers=H, timeout=30)
-    return r.status_code < 300
+    return subprocess.run(["gh", "api", "-X", "PUT", f"{API}/actions/workflows/{arch}/{accion}"], capture_output=True, timeout=60).returncode == 0
 
 
 def main():
