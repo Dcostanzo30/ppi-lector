@@ -10,7 +10,7 @@ URLS = ["https://api.bcra.gob.ar/estadisticas/v4.0/monetarias", "https://api.bcr
 from datetime import date, timedelta
 # Desde el 01/11/2025: un año antes de la licitación de noviembre de 2026, para conciliar con finanzas_tesoro.py (Domingo, 17/11/2026).
 # Antes eran los últimos 150 días; con eso cada corrida borraba el principio del año.
-DESDE = os.environ.get("DESDE") or "2025-11-01"
+DESDE = os.environ.get("DESDE") or "2024-11-01"   # 24/11/2026: desde nov-2024, para comparar diciembre contra dic-2024 (antes 2025-11-01)
 s = requests.Session(); s.headers["User-Agent"] = "Mozilla/5.0"
 def pedir(url, **kw):
     try:
@@ -46,11 +46,14 @@ elegidas = pd.concat([elegidas, cat[pd.to_numeric(cat[idc], errors="coerce").isi
 REPASO = 10
 previo = pd.read_csv(SAL / "series.csv", dtype={"fecha": str}) if (SAL / "series.csv").exists() else pd.DataFrame(columns=["id", "descripcion", "fecha", "valor"])
 ultimo = previo.groupby("id")["fecha"].max().to_dict() if len(previo) else {}
+primero = previo.groupby("id")["fecha"].min().to_dict() if len(previo) else {}
+# si lo guardado arranca después de DESDE (se adelantó DESDE), esa variable se vuelve a pedir entera desde DESDE
+LIMITE_HUECO = (pd.Timestamp(DESDE) + pd.Timedelta(days=10)).date().isoformat()
 filas, pedidos = [], {}
 for _, v in elegidas.iterrows():
     vid = int(v[idc])
     desde = DESDE
-    if vid in ultimo and isinstance(ultimo[vid], str):
+    if vid in ultimo and isinstance(ultimo[vid], str) and str(primero.get(vid, "9999")) <= LIMITE_HUECO:
         desde = max(DESDE, (pd.Timestamp(ultimo[vid]) - pd.Timedelta(days=REPASO)).date().isoformat())
     try:
         q = pedir(f"{URL}/{vid}", params={"desde": desde, "hasta": date.today().isoformat(), "limit": 3000})
