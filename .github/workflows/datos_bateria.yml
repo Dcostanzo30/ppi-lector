@@ -1,0 +1,90 @@
+# Copia de ppi--datos/.github/workflows/bateria.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 ("es una ganancia total de agilidad y quedamos fuera del bloqueo de los 2000 minutos").
+# El código sigue en ppi--datos (privado): se clona con DATOS_TOKEN (sin la cinta entera), se corre y se guarda allá.
+name: Bateria de hipotesis (desde ppi-lector, para ppi--datos)
+
+# Una vez por noche, con la captura de BYMA ya bajada (control de cobertura). Respaldo: el reloj nocturno la dispara.
+# A mano: fecha vacía = el último día; una o varias fechas AAAA-MM-DD separadas por espacio; "todo" = reprocesa todos los días.
+on:
+  schedule:
+    - cron: "30 0 * * 2-6"     # 21:30 de Buenos Aires, de lunes a viernes
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha(s) AAAA-MM-DD, vacío = la última, todo = reprocesar todo"
+        default: ""
+
+concurrency:
+  group: datos-cinta
+  cancel-in-progress: false
+
+jobs:
+  bateria:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+      GH_TOKEN: ${{ secrets.DATOS_TOKEN }}
+      DATOS_REPO: Dcostanzo30/ppi--datos
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: .github/scripts }
+      - run: .github/scripts/clonar_datos.sh ${{ github.event.inputs.fecha }}
+      - uses: actions/checkout@v4
+        with:
+          path: datos/lector
+          sparse-checkout: mercado_total
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -q pandas numpy huggingface_hub
+      - name: Libro y bateria
+        working-directory: datos
+        run: |
+          F="${{ github.event.inputs.fecha }}"
+          if [ "$F" = "todo" ]; then rm -rf bateria/hist bateria/jornadas.csv; fi
+          FECHAS="$FECHAS_CINTA"
+          python procesados.py bajar
+          ULT=""
+          for f in $FECHAS; do
+            ls tiempo_real/$f/*.txt.gz >/dev/null 2>&1 || continue
+            echo "=== $f"
+            python procesar_libro.py procesado/$f tiempo_real/$f/*.txt.gz
+            python calidad.py $f || echo "calidad: falló $f"
+            python bateria.py $f
+            python filas.py $f || echo "filas: falló $f, sigue la batería igual"
+            ULT=$f
+          done
+          if [ -n "$ULT" ]; then python preapertura.py || echo "preapertura: falló, sigue la batería igual"; fi
+          [ -n "$ULT" ] && python resumen.py --fecha $ULT
+          [ -n "$ULT" ] && cat bateria/parte_$ULT.md >> $GITHUB_STEP_SUMMARY
+          if [ -n "$ULT" ]; then python fichas.py || echo "fichas: falló, sigue la batería igual"; fi
+          if [ -n "$ULT" ]; then python cruce.py || echo "cruce: falló, sigue la batería igual"; fi
+          if [ -n "$ULT" ]; then python estados.py || echo "estados: falló, sigue la batería igual"; fi
+          if [ -n "$ULT" ]; then python bibliorato.py || echo "bibliorato: falló, sigue la batería igual"; fi
+          if [ -n "$ULT" ]; then python correlaciones.py > /dev/null || echo "correlaciones: falló, sigue la batería igual"; fi
+          python procesados.py subir todo || echo "::warning::procesados: no se pudieron subir"
+      - name: Control de cobertura contra BYMA
+        working-directory: datos
+        run: python control_cobertura.py --lector lector || echo "::warning::control de cobertura, falló"
+      - name: Seguimiento diario GGAL, BMA, YPFD, VIST
+        working-directory: datos
+        run: python seguimiento_diario.py --lector lector || echo "::warning::seguimiento diario, falló"
+      - name: Registro diario
+        working-directory: datos
+        run: python registro.py || echo "::warning::registro diario, falló (DATOS_TOKEN no lee las corridas de Actions)"
+      - name: Depósito alternativo (Hugging Face)
+        working-directory: datos
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python deposito.py || echo "::warning::depósito, falló o quedó algo sin verificar"
+      - name: Guardar
+        working-directory: datos
+        run: |
+          git config user.name "bot-bateria"
+          git add procesado bateria control registro seguimiento deposito
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -q -m "Bateria de hipotesis $(date +%F) (desde ppi-lector)"
+          for i in 1 2 3 4; do git push -q && exit 0; git pull --rebase -X theirs || { git rebase --abort; git pull --no-rebase -X ours; }; sleep 5; done
+          exit 1
+# FIN datos_bateria.yml

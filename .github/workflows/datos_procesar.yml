@@ -1,0 +1,48 @@
+# Copia de ppi--datos/.github/workflows/procesar.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 ("es una ganancia total de agilidad y quedamos fuera del bloqueo de los 2000 minutos").
+# El código sigue en ppi--datos (privado): se clona con DATOS_TOKEN (sin la cinta entera), se corre y se guarda allá.
+name: Procesar tiempo real (desde ppi-lector, para ppi--datos)
+
+on:
+  workflow_run:
+    workflows: ["Lector tiempo real"]   # cada vez que el lector termina un turno y guardó la cinta
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha a reprocesar (AAAA-MM-DD); vacío = la última"
+        default: ""
+
+concurrency:
+  group: datos-cinta
+  cancel-in-progress: false
+
+jobs:
+  procesar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+      GH_TOKEN: ${{ secrets.DATOS_TOKEN }}
+      DATOS_REPO: Dcostanzo30/ppi--datos
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: .github/scripts }
+      - run: .github/scripts/clonar_datos.sh "${{ github.event.inputs.fecha }}"
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Procesar
+        working-directory: datos
+        run: |
+          python procesar_tiempo_real.py ${{ github.event.inputs.fecha }}
+          python procesados.py subir todo || echo "::warning::procesados: no se pudieron subir"
+      - name: Guardar
+        working-directory: datos
+        run: |
+          git config user.name "bot-procesador"
+          git add procesado
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -q -m "Procesado tiempo real $(date +%F) (desde ppi-lector)"
+          for i in 1 2 3 4 5; do git push -q && exit 0; git pull --rebase -X theirs -q || { git rebase --abort; git pull --no-rebase -X ours -q; }; sleep 5; done; exit 1
+# FIN datos_procesar.yml

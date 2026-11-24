@@ -1,0 +1,51 @@
+# Copia de ppi--datos/.github/workflows/graficos.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 ("es una ganancia total de agilidad y quedamos fuera del bloqueo de los 2000 minutos").
+# El código sigue en ppi--datos (privado): se clona con DATOS_TOKEN (sin la cinta entera), se corre y se guarda allá.
+name: Graficos de la cinta (desde ppi-lector, para ppi--datos)
+
+on:
+  workflow_run:
+    workflows: ["Procesar tiempo real (desde ppi-lector, para ppi--datos)"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha a graficar (AAAA-MM-DD); vacío = la última"
+        default: ""
+
+concurrency:
+  group: datos-graficos
+  cancel-in-progress: false
+
+jobs:
+  graficar:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+      GH_TOKEN: ${{ secrets.DATOS_TOKEN }}
+      DATOS_REPO: Dcostanzo30/ppi--datos
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: .github/scripts }
+      - run: .github/scripts/clonar_datos.sh "${{ github.event.inputs.fecha }}"
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -q matplotlib
+      - name: Graficar
+        working-directory: datos
+        run: |
+          python procesados.py bajar "*operaciones.csv.gz"
+          python graficos_dia.py ${{ github.event.inputs.fecha }}
+          python ritmo_referencia.py
+      - name: Guardar
+        working-directory: datos
+        run: |
+          git config user.name "bot-graficos"
+          git add -A graficos historia
+          git diff --cached --quiet && { echo "Nada nuevo"; exit 0; }
+          git commit -q -m "Graficos de la cinta $(date +%F) (desde ppi-lector)"
+          for i in 1 2 3 4 5; do git push -q && exit 0; git pull --rebase -X theirs -q || { git rebase --abort; git pull --no-rebase -X ours -q; }; sleep 5; done; exit 1
+# FIN datos_graficos.yml

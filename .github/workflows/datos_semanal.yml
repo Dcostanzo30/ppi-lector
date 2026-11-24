@@ -1,0 +1,46 @@
+# Copia de ppi--datos/.github/workflows/semanal.yml que corre en ppi-lector (repositorio público: no gasta minutos de Actions),
+# pedida por Domingo el 24/11/2026 ("es una ganancia total de agilidad y quedamos fuera del bloqueo de los 2000 minutos").
+# El código sigue en ppi--datos (privado): se clona con DATOS_TOKEN (sin la cinta entera), se corre y se guarda allá.
+name: Semanal de mercado (desde ppi-lector, para ppi--datos)
+
+on:
+  schedule:
+    - cron: "15 3 * * 6"     # sábados 00:15 de Buenos Aires
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Viernes del informe (AAAA-MM-DD). Vacío: el último día con datos."
+        required: false
+
+concurrency:
+  group: datos-semanal
+  cancel-in-progress: false
+
+jobs:
+  armar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: America/Argentina/Buenos_Aires
+      DATOS_TOKEN: ${{ secrets.DATOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: .github/scripts }
+      - run: .github/scripts/clonar_datos.sh ultima
+      - uses: actions/checkout@v4
+        with: { path: datos/lector }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -q pandas matplotlib pypdf requests urllib3
+      - run: sudo apt-get install -y -qq fonts-dejavu-core > /dev/null || true
+      - name: Armar el informe
+        working-directory: datos
+        run: python semanal/semanal.py --lector lector ${{ github.event.inputs.fecha && format('--fecha {0}', github.event.inputs.fecha) || '' }}
+      - name: Guardar en ppi--datos
+        working-directory: datos
+        run: |
+          git config user.name "bot-semanal"
+          git add semanal/informes
+          git commit -q -m "Semanal de mercado $(ls semanal/informes | sort | tail -1) (desde ppi-lector)" || echo "Sin cambios"
+          for i in 1 2 3 4 5; do git push -q && exit 0; git pull --rebase -X theirs -q || { git rebase --abort; git pull --no-rebase -X ours -q; }; sleep 5; done; exit 1
+# FIN datos_semanal.yml
