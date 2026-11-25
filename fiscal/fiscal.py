@@ -23,7 +23,6 @@ BUSCAR = [
     ("IMIG prestaciones sociales", r"^IMIG\. Gastos primarios\. Gastos corrientes primarios\. Prestaciones sociales$", "IMIG", "prestaciones"),
     ("IMIG remuneraciones", r"^IMIG\. Gastos primarios\. Gastos corrientes primarios\. Gastos de funcionamiento y otros\. (Salarios|Remuneraciones)$|^IMIG\. Gastos primarios\. Gastos corrientes primarios\. (Gastos de funcionamiento\. )?(Salarios|Remuneraciones)$", "IMIG", "remuneraciones"),
     ("IMIG gastos primarios", r"^IMIG\. Gastos primarios$", "IMIG", "gasto_primario"),
-    ("Exportaciones de manufacturas de origen agropecuario Intercambio Comercial Argentino", r"^Exportaciones de manufacturas de origen agropecuario\. En millones de dólares\.?$", "Intercambio Comercial Argentino", "expo_moa"),
     ("IMIG ingresos tributarios", r"^IMIG\. Ingresos totales\. Ingresos tributarios$", "IMIG", "ingresos_tributarios"),
 ]
 
@@ -32,7 +31,8 @@ BUSCAR = [
 FIJAS = {"74.3_IECE_0_M_35": ("expo_energia", "Exportación de combustibles y energía"),
          "74.3_IICL_0_M_42": ("impo_combustibles", "Importaciones de combustibles y lubricantes"),
          "74.3_IET_0_M_16": ("expo_total", "Exportaciones totales"),
-         "74.3_IEPP_0_M_35": ("expo_primarios", "Exportaciones de productos primarios")}
+         "74.3_IEPP_0_M_35": ("expo_primarios", "Exportaciones de productos primarios"),
+         "74.3_IEMOA_0_M_48": ("expo_moa", "Exportaciones de manufacturas de origen agropecuario")}
 
 
 def pedir(url, **params):
@@ -176,7 +176,7 @@ def informe(S, ipc):
             w = E.loc[:f].tail(12)
             if len(w) < 12: continue
             ag = w.agro.sum() if "agro" in w else float("nan")
-            md.append(f"| {pd.Timestamp(f):%m/%Y} | {fmt(w.saldo_energia.sum())} | {fmt(w.expo_energia.sum())} | {fmt(ag)} | {fmt(w.expo_energia.sum() / ag * 100, 1) + '%' if ag else 's/d'} |")
+            md.append(f"| {pd.Timestamp(f):%m/%Y} | {fmt(w.saldo_energia.sum())} | {fmt(w.expo_energia.sum())} | {fmt(ag)} | {fmt(w.expo_energia.sum() / ag * 100, 1) + '%' if ag and not pd.isna(ag) else 's/d'} |")
         md.append("")
     else:
         md.append("No se encontraron las series del ICA: s/d.\n")
