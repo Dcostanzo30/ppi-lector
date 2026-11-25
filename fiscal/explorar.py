@@ -3,7 +3,7 @@ tributarios) y de gasto base caja del Sector Público Nacional (jubilaciones, re
 Solo imprime; no guarda nada."""
 import requests
 B = "https://apis.datos.gob.ar/series/api"
-for q in ["exportaciones combustibles y energia", "importaciones combustibles y lubricantes", "intercambio comercial argentino exportaciones mensual", "saldo balanza comercial energetica", "exportaciones por grandes rubros mensual"]:
+for q in ["exportaciones de manufacturas de origen agropecuario", "exportaciones MOA millones de dolares"]:
     try:
         r = requests.get(f"{B}/search/", params={"q": q, "limit": 12}, timeout=30).json()
         print(f"\n### {q}  ({r.get('count')})")
