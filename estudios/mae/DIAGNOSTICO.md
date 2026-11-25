@@ -1,21 +1,18 @@
-# Diagnóstico A3 market data — 2026-11-24 02:18
+# Diagnóstico A3 market data — 2026-11-24 21:50
 
-  - titulo/historicocauciones: HTTP 400
-- Cauciones 2026-06-01 a 2026-07-01: 0 filas
-  - titulo/historicocauciones: HTTP 400
-- Cauciones 2026-07-02 a 2026-08-01: 0 filas
-  - titulo/historicocauciones: HTTP 400
-- Cauciones 2026-08-02 a 2026-09-01: 0 filas
-  - titulo/historicocauciones: HTTP 400
-- Cauciones 2026-09-02 a 2026-10-02: 0 filas
-  - titulo/historicocauciones: HTTP 400
-- Cauciones 2026-10-03 a 2026-11-02: 0 filas
-  - titulo/historicocauciones: HTTP 400
-- Cauciones 2026-11-03 a 2026-11-24: 0 filas
-- resumen/DDF: 14 filas
-  Ejemplo: {"ticker": "DLR042027", "tipoEmision": "DDF", "descripcion": "DLR042027", "plazo": "---", "fechaLiquidacion": null, "moneda": "", "segmento": "DDF", "variacion": 0.977, "ultimo": 1757.0, "cantidad": 158987.0, "monto": 279193236500.0, "codigoOrden": null, "tickerOrden": null, "tipoNegociacion": null,
+- Cauciones 2026-06-01 a 2026-07-01: 63 filas
+- Cauciones 2026-07-02 a 2026-08-01: 58 filas
+- Cauciones 2026-08-02 a 2026-09-01: 58 filas
+- Cauciones 2026-09-02 a 2026-10-02: 70 filas
+- Cauciones 2026-10-03 a 2026-11-02: 60 filas
+- Cauciones 2026-11-03 a 2026-11-24: 32 filas
+  Columnas: ['fecha', 'montoConcertado', 'montoColocador', 'montoTomador', 'tasaColocador', 'tasaTomador', 'tasaPP', 'ticker', 'tipoEmision', 'fechaLiquidacion', 'volumen', 'monto', 'descripcion', 'plazo', 'codigoPlazo', 'segmento', 'codigoSegmento', 'moneda', 'variacion', 'ultimo', 'ultimaTasa', 'cierreAnterior', 'minimo', 'maximo', 'openInterest', 'precioCierre', 'precioApertura', 'fecha_dia', 'volumen_dia']
+  Ejemplo: {"fecha": "2026-07-01T00:00:00", "montoConcertado": 302481633.0, "montoColocador": 0, "montoTomador": 0, "tasaColocador": 0, "tasaTomador": 0, "tasaPP": 1.9981, "ticker": "CAUSD", "tipoEmision": "CAU", "fechaLiquidacion": "0001-01-01T00:00:00", "volumen": 0, "monto": 0, "descripcion": "CAUSD D 001", "plazo": "001", "codigoPlazo": null, "segmento": null, "codigoSegmento": null, "moneda": "D", "vari
+- resumen/DDF: 13 filas
+  Ejemplo: {"ticker": "DLR112026", "tipoEmision": "DDF", "descripcion": "DLR112026", "plazo": "---", "fechaLiquidacion": null, "moneda": "", "segmento": "DDF", "variacion": 0.6311, "ultimo": 1592.0, "cantidad": 265090609.0, "monto": 422136657108000.0, "codigoOrden": null, "tickerOrden": null, "tipoNegociacion"
 - datos/DER: 0 filas  <- sin operaciones
-- datos/FOR: 0 filas  <- sin operaciones
+- datos/FOR: 11 filas
+  Ejemplo: {"ticker": "EB$T", "tipoEmision": "FOR", "fechaLiquidacion": "0001-01-01T00:00:00", "volumen": 25000, "monto": 44673000, "descripcion": "EB$T  (EURO BILL. A PESO TR.)", "plazo": "000", "codigoPlazo": "000", "segmento": "Minorista", "codigoSegmento": "N", "moneda": "T", "variacion": 6.4413, "ultimo":
   - datos/DDF: HTTP 500
   - datos/DDF: HTTP 500
   - datos/DDF: HTTP 500
