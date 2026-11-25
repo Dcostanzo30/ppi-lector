@@ -3,10 +3,7 @@ tributarios) y de gasto base caja del Sector Público Nacional (jubilaciones, re
 Solo imprime; no guarda nada."""
 import requests
 B = "https://apis.datos.gob.ar/series/api"
-for q in ["recursos tributarios total", "recaudacion tributaria", "IVA neto de reintegros", "ganancias recaudacion",
-          "seguridad social aportes contribuciones recaudacion", "derechos de exportacion",
-          "base caja prestaciones sociales", "base caja jubilaciones y pensiones", "base caja remuneraciones",
-          "base caja sector publico nacional gasto primario", "ahorro inversion financiamiento sector publico nacional"]:
+for q in ["exportaciones combustibles y energia", "importaciones combustibles y lubricantes", "intercambio comercial argentino exportaciones mensual", "saldo balanza comercial energetica", "exportaciones por grandes rubros mensual"]:
     try:
         r = requests.get(f"{B}/search/", params={"q": q, "limit": 12}, timeout=30).json()
         print(f"\n### {q}  ({r.get('count')})")
