@@ -1,6 +1,6 @@
 # Seguimiento de soberanos largos en dólares
 
-Última rueda: **2026-11-24**. Riesgo país: **1.094**. Brent: **US$ 88,53**.
+Última rueda: **2026-11-24**. Riesgo país: **1.094**. Brent: **US$ 87,56**.
 
 ## Soberanos en dólar MEP: precio / valor residual
 
@@ -39,7 +39,7 @@ Precio en D en dólares (incluye interés corrido). TIR sobre ese precio. Parida
 
 | Fecha | Riesgo país | Brent | TIR AE38 | TIR AL41 | TIR GD38 | Precio AE38D | Precio AL41D | Precio GD38D | Ley local AE38−GD38 | Ley local AL41−GD41 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 2026-11-24 | 1.094 | 88,53 | 17,40% | 15,70% | 14,78% | 62,78 | 56,16 | 68,65 | 2,62 | 1,94 |
+| 2026-11-24 | 1.094 | 87,56 | 17,40% | 15,70% | 14,78% | 62,78 | 56,16 | 68,65 | 2,62 | 1,94 |
 | 2026-11-20 | 1.070 | 92,57 | 17,26% | 15,83% | 14,69% | 63,00 | 55,81 | 68,81 | 2,57 | 1,56 |
 | 2026-11-19 | 931 | 91,98 | 15,81% | 14,51% | 12,94% | 66,10 | 59,09 | 73,27 | 2,87 | 1,55 |
 | 2026-11-18 | 848 | 91,95 | 14,76% | 13,63% | 12,43% | 68,54 | 61,50 | 74,66 | 2,33 | 1,35 |
