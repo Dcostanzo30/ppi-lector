@@ -1,23 +1,20 @@
-# Diagnóstico MEP — 2026-11-25 16:37
+# Diagnóstico MEP — 2026-11-25 20:05
 
-- GD30 INMEDIATA: compradora 84260.0 vendedora 84660.0
-- GD30D INMEDIATA: compradora 50.32 vendedora 50.33
-- GD30C INMEDIATA: compradora 47.52 vendedora 47.55
-- GD30 A-24HS: compradora 84270.0 vendedora 84360.0
-- GD30D A-24HS: compradora 50.33 vendedora 50.35
-- GD30C A-24HS: compradora 47.55 vendedora 47.55
-- AL30 INMEDIATA: compradora 81540.0 vendedora 81550.0
-- AL30D INMEDIATA: compradora 48.7 vendedora 48.71
-- AL30C INMEDIATA: compradora 46.05 vendedora 46.06
-- AL30 A-24HS: compradora 81520.0 vendedora 81530.0
-- AL30D A-24HS: compradora 48.7 vendedora 48.71
-- AL30C A-24HS: compradora None vendedora None  (JSONDecodeError Expecting value: line 1 column 1 (char 0))
+- GD30 INMEDIATA: compradora None vendedora 86000.0
+- GD30D INMEDIATA: compradora None vendedora 53.5
+- GD30C INMEDIATA: compradora 45.25 vendedora 47.75
+- GD30 A-24HS: compradora 856.4 vendedora 85000.0
+- GD30D A-24HS: compradora 33.0 vendedora 55.5
+- GD30C A-24HS: compradora 45.5 vendedora 56.33
+- AL30 INMEDIATA: compradora 80500.0 vendedora 83000.0
+- AL30D INMEDIATA: compradora None vendedora 52.0
+- AL30C INMEDIATA: compradora 43.5 vendedora 59.0
+- AL30 A-24HS: compradora 79400.0 vendedora 82000.0
+- AL30D A-24HS: compradora 47.0 vendedora 52.0
+- AL30C A-24HS: compradora None vendedora 54.75
 
-Filas de puntas: 12; de MEP/CCL: 7
-- GD30 MEP INMEDIATA: pagás 1682.43, cobrás 1674.15, costo ida y vuelta 0.495%
-- GD30 CCL INMEDIATA: pagás 1781.57, cobrás 1772.03, costo ida y vuelta 0.538%
-- GD30 MEP A-24HS: pagás 1676.14, cobrás 1673.68, costo ida y vuelta 0.147%
-- GD30 CCL A-24HS: pagás 1774.13, cobrás 1772.24, costo ida y vuelta 0.107%
-- AL30 MEP INMEDIATA: pagás 1674.54, cobrás 1673.99, costo ida y vuelta 0.033%
-- AL30 CCL INMEDIATA: pagás 1770.9, cobrás 1770.3, costo ida y vuelta 0.034%
-- AL30 MEP A-24HS: pagás 1674.13, cobrás 1673.58, costo ida y vuelta 0.033%
+Filas de puntas: 12; de MEP/CCL: 4
+- GD30 MEP A-24HS: pagás 2575.76, cobrás 15.43, costo ida y vuelta 16592.497%
+- GD30 CCL A-24HS: pagás 1868.13, cobrás 15.2, costo ida y vuelta 12187.701%
+- AL30 CCL INMEDIATA: pagás 1908.05, cobrás 1364.41, costo ida y vuelta 39.844%
+- AL30 MEP A-24HS: pagás 1744.68, cobrás 1526.92, costo ida y vuelta 14.261%
