@@ -1,6 +1,6 @@
 # Fiscal: recaudación y gasto base caja
 
-Rehecho el 24/11/2026. Fuente: API de series de datos.gob.ar (Ministerio de Economía), mensual, millones de pesos. La recaudación sale con unos dos meses de atraso en esta API (ARCA la informa el primer día hábil del mes siguiente); el IMIG, con unos tres.
+Rehecho el 25/11/2026. Fuente: API de series de datos.gob.ar (Ministerio de Economía), mensual, millones de pesos. La recaudación sale con unos dos meses de atraso en esta API (ARCA la informa el primer día hábil del mes siguiente); el IMIG, con unos tres.
 
 ## Recaudación (ARCA), último mes: 10/2026
 
@@ -52,4 +52,32 @@ Método: el aguinaldo es medio haber/sueldo. **Control**: en cada diciembre cono
 | 2025 | 5.726.522 | 8.619.187 | 2.892.665 | 0,51 |
 
 **Estimación del aguinaldo de diciembre de 2026: $ 4,27 billones** (= último mes conocido 09/2026: 7.780.833 M, llevado a diciembre con el IPC ×1,067 (meses sin IPC todavía, con el último dato: 2026-11, 2026-12), por el exceso promedio de diciembre 2024, 2025: 0,51; 2023 queda afuera por la inflación de ese diciembre). Incluye solo jubilaciones contributivas y remuneraciones del SPN; no incluye otras prestaciones ni transferencias a provincias o universidades. Tipo: compromiso conocido en el monto, estimado en la fecha (se paga en la segunda quincena de diciembre). Estado: a confirmar con el IMIG de diciembre.
+
+## Balanza energética y agro (INDEC, Intercambio Comercial Argentino; millones de US$)
+
+Último mes: 09/2026. Agro = productos primarios + manufacturas de origen agropecuario (incluye algo de no agro, como minerales, dentro de primarios).
+
+| Mes | Expo energía | Impo combustibles | Saldo energético | Expo agro | Expo totales | Energía / totales |
+|---|---|---|---|---|---|---|
+| 09/2025 | 942 | 175 | 767 | s/d | 8.128 | 11,6% |
+| 10/2025 | 894 | 201 | 693 | s/d | 7.963 | 11,2% |
+| 11/2025 | 1.019 | 149 | 870 | s/d | 8.133 | 12,5% |
+| 12/2025 | 1.081 | 174 | 907 | s/d | 7.482 | 14,5% |
+| 01/2026 | 932 | 149 | 783 | s/d | 7.245 | 12,9% |
+| 02/2026 | 670 | 138 | 533 | s/d | 5.963 | 11,2% |
+| 03/2026 | 1.265 | 139 | 1.126 | s/d | 8.697 | 14,5% |
+| 04/2026 | 1.570 | 151 | 1.418 | s/d | 8.916 | 17,6% |
+| 05/2026 | 1.775 | 297 | 1.478 | s/d | 9.578 | 18,5% |
+| 06/2026 | 1.433 | 810 | 623 | s/d | 9.112 | 15,7% |
+| 07/2026 | 1.528 | 631 | 897 | s/d | 8.854 | 17,3% |
+| 08/2026 | 1.498 | 528 | 970 | s/d | 8.866 | 16,9% |
+| 09/2026 | 1.781 | 181 | 1.600 | s/d | 10.036 | 17,7% |
+
+**Últimos 12 meses acumulados (millones de US$)**
+
+| Hasta | Saldo energético | Expo energía | Expo agro | Energía / agro |
+|---|---|---|---|---|
+| 09/2026 | 11.898 | 15.446 | s/d | s/d% |
+| 09/2025 | 7.377 | 10.636 | s/d | s/d% |
+| 09/2024 | 4.726 | 9.413 | s/d | s/d% |
 
