@@ -80,4 +80,14 @@ Método: el aguinaldo es medio haber/sueldo. **Control**: en cada diciembre cono
 | 09/2026 | 11.898 | 15.446 | 58.187 | 26,5% |
 | 09/2025 | 7.377 | 10.636 | 50.499 | 21,1% |
 | 09/2024 | 4.726 | 9.413 | 44.345 | 21,2% |
+**Escenario: autoabastecimiento de gas en invierno** (cálculo aritmético, no pronóstico; últimos 12 meses a 09/2026)
+
+| Concepto | Hoy | Con autoabastecimiento | Diferencia |
+|---|---|---|---|
+| Saldo energético 12 meses | 11.898 | 13.412 | 1.514 |
+| Saldo energético junio–agosto | 2.490 | 4.004 | 1.514 |
+| Saldo energético / expo agro | 20,4% | 23,0% | |
+
+Método: lo importado en junio–agosto por encima de la mediana de los otros meses (151 M por mes) se toma como importación de invierno (gas y gasoil para generación) que el autoabastecimiento evitaría. Referencia: pago de Bonares y Globales del 9/7/2027, US$ 5.385 millones.
+
 
