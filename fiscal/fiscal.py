@@ -177,6 +177,22 @@ def informe(S, ipc):
             if len(w) < 12: continue
             ag = w.agro.sum() if "agro" in w else float("nan")
             md.append(f"| {pd.Timestamp(f):%m/%Y} | {fmt(w.saldo_energia.sum())} | {fmt(w.expo_energia.sum())} | {fmt(ag)} | {fmt(w.expo_energia.sum() / ag * 100, 1) + '%' if ag and not pd.isna(ag) else 's/d'} |")
+        # escenario fijo (pedido de Domingo 25/11/2026): autoabastecimiento de gas en invierno
+        w = E.tail(12)
+        if len(w) == 12 and "agro" in w:
+            meses = pd.to_datetime(w.index).month
+            inv = w.impo_combustibles[(meses >= 6) & (meses <= 8)]
+            base = w.impo_combustibles[(meses < 6) | (meses > 8)].median()
+            extra = (inv - base).clip(lower=0).sum()
+            s12 = w.saldo_energia.sum(); sinv = w.saldo_energia[(meses >= 6) & (meses <= 8)].sum(); ag = w.agro.sum()
+            md.append(f"**Escenario: autoabastecimiento de gas en invierno** (cálculo aritmético, no pronóstico; últimos 12 meses a {pd.Timestamp(w.index[-1]):%m/%Y})\n")
+            md.append("| Concepto | Hoy | Con autoabastecimiento | Diferencia |\n|---|---|---|---|")
+            md.append(f"| Saldo energético 12 meses | {fmt(s12)} | {fmt(s12 + extra)} | {fmt(extra)} |")
+            md.append(f"| Saldo energético junio–agosto | {fmt(sinv)} | {fmt(sinv + extra)} | {fmt(extra)} |")
+            md.append(f"| Saldo energético / expo agro | {fmt(s12 / ag * 100, 1)}% | {fmt((s12 + extra) / ag * 100, 1)}% | |")
+            md.append(f"\nMétodo: lo importado en junio–agosto por encima de la mediana de los otros meses ({fmt(base)} M por mes) se toma como "
+                      "importación de invierno (gas y gasoil para generación) que el autoabastecimiento evitaría. Referencia: pago de Bonares y "
+                      "Globales del 9/7/2027, US$ 5.385 millones.\n")
         md.append("")
     else:
         md.append("No se encontraron las series del ICA: s/d.\n")
