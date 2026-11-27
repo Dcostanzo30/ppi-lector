@@ -1,21 +1,33 @@
 # Base monetaria: expansión y contracción
 
-Rehecho el 21/11/2026. Montos en billones de pesos. Fuente: factores de explicación de la base monetaria del BCRA (API de estadísticas), que se publican con algunos días de atraso.
+Rehecho el 27/11/2026. Montos en billones de pesos. Fuente: factores de explicación de la base monetaria del BCRA (API de estadísticas), que se publican con algunos días de atraso.
 
-**Base monetaria al 18/11/2026: $ 47,36 billones.**
+**Base monetaria al 24/11/2026: $ 47,52 billones.**
 
 | Período | Variación | % |
 |---|---|---|
-| Desde fin de mes (30/10/2026) | 0,04 | 0,1% |
-| Últimos 30 días (desde 19/10/2026) | 1,20 | 2,6% |
-| Desde el primer dato (03/11/2025) | 5,92 | 14,3% |
+| Desde fin de mes (30/10/2026) | 0,19 | 0,4% |
+| Últimos 30 días (desde 23/10/2026) | 0,70 | 1,5% |
+| Desde el primer dato (01/11/2024) | 22,17 | 87,5% |
 
-## Factores por mes (último dato de factores: 17/11/2026)
+## Factores por mes (último dato de factores: 20/11/2026)
 
 Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 
 | Mes | Compra de divisas | Tesoro | Pases y letras del BCRA | Otros | Total |
 |---|---|---|---|---|---|
+| 11/2024 | -1,20 | 3,57 | -1,66 | 0,41 | 1,11 |
+| 12/2024 | -0,83 | 2,34 | 4,77 | -0,37 | 5,90 |
+| 01/2025 | 0,64 | 1,80 | -1,38 | -0,54 | 0,52 |
+| 02/2025 | 1,53 | -2,03 | 0,94 | -0,41 | 0,04 |
+| 03/2025 | -1,46 | 0,62 | 1,70 | -0,62 | 0,25 |
+| 04/2025 | -0,92 | 3,86 | -1,52 | 0,74 | 2,16 |
+| 05/2025 | 0,00 | 1,56 | 0,46 | 0,22 | 2,24 |
+| 06/2025 | 0,00 | 2,57 | 0,56 | -0,89 | 2,24 |
+| 07/2025 | 0,00 | -5,89 | 11,13 | -2,30 | 2,94 |
+| 08/2025 | 0,00 | 2,03 | 0,00 | 2,12 | 4,15 |
+| 09/2025 | -1,64 | 1,15 | 0,00 | -1,47 | -1,96 |
+| 10/2025 | -0,24 | 4,14 | 0,00 | -4,87 | -0,97 |
 | 11/2025 | -1,59 | 1,70 | 0,00 | -0,51 | -0,40 |
 | 12/2025 | 0,00 | -0,58 | 0,00 | 2,61 | 2,03 |
 | 01/2026 | -2,35 | -0,14 | 0,00 | 2,35 | -0,14 |
@@ -28,15 +40,12 @@ Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 | 08/2026 | 1,16 | 0,47 | 0,00 | -0,37 | 1,26 |
 | 09/2026 | 0,72 | -0,27 | 0,00 | -0,99 | -0,54 |
 | 10/2026 | 2,12 | -1,04 | 0,00 | -0,67 | 0,41 |
-| 11/2026 | -0,19 | 4,25 | 0,00 | -4,15 | -0,09 |
+| 11/2026 | -0,17 | 5,26 | 0,00 | -5,26 | -0,17 |
 
 ## Últimos 10 días con factores
 
 | Fecha | Compra de divisas | Tesoro | Pases y letras del BCRA | Otros | Total |
 |---|---|---|---|---|---|
-| 30/10/2026 | 0,15 | -0,05 | 0,00 | 1,02 | 1,12 |
-| 02/11/2026 | -0,20 | 0,22 | 0,00 | -0,10 | -0,08 |
-| 03/11/2026 | 0,00 | -0,00 | 0,00 | -0,24 | -0,24 |
 | 04/11/2026 | 0,01 | -0,00 | 0,00 | -0,17 | -0,15 |
 | 05/11/2026 | 0,06 | 1,77 | 0,00 | 0,98 | 2,82 |
 | 11/11/2026 | 0,05 | 2,03 | 0,00 | -0,13 | 1,94 |
@@ -44,6 +53,9 @@ Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 | 13/11/2026 | 0,06 | -0,26 | 0,00 | -1,39 | -1,59 |
 | 16/11/2026 | 0,05 | 0,00 | 0,00 | -0,28 | -0,23 |
 | 17/11/2026 | 0,11 | -0,00 | 0,00 | -1,42 | -1,31 |
+| 18/11/2026 | 0,02 | 0,00 | 0,00 | 0,11 | 0,13 |
+| 19/11/2026 | 0,00 | 0,01 | 0,00 | -0,21 | -0,20 |
+| 20/11/2026 | 0,00 | 1,00 | 0,00 | -1,02 | -0,02 |
 
 ## Licitaciones del Tesoro y la base el día de la liquidación
 
@@ -85,5 +97,4 @@ VNO en circulación según el último comunicado oficial de cada instrumento. El
 
 | Llamado | Licitación | Liquidación |
 |---|---|---|
-| 24/11/2026 | 26/11/2026 | 30/11/2026 |
 | 09/12/2026 | 11/12/2026 | 15/12/2026 |
