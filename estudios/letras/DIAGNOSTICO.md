@@ -1,9 +1,9 @@
-# Diagnóstico Lecap — 2026-11-26 00:13
+# Diagnóstico Lecap — 2026-11-26 21:49
 
 Letras encontradas (S/T, pesos): 3 -> ['S26F7', 'S29E7', 'S30N6']
 
-- S26F7: vence 2027-02-26, paga 108.368 por 100, 17 días de historia
-- S29E7: vence 2027-01-29, paga 111.414 por 100, 60 días de historia
-- S30N6: vence 2026-11-30, paga 129.888 por 100, 121 días de historia
+- S26F7: vence 2027-02-26, paga 108.368 por 100, 18 días de historia
+- S29E7: vence 2027-01-29, paga 111.414 por 100, 61 días de historia
+- S30N6: vence 2026-11-30, paga 129.888 por 100, 122 días de historia
 
-Filas de tasa: 198
+Filas de tasa: 201
