@@ -1,13 +1,13 @@
 nombre,descripcion,volumen,share,grupo,moneda,orden,consulta
-Renta Fija TRD,Renta Fija Trading,0,0,Contado,ARS,1,2026-11-26
-Renta Fija PPT,Renta Fija PPT,0,0,Contado,ARS,2,2026-11-26
-FOREX,FOREX,0,0,Monedas,ARS,1,2026-11-26
-Futuro de Dólar,Total acumulado en dólares,0,0,Monedas,ARS,2,2026-11-26
-Cauciones,Cauciones,0,0,Tasas,ARS,1,2026-11-26
-REPO,REPO,0,0,Tasas,ARS,2,2026-11-26
-Renta Fija TRD,Renta Fija Trading,0,0,Contado,USD,1,2026-11-26
-Renta Fija PPT,Renta Fija PPT,0,0,Contado,USD,2,2026-11-26
-FOREX,FOREX,0,0,Monedas,USD,1,2026-11-26
-Futuro de Dólar,Total acumulado en dólares,0,0,Monedas,USD,2,2026-11-26
-Cauciones,Cauciones,0,0,Tasas,USD,1,2026-11-26
-REPO,REPO,0,0,Tasas,USD,2,2026-11-26
+Renta Fija TRD,Renta Fija Trading,5155704036688,82.08,Contado,ARS,1,2026-11-26
+Renta Fija PPT,Renta Fija PPT,1125819386294,17.92,Contado,ARS,2,2026-11-26
+FOREX,FOREX,796778728000,18.72,Monedas,ARS,1,2026-11-26
+Futuro de Dólar,Total acumulado en dólares,3459873840793,81.28,Monedas,ARS,2,2026-11-26
+Cauciones,Cauciones,3689778513995,28.04,Tasas,ARS,1,2026-11-26
+REPO,REPO,9467261254105,71.96,Tasas,ARS,2,2026-11-26
+Renta Fija TRD,Renta Fija Trading,3205047030.789862,82.08,Contado,USD,1,2026-11-26
+Renta Fija PPT,Renta Fija PPT,699866411.1769315,17.92,Contado,USD,2,2026-11-26
+FOREX,FOREX,495318055.1483743,18.72,Monedas,USD,1,2026-11-26
+Futuro de Dólar,Total acumulado en dólares,2150832999.9998755,81.28,Monedas,USD,2,2026-11-26
+Cauciones,Cauciones,2293753401.3587046,28.04,Tasas,USD,1,2026-11-26
+REPO,REPO,5885329599.267173,71.96,Tasas,USD,2,2026-11-26
