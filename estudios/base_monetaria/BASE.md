@@ -1,16 +1,16 @@
 # Base monetaria: expansión y contracción
 
-Rehecho el 27/11/2026. Montos en billones de pesos. Fuente: factores de explicación de la base monetaria del BCRA (API de estadísticas), que se publican con algunos días de atraso.
+Rehecho el 28/11/2026. Montos en billones de pesos. Fuente: factores de explicación de la base monetaria del BCRA (API de estadísticas), que se publican con algunos días de atraso.
 
-**Base monetaria al 24/11/2026: $ 47,52 billones.**
+**Base monetaria al 25/11/2026: $ 45,89 billones.**
 
 | Período | Variación | % |
 |---|---|---|
-| Desde fin de mes (30/10/2026) | 0,19 | 0,4% |
-| Últimos 30 días (desde 23/10/2026) | 0,70 | 1,5% |
-| Desde el primer dato (01/11/2024) | 22,17 | 87,5% |
+| Desde fin de mes (30/10/2026) | -1,43 | -3,0% |
+| Últimos 30 días (desde 26/10/2026) | -0,91 | -1,9% |
+| Desde el primer dato (01/11/2024) | 20,55 | 81,1% |
 
-## Factores por mes (último dato de factores: 20/11/2026)
+## Factores por mes (último dato de factores: 24/11/2026)
 
 Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 
@@ -40,13 +40,12 @@ Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 | 08/2026 | 1,16 | 0,47 | 0,00 | -0,37 | 1,26 |
 | 09/2026 | 0,72 | -0,27 | 0,00 | -0,99 | -0,54 |
 | 10/2026 | 2,12 | -1,04 | 0,00 | -0,67 | 0,41 |
-| 11/2026 | -0,17 | 5,26 | 0,00 | -5,26 | -0,17 |
+| 11/2026 | -0,17 | 5,33 | 0,00 | -4,97 | 0,19 |
 
 ## Últimos 10 días con factores
 
 | Fecha | Compra de divisas | Tesoro | Pases y letras del BCRA | Otros | Total |
 |---|---|---|---|---|---|
-| 04/11/2026 | 0,01 | -0,00 | 0,00 | -0,17 | -0,15 |
 | 05/11/2026 | 0,06 | 1,77 | 0,00 | 0,98 | 2,82 |
 | 11/11/2026 | 0,05 | 2,03 | 0,00 | -0,13 | 1,94 |
 | 12/11/2026 | -0,34 | 0,50 | 0,00 | -1,40 | -1,25 |
@@ -56,6 +55,7 @@ Positivo = expande la base (el BCRA entrega pesos); negativo = la contrae.
 | 18/11/2026 | 0,02 | 0,00 | 0,00 | 0,11 | 0,13 |
 | 19/11/2026 | 0,00 | 0,01 | 0,00 | -0,21 | -0,20 |
 | 20/11/2026 | 0,00 | 1,00 | 0,00 | -1,02 | -0,02 |
+| 24/11/2026 | 0,00 | 0,07 | 0,00 | 0,30 | 0,37 |
 
 ## Licitaciones del Tesoro y la base el día de la liquidación
 

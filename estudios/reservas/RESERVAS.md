@@ -51,13 +51,13 @@ Meta de reservas netas de fin de diciembre (tipos del programa): **-4,1**. Últi
 | Paso | Miles de millones de US$ |
 |---|---|
 | Netas del último balance (2026-11-23) | -3,99 |
-| + Compras del BCRA ya publicadas después del balance (hasta 2026-11-20) | 0,00 |
+| + Compras del BCRA ya publicadas después del balance (hasta 2026-11-24) | 0,00 |
 | + Pagos comprometidos que bajan las netas () | 0,00 |
-| + Resto (lo que se fue por otros lados): -0,210 por semana × 5,9 semanas | -1,23 |
-| **= Netas a fin de año si el BCRA no compra más** | **-5,22** |
-| Netas a fin de año al ritmo de compras de las últimas 8 semanas (0,228 por semana) | -3,88 |
+| + Resto (lo que se fue por otros lados): -0,210 por semana × 5,3 semanas | -1,11 |
+| **= Netas a fin de año si el BCRA no compra más** | **-5,10** |
+| Netas a fin de año al ritmo de compras de las últimas 8 semanas (0,228 por semana) | -3,90 |
 
-**Para llegar a la meta, el BCRA tiene que comprar unos US$ 192 millones por semana** de acá a fin de año (viene comprando US$ 228 millones por semana). Al ritmo actual llega.
+**Para llegar a la meta, el BCRA tiene que comprar unos US$ 190 millones por semana** de acá a fin de año (viene comprando US$ 228 millones por semana). Al ritmo actual llega.
 
 El "resto" junta todo lo que no son compras: pagos a otros organismos, BOPREAL, encajes, valuación del oro. Se estima con las últimas 8 semanas y cambia cada jueves. Los desembolsos y devoluciones de capital al FMI no mueven las netas (cambian igual reservas y crédito del FMI); los intereses sí.
 
