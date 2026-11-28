@@ -1,4 +1,4 @@
-# Diagnóstico futuros — 2026-11-27 00:17
+# Diagnóstico futuros — 2026-11-27 21:50
 
 Ingreso a PPI correcto.
 
@@ -12,26 +12,26 @@ Ingreso a PPI correcto.
 
 **Futuros encontrados: 139**
 
-- Con precio actual: 110; sin precio: 29 ['AL30/FEB27', 'AL30D/FEB27', 'AL35/DIC26', 'AL35/FEB27', 'BTC/DIC26', 'BTC/NOV26', 'BTC/NOV26/DIC26', 'DLR/ENE27A', 'DLR/FEB27A', 'DLR/MAR27A', 'DLR/NOV26/ENE27', 'DLR/SPOT', 'GD30/DIC26', 'GD30/FEB27', 'GD35/DIC26']
+- Con precio actual: 113; sin precio: 26 ['AL30/FEB27', 'AL30D/FEB27', 'AL35/DIC26', 'AL35/FEB27', 'BTC/NOV26/DIC26', 'DLR/ENE27A', 'DLR/FEB27A', 'DLR/MAR27A', 'DLR/NOV26/ENE27', 'DLR/SPOT', 'GD30/DIC26', 'GD30/FEB27', 'GD35/DIC26', 'GD35/FEB27', 'MAI.ROS/DIC26/SEP27']
   - AL30/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - AL30D/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - AL35/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - AL35/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - BTC/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - BTC/NOV26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - BTC/NOV26/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - DLR/ENE27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - DLR/FEB27A: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
-  - DLR/MAR27A: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - DLR/FEB27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
+  - DLR/MAR27A: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - DLR/NOV26/ENE27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - DLR/SPOT: Exception en A-24HS: {'error': 'Instrument Type not found: MERCADOS'}
   - GD30/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - GD30/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - GD35/DIC26: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - GD35/FEB27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
-  - MAI.ROS/DIC26M: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - GD35/DIC26: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - GD35/FEB27: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - MAI.ROS/DIC26/SEP27: JSONDecodeError en A-24HS: Expecting value: line 1 column 1 (char 0)
+  - MAI.ROS/DIC26M: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - MAI.ROS/JUN27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - MAI.ROS/MAR27/JUL27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
   - MAI.ROS/MAY27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
+  - SOJ.ROS/ENE27/JUL27: respuesta vacía en A-24HS: {'date': '0001-01-01T00:53:00-03:00', 'price': 0, 'volume': 0, 'openingPrice': 0, 'max': 0, 'min': 0, 'previousClose': 0
 - Vencimientos tomados de PPI: 135 contratos
-- Filas de historia diaria (DLR simples): 1173
+- Filas de historia diaria (DLR simples): 1177
