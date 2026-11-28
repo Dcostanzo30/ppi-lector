@@ -1,13 +1,13 @@
 # Carry del inversor de a pie — 27/11/2026
 
-Dólar mayorista de referencia: 1600.6872. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.09% de puntas medidas (41 lecturas) (= 2.49%).
+Dólar mayorista de referencia: 1600.6872. Costo de ida y vuelta del cambio de dólares por bonos: 2.4% de comisiones + 0.10% de puntas medidas (45 lecturas) (= 2.50%).
 
 ## Lecap, sin cobertura y cubierta con dólar futuro
 
 | Letra | Vence | Días | TEA Lecap | Suba máx. del dólar sin perder (sin cobertura) | Futuro usado | Devaluación implícita | Cubierta bruta | Costos | **Cubierta neta** | Días para cubrir costos |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S26F7 | 2027-02-26 | 92 | 29.4% | 3.56% | DLR/FEB27 | 5.67% | 0.98% | 4.16% | **-3.18%** | 383 |
-| S29E7 | 2027-01-29 | 64 | 25.9% | 1.05% | DLR/ENE27 | 3.74% | 0.37% | 4.16% | **-3.79%** | 705 |
+| S26F7 | 2027-02-26 | 92 | 29.4% | 3.55% | DLR/FEB27 | 5.67% | 0.98% | 4.17% | **-3.19%** | 384 |
+| S29E7 | 2027-01-29 | 64 | 25.9% | 1.04% | DLR/ENE27 | 3.74% | 0.37% | 4.17% | **-3.8%** | 707 |
 
 - *Suba máxima del dólar sin perder:* cuánto puede subir el dólar en el período (hasta el vencimiento) para que la Lecap sin cobertura, ya descontados los costos, no rinda menos que haber quedado en dólares.
 - *Cubierta bruta / neta:* resultado en dólares, en el período, de comprar la Lecap y fijar el precio de vuelta con el futuro del vencimiento igual o inmediato posterior. La neta resta los costos.
@@ -16,9 +16,9 @@ Dólar mayorista de referencia: 1600.6872. Costo de ida y vuelta del cambio de d
 
 | Plazo | Rinde en pesos | Comisión PPI | Costo de cambio | **Neto en pesos de ida y vuelta** |
 |---|---|---|---|---|
-| 7 días | 0.42% | 0.05% | 2.49% | **-2.12%** |
-| 30 días | 1.79% | 0.20% | 2.49% | **-0.90%** |
-| 90 días | 5.36% | 0.60% | 2.49% | **2.27%** |
+| 7 días | 0.42% | 0.05% | 2.50% | **-2.13%** |
+| 30 días | 1.79% | 0.20% | 2.50% | **-0.92%** |
+| 90 días | 5.36% | 0.60% | 2.50% | **2.26%** |
 
 El neto es lo que deja, antes de que se mueva el dólar, pasar de dólares a pesos, prestar en caución y volver a dólares. Si el dólar sube más que ese neto, se pierde.
 
